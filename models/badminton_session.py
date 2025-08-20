@@ -1,0 +1,213 @@
+# -*- coding: utf-8 -*-
+from odoo import models, fields, api
+from odoo.exceptions import ValidationError
+from datetime import datetime, timedelta
+import json
+
+class BadmintonSession(models.Model):
+    _name = 'badminton.session'
+    _description = 'Badminton Oyun Sessiyası'
+    _inherit = ['mail.thread', 'mail.activity.mixin']  # Mail funksiyaları üçün
+    _order = 'start_time desc'
+
+    name = fields.Char(string="Sessiya Nömrəsi", readonly=True, default="Yeni")
+    partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
+    start_time = fields.Datetime(string="Başlama Vaxtı", readonly=True)
+    end_time = fields.Datetime(string="Bitmə Vaxtı")
+    duration_hours = fields.Float(string="Müddət (saat)", default=1.0)
+    hourly_rate = fields.Float(string="Saatlıq Qiymət", default=10.0)
+    total_amount = fields.Float(string="Ümumi Məbləğ", compute='_compute_total_amount', store=True)
+    
+    state = fields.Selection([
+        ('draft', 'Gözləmədə'),
+        ('active', 'Aktiv'),
+        ('extended', 'Uzadılıb'),
+        ('completed', 'Tamamlanıb'),
+        ('cancelled', 'Ləğv edilib')
+    ], string="Vəziyyət", default='draft')
+    
+    qr_scanned = fields.Boolean(string="QR Oxunub", default=False)
+    extended_time = fields.Float(string="Əlavə Vaxt (saat)", default=0.0)
+    notes = fields.Text(string="Qeydlər")
+    
+    # Compute metodları
+    @api.depends('duration_hours', 'extended_time', 'hourly_rate')
+    def _compute_total_amount(self):
+        for session in self:
+            total_hours = session.duration_hours + session.extended_time
+            session.total_amount = total_hours * session.hourly_rate
+    
+    @api.model
+    def create(self, vals):
+        if vals.get('name', 'Yeni') == 'Yeni':
+            vals['name'] = self.env['ir.sequence'].next_by_code('badminton.session') or 'BS001'
+        return super(BadmintonSession, self).create(vals)
+    
+    # Manual sessiya başlatma funksiyası (QR oxuyucu pəncərəsi üçün)
+    def start_session_manual(self):
+        """Manual olaraq sessiya başlat"""
+        if self.partner_id:
+            # Aktiv sessiya var mı yoxla
+            active_session = self.search([
+                ('partner_id', '=', self.partner_id.id),
+                ('state', 'in', ['active', 'extended'])
+            ], limit=1)
+            
+            if active_session:
+                raise ValidationError(f'{self.partner_id.name} üçün artıq aktiv sessiya var!')
+            
+            # Sessiya məlumatlarını yenilə
+            self.start_time = fields.Datetime.now()
+            self.end_time = fields.Datetime.now() + timedelta(hours=self.duration_hours)
+            self.state = 'active'
+            self.qr_scanned = False  # Manual başladıldığı üçün
+            
+            # Kort təyin et (əlçatan kortu tap)
+            available_court = self.env['badminton.court'].search([
+                ('is_available', '=', True)
+            ], limit=1)
+            
+            if available_court:
+                available_court.assign_session(self.id)
+            
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'message': f'{self.partner_id.name} üçün sessiya başladıldı!',
+                    'type': 'success',
+                    'sticky': False,
+                }
+            }
+        else:
+            raise ValidationError('Zəhmət olmasa müştəri seçin!')
+    
+    # QR Kod oxuma funksiyası
+    def start_session_by_qr(self, qr_data):
+        """QR kod oxunduqda sessiyanı başlat"""
+        try:
+            # QR koddan müştəri məlumatlarını çıxart
+            if "ID:" in qr_data and "NAME:" in qr_data:
+                partner_id = int(qr_data.split("ID:")[1].split("-")[0])
+                partner = self.env['res.partner'].browse(partner_id)
+                
+                if partner.exists():
+                    # Aktiv sessiya var mı yoxla
+                    active_session = self.search([
+                        ('partner_id', '=', partner_id),
+                        ('state', 'in', ['active', 'extended'])
+                    ], limit=1)
+                    
+                    if active_session:
+                        return {
+                            'status': 'error',
+                            'message': f'{partner.name} üçün artıq aktiv sessiya var!'
+                        }
+                    
+                    # Yeni sessiya yarat
+                    session = self.create({
+                        'partner_id': partner_id,
+                        'start_time': fields.Datetime.now(),
+                        'end_time': fields.Datetime.now() + timedelta(hours=1),
+                        'state': 'active',
+                        'qr_scanned': True
+                    })
+                    
+                    return {
+                        'status': 'success',
+                        'message': f'{partner.name} üçün sessiya başladıldı!',
+                        'session_id': session.id
+                    }
+                else:
+                    return {
+                        'status': 'error',
+                        'message': 'Müştəri tapılmadı!'
+                    }
+            else:
+                return {
+                    'status': 'error',
+                    'message': 'QR kod formatı səhvdir!'
+                }
+        except Exception as e:
+            return {
+                'status': 'error',
+                'message': f'Xəta baş verdi: {str(e)}'
+            }
+    
+    # Sessiya uzatma funksiyası
+    def extend_session(self, additional_hours=1.0):
+        """Sessiyanı uzat"""
+        for session in self:
+            if session.state in ['active', 'extended']:
+                session.extended_time += additional_hours
+                session.end_time = session.end_time + timedelta(hours=additional_hours)
+                session.state = 'extended'
+                session.notes = f"Sessiya {additional_hours} saat uzadıldı"
+    
+    # Sessiyanı tamamla
+    def complete_session(self):
+        """Sessiyanı tamamla"""
+        for session in self:
+            session.state = 'completed'
+            session.notes = f"Sessiya tamamlandı: {fields.Datetime.now()}"
+    
+    # Sessiyaları avtomatik yoxla (cron job üçün)
+    @api.model
+    def check_expired_sessions(self):
+        """Vaxtı bitən sessiyaları yoxla"""
+        expired_sessions = self.search([
+            ('state', 'in', ['active', 'extended']),
+            ('end_time', '<=', fields.Datetime.now())
+        ])
+        
+        for session in expired_sessions:
+            session.message_post(
+                body=f"Diqqət! {session.partner_id.name} müştərisinin vaxtı bitib. Reception ilə əlaqə saxlayın.",
+                message_type='notification'
+            )
+    
+    # Aktiv sessiyaları göstər
+    @api.model
+    def get_active_sessions(self):
+        """Hal-hazırda aktiv olan sessiyaları gətir"""
+        active_sessions = self.search([
+            ('state', 'in', ['active', 'extended'])
+        ])
+        
+        session_data = []
+        for session in active_sessions:
+            remaining_time = session.end_time - fields.Datetime.now()
+            remaining_minutes = max(0, int(remaining_time.total_seconds() / 60))
+            
+            session_data.append({
+                'id': session.id,
+                'partner_name': session.partner_id.name,
+                'start_time': session.start_time,
+                'end_time': session.end_time,
+                'remaining_minutes': remaining_minutes,
+                'state': session.state,
+                'total_amount': session.total_amount
+            })
+        
+        return session_data
+
+
+class BadmintonCourt(models.Model):
+    _name = 'badminton.court'
+    _description = 'Badminton Kortu'
+    
+    name = fields.Char(string="Kort Adı", required=True)
+    is_available = fields.Boolean(string="Əlçatandır", default=True)
+    current_session_id = fields.Many2one('badminton.session', string="Hazırki Sessiya")
+    hourly_rate = fields.Float(string="Saatlıq Qiymət", default=10.0)
+    description = fields.Text(string="Təsvir")
+    
+    def assign_session(self, session_id):
+        """Korta sessiya təyin et"""
+        self.current_session_id = session_id
+        self.is_available = False
+    
+    def release_court(self):
+        """Kortu boşalt"""
+        self.current_session_id = False
+        self.is_available = True

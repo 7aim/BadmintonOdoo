@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_volan" model="ir.ui.view">
+        <field name="name">res.partner.form.volan</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='vat']" position="after">
+                <group>
+                    <field name="birth_date"/>
+                    <field name="additional_info"/>
+                </group>
+                <group>
+                    <field name="qr_code_image" widget="image" string=" "/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Badminton Sessiya Sequence -->
+    <record id="seq_badminton_session" model="ir.sequence">
+        <field name="name">Badminton Sessiya Sequence</field>
+        <field name="code">badminton.session</field>
+        <field name="prefix">BS</field>
+        <field name="padding">3</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+    </record>
+
+    <!-- Default Kortlar -->
+    <record id="court_1" model="badminton.court">
+        <field name="name">Kort 1</field>
+        <field name="hourly_rate">15.0</field>
+        <field name="description">Əsas oyun kortu</field>
+    </record>
+
+    <record id="court_2" model="badminton.court">
+        <field name="name">Kort 2</field>
+        <field name="hourly_rate">15.0</field>
+        <field name="description">İkinci oyun kortu</field>
+    </record>
+
+    <record id="court_3" model="badminton.court">
+        <field name="name">Kort 3</field>
+        <field name="hourly_rate">12.0</field>
+        <field name="description">Kiçik kort</field>
+    </record>
+</odoo>
