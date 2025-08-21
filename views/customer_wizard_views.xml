@@ -15,7 +15,7 @@
                             <field name="name"/>
                             <field name="phone"/>
                             <field name="mobile"/>
-                            <field name="badminton_balance" string="Badminton Balansı" optional="hide"/>
+                            <field name="badminton_balance" string="Badminton Balansı"/>
                         </list>
                     </field>
                 </group>

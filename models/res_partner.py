@@ -22,10 +22,12 @@ class VolanPartner(models.Model):
     badminton_balance = fields.Integer(string="Badminton Balansı (saat)", default=0, 
                                       help="Müştərinin qalan badminton saatlarının sayı")
     
-    # Note: One2many fields will be added after module installation is complete
-    # badminton_sale_ids = fields.One2many('badminton.sale', 'partner_id', string="Badminton Satışları")
-    # badminton_balance_history_ids = fields.One2many('badminton.balance.history', 'partner_id', string="Balans Tarixçəsi")
-    # basketball_membership_ids = fields.One2many('sport.membership', 'partner_id', string="Basketbol Üzvlüklər")
+    # 5. Badminton Satış Tarixçəsi
+    badminton_sale_ids = fields.One2many('badminton.sale', 'partner_id', string="Badminton Satışları")
+    badminton_balance_history_ids = fields.One2many('badminton.balance.history', 'partner_id', string="Balans Tarixçəsi")
+    
+    # 6. Basketbol Üzvlüklər
+    basketball_membership_ids = fields.One2many('sport.membership', 'partner_id', string="Basketbol Üzvlüklər")
 
     @api.model
     def _auto_init(self):
