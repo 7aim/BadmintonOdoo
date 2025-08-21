@@ -20,6 +20,26 @@
         <field name="number_increment">1</field>
     </record>
 
+    <!-- Badminton Sale Sequence -->
+    <record id="seq_badminton_sale" model="ir.sequence">
+        <field name="name">Badminton Sale Sequence</field>
+        <field name="code">badminton.sale</field>
+        <field name="prefix">BSL</field>
+        <field name="padding">3</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+    </record>
+
+    <!-- Badminton Lesson Sequence -->
+    <record id="seq_badminton_lesson" model="ir.sequence">
+        <field name="name">Badminton Lesson Sequence</field>
+        <field name="code">badminton.lesson</field>
+        <field name="prefix">BL</field>
+        <field name="padding">3</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+    </record>
+
     <!-- Default İdman Növləri -->
     <record id="sport_badminton" model="sport.branch">
         <field name="name">Badminton</field>

@@ -47,6 +47,14 @@ class BadmintonSession(models.Model):
     def start_session_manual(self):
         """Manual olaraq sessiya başlat"""
         if self.partner_id:
+            # Müştərinin badminton balansını yoxla
+            customer_balance = self.partner_id.badminton_balance or 0
+            required_hours = self.duration_hours
+            
+            if customer_balance < required_hours:
+                raise ValidationError(f'{self.partner_id.name} müştərisinin kifayət qədər balansı yoxdur! '
+                                     f'Mövcud balans: {customer_balance} saat, Tələb olunan: {required_hours} saat')
+            
             # Aktiv sessiya var mı yoxla
             active_session = self.search([
                 ('partner_id', '=', self.partner_id.id),
@@ -66,7 +74,7 @@ class BadmintonSession(models.Model):
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
-                    'message': f'{self.partner_id.name} üçün sessiya başladıldı!',
+                    'message': f'{self.partner_id.name} üçün sessiya başladıldı! Qalan balans: {customer_balance - required_hours} saat',
                     'type': 'success',
                     'sticky': False,
                 }
@@ -84,6 +92,17 @@ class BadmintonSession(models.Model):
                 partner = self.env['res.partner'].browse(partner_id)
                 
                 if partner.exists():
+                    # Müştərinin badminton balansını yoxla
+                    customer_balance = partner.badminton_balance or 0
+                    required_hours = 1.0  # Standart 1 saat
+                    
+                    if customer_balance < required_hours:
+                        return {
+                            'status': 'error',
+                            'message': f'{partner.name} müştərisinin kifayət qədər balansı yoxdur! '
+                                     f'Mövcud balans: {customer_balance} saat'
+                        }
+                    
                     # Aktiv sessiya var mı yoxla
                     active_session = self.search([
                         ('partner_id', '=', partner_id),
@@ -107,7 +126,7 @@ class BadmintonSession(models.Model):
                     
                     return {
                         'status': 'success',
-                        'message': f'{partner.name} üçün sessiya başladıldı!',
+                        'message': f'{partner.name} üçün sessiya başladıldı! Qalan balans: {customer_balance - required_hours} saat',
                         'session_id': session.id
                     }
                 else:
@@ -138,10 +157,28 @@ class BadmintonSession(models.Model):
     
     # Sessiyanı tamamla
     def complete_session(self):
-        """Sessiyanı tamamla"""
+        """Sessiyanı tamamla və balansdan düş"""
         for session in self:
-            session.state = 'completed'
-            session.notes = f"Sessiya tamamlandı: {fields.Datetime.now()}"
+            if session.state in ['active', 'extended']:
+                # Müştərinin balansından saatları düş
+                total_hours_used = session.duration_hours + session.extended_time
+                current_balance = session.partner_id.badminton_balance or 0
+                new_balance = max(0, current_balance - total_hours_used)
+                session.partner_id.badminton_balance = new_balance
+                
+                # Balans tarixçəsi yaradırıq
+                self.env['badminton.balance.history'].create({
+                    'partner_id': session.partner_id.id,
+                    'session_id': session.id,
+                    'hours_used': total_hours_used,
+                    'balance_before': current_balance,
+                    'balance_after': new_balance,
+                    'transaction_type': 'usage',
+                    'description': f"Badminton sessiyası: {session.name}"
+                })
+                
+                session.state = 'completed'
+                session.notes = f"Sessiya tamamlandı: {fields.Datetime.now()}. İstifadə edilən saat: {total_hours_used}"
     
     # Sessiyaları avtomatik yoxla (cron job üçün)
     @api.model

@@ -1,5 +1,12 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_badminton_session,badminton.session,model_badminton_session,base.group_user,1,1,1,1
+access_badminton_sale,badminton.sale,model_badminton_sale,base.group_user,1,1,1,1
+access_badminton_balance_history,badminton.balance.history,model_badminton_balance_history,base.group_user,1,1,1,1
+access_badminton_lesson,badminton.lesson,model_badminton_lesson,base.group_user,1,1,1,1
+access_badminton_lesson_schedule,badminton.lesson.schedule,model_badminton_lesson_schedule,base.group_user,1,1,1,1
+access_badminton_lesson_attendance,badminton.lesson.attendance,model_badminton_lesson_attendance,base.group_user,1,1,1,1
+access_customer_lookup_wizard,customer.lookup.wizard,model_customer_lookup_wizard,base.group_user,1,1,1,1
+access_badminton_sale_wizard,badminton.sale.wizard,model_badminton_sale_wizard,base.group_user,1,1,1,1
 access_qr_scanner_wizard,qr.scanner.wizard,model_qr_scanner_wizard,base.group_user,1,1,1,1
 access_sport_branch,sport.branch,model_sport_branch,base.group_user,1,1,1,1
 access_sport_filial,sport.filial,model_sport_filial,base.group_user,1,1,1,1

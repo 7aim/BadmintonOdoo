@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Badminton Sale Form View -->
+    <record id="view_badminton_sale_form" model="ir.ui.view">
+        <field name="name">badminton.sale.form</field>
+        <field name="model">badminton.sale</field>
+        <field name="arch" type="xml">
+            <form string="Badminton Satışı">
+                <header>
+                    <button name="action_confirm" type="object" string="Təsdiqləmək" 
+                            invisible="[('state', '!=', 'draft')]" class="btn-primary"/>
+                    <button name="action_mark_paid" type="object" string="Ödənib Qeyd Et" 
+                            invisible="[('state', '!=', 'confirmed'), ('is_paid', '=', True)]" class="btn-success"/>
+                    <button name="action_cancel" type="object" string="Ləğv Et" 
+                            invisible="[('state', 'in', ['paid', 'cancelled'])]" class="btn-secondary"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,paid"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id" options="{'no_create': True}"/>
+                            <field name="filial_id" options="{'no_create': True}"/>
+                            <field name="sale_date"/>
+                            <field name="expiry_date" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="hours_quantity"/>
+                            <field name="unit_price" readonly="1"/>
+                            <field name="total_amount" readonly="1"/>
+                            <field name="payment_method"/>
+                        </group>
+                    </group>
+                    <group string="Ödəniş Məlumatları">
+                        <group>
+                            <field name="is_paid" readonly="1"/>
+                            <field name="payment_date" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="credited_hours" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Qeydlər">
+                        <field name="notes" nolabel="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Badminton Sale list View -->
+    <record id="view_badminton_sale_list" model="ir.ui.view">
+        <field name="name">badminton.sale.list</field>
+        <field name="model">badminton.sale</field>
+        <field name="arch" type="xml">
+            <list string="Badminton Satışları" decoration-success="state=='paid'" decoration-info="state=='confirmed'" decoration-muted="state=='cancelled'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="filial_id"/>
+                <field name="hours_quantity"/>
+                <field name="total_amount"/>
+                <field name="payment_method"/>
+                <field name="is_paid"/>
+                <field name="sale_date"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Badminton Sale Search View -->
+    <record id="view_badminton_sale_search" model="ir.ui.view">
+        <field name="name">badminton.sale.search</field>
+        <field name="model">badminton.sale</field>
+        <field name="arch" type="xml">
+            <search string="Badminton Satışları">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="filial_id"/>
+                <filter name="paid" string="Ödənilib" domain="[('is_paid', '=', True)]"/>
+                <filter name="unpaid" string="Ödənilməyib" domain="[('is_paid', '=', False)]"/>
+                <filter name="active" string="Aktiv" domain="[('state', 'in', ['confirmed', 'paid'])]"/>
+                <group expand="0" string="Qrupla">
+                    <filter name="group_by_partner" string="Müştəri" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_by_filial" string="Filial" context="{'group_by': 'filial_id'}"/>
+                    <filter name="group_by_state" string="Vəziyyət" context="{'group_by': 'state'}"/>
+                    <filter name="group_by_date" string="Tarix" context="{'group_by': 'sale_date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action for Badminton Sales -->
+    <record id="action_badminton_sale" model="ir.actions.act_window">
+        <field name="name">Badminton Satışları</field>
+        <field name="res_model">badminton.sale</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Yeni badminton satışı yaradın!
+            </p>
+            <p>
+                Burada müştərilərə badminton saatları satıb onların hesabına əlavə edə bilərsiniz.
+            </p>
+        </field>
+    </record>
+
+    <!-- Badminton Balance History list View -->
+    <record id="view_badminton_balance_history_list" model="ir.ui.view">
+        <field name="name">badminton.balance.history.list</field>
+        <field name="model">badminton.balance.history</field>
+        <field name="arch" type="xml">
+            <list string="Badminton Balans Tarixçəsi" create="false" edit="false">
+                <field name="transaction_date"/>
+                <field name="partner_id"/>
+                <field name="transaction_type"/>
+                <field name="hours_added"/>
+                <field name="hours_used"/>
+                <field name="balance_before"/>
+                <field name="balance_after"/>
+                <field name="description"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Action for Badminton Balance History -->
+    <record id="action_badminton_balance_history" model="ir.actions.act_window">
+        <field name="name">Badminton Balans Tarixçəsi</field>
+        <field name="res_model">badminton.balance.history</field>
+        <field name="view_mode">list</field>
+        <field name="context">{}</field>
+    </record>
+</odoo>
