@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Ana Menu və Alt Menular -->
+    <menuitem id="menu_sport_main" name="🏟️ İdman İdarəetməsi" sequence="100" web_icon="volan_badminton,static/description/icon.png"/>
+    
+    <!-- Badminton Bölməsi -->
+    <menuitem id="menu_badminton_section" name="🏸 Badminton" parent="menu_sport_main" sequence="10"/>
+    <menuitem id="menu_active_sessions" name="Aktiv Sessiyalar" parent="menu_badminton_section" 
+              action="action_active_sessions" sequence="1"/>
+    <menuitem id="menu_all_sessions" name="Bütün Sessiyalar" parent="menu_badminton_section" 
+              action="action_badminton_session" sequence="2"/>
+    
+    <!-- Basketbol Bölməsi -->
+    <menuitem id="menu_basketball_section" name="🏀 Basketbol" parent="menu_sport_main" sequence="20"/>
+    <menuitem id="menu_active_memberships" name="Aktiv Üzvlüklər" parent="menu_basketball_section" 
+              action="action_active_memberships" sequence="1"/>
+    <menuitem id="menu_all_memberships" name="Bütün Üzvlüklər" parent="menu_basketball_section" 
+              action="action_sport_membership" sequence="2"/>
+    <menuitem id="menu_attendances" name="Dərsə İştiraklar" parent="menu_basketball_section" 
+              action="action_sport_attendance" sequence="3"/>
+    <menuitem id="menu_schedules" name="Dərs Qrafiki" parent="menu_basketball_section" 
+              action="action_sport_schedule" sequence="4"/>
+    
+    <!-- QR Scanner Bölməsi -->
+    <menuitem id="menu_qr_section" name="🔍 QR Scanner" parent="menu_sport_main" 
+              action="action_qr_scanner_wizard" sequence="30"/>
+    
+    <!-- Tənzimləmələr Bölməsi -->
+    <menuitem id="menu_sport_config" name="⚙️ Tənzimləmələr" parent="menu_sport_main" sequence="40"/>
+    <menuitem id="menu_sport_branches" name="İdman Növləri" parent="menu_sport_config" 
+              action="action_sport_branch" sequence="1"/>
+    <menuitem id="menu_sport_filials" name="Filiallar" parent="menu_sport_config" 
+              action="action_sport_filial" sequence="2"/>
+</odoo>

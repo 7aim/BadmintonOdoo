@@ -111,49 +111,6 @@
         </field>
     </record>
 
-    <!-- Kort İdarəetməsi -->
-    <record id="view_badminton_court_form" model="ir.ui.view">
-        <field name="name">badminton.court.form</field>
-        <field name="model">badminton.court</field>
-        <field name="arch" type="xml">
-            <form string="Badminton Kortu">
-                <sheet>
-                    <div class="oe_title">
-                        <h1>
-                            <field name="name"/>
-                        </h1>
-                    </div>
-                    <group>
-                        <group>
-                            <field name="is_available"/>
-                            <field name="hourly_rate"/>
-                        </group>
-                        <group>
-                            <field name="current_session_id" readonly="1"/>
-                        </group>
-                    </group>
-                    <group>
-                        <field name="description"/>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
-
-    <record id="view_badminton_court_list" model="ir.ui.view">
-        <field name="name">badminton.court.list</field>
-        <field name="model">badminton.court</field>
-        <field name="arch" type="xml">
-            <list string="Kortlar" decoration-success="is_available==True" 
-                  decoration-danger="is_available==False">
-                <field name="name"/>
-                <field name="is_available"/>
-                <field name="current_session_id"/>
-                <field name="hourly_rate"/>
-            </list>
-        </field>
-    </record>
-
     <!-- Menular -->
     <record id="action_badminton_session" model="ir.actions.act_window">
         <field name="name">Bütün Sessiyalar</field>
@@ -179,26 +136,5 @@
         <field name="target">new</field>
         <field name="context">{'default_state': 'draft'}</field>
     </record>
-
-    <record id="action_badminton_courts" model="ir.actions.act_window">
-        <field name="name">Kortlar</field>
-        <field name="res_model">badminton.court</field>
-        <field name="view_mode">list,form</field>
-    </record>
-
-    <!-- Ana Menu -->
-    <menuitem id="menu_badminton_main" name="Badminton İdarəetməsi" sequence="100"/>
-    
-    <menuitem id="menu_badminton_sessions" name="Sessiyalar" parent="menu_badminton_main" sequence="10"/>
-    <menuitem id="menu_active_sessions" name="Aktiv Sessiyalar" parent="menu_badminton_sessions" 
-              action="action_active_sessions" sequence="1"/>
-    <menuitem id="menu_all_sessions" name="Bütün Sessiyalar" parent="menu_badminton_sessions" 
-              action="action_badminton_session" sequence="2"/>
-    <menuitem id="menu_qr_scanner" name="QR Oxuyucu" parent="menu_badminton_sessions" 
-              action="action_qr_scanner" sequence="3"/>
-    
-    <menuitem id="menu_badminton_config" name="Tənzimləmələr" parent="menu_badminton_main" sequence="20"/>
-    <menuitem id="menu_courts" name="Kortlar" parent="menu_badminton_config" 
-              action="action_badminton_courts" sequence="1"/>
 
 </odoo>

@@ -62,14 +62,6 @@ class BadmintonSession(models.Model):
             self.state = 'active'
             self.qr_scanned = False  # Manual başladıldığı üçün
             
-            # Kort təyin et (əlçatan kortu tap)
-            available_court = self.env['badminton.court'].search([
-                ('is_available', '=', True)
-            ], limit=1)
-            
-            if available_court:
-                available_court.assign_session(self.id)
-            
             return {
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
@@ -190,24 +182,3 @@ class BadmintonSession(models.Model):
             })
         
         return session_data
-
-
-class BadmintonCourt(models.Model):
-    _name = 'badminton.court'
-    _description = 'Badminton Kortu'
-    
-    name = fields.Char(string="Kort Adı", required=True)
-    is_available = fields.Boolean(string="Əlçatandır", default=True)
-    current_session_id = fields.Many2one('badminton.session', string="Hazırki Sessiya")
-    hourly_rate = fields.Float(string="Saatlıq Qiymət", default=10.0)
-    description = fields.Text(string="Təsvir")
-    
-    def assign_session(self, session_id):
-        """Korta sessiya təyin et"""
-        self.current_session_id = session_id
-        self.is_available = False
-    
-    def release_court(self):
-        """Kortu boşalt"""
-        self.current_session_id = False
-        self.is_available = True

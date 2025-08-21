@@ -26,7 +26,7 @@ class VolanPartner(models.Model):
         for partner in self:
             if partner.id and partner.name:
                 # ID + Ad kombinasiyası ilə daha unikal QR kod
-                qr_payload = f"ID:{partner.id}-NAME:{partner.name}"
+                qr_payload = f"ID-{partner.id}-NAME-{partner.name}"
                 try:
                     img = qrcode.make(qr_payload)
                     temp = io.BytesIO()

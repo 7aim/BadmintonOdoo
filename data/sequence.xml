@@ -10,22 +10,45 @@
         <field name="number_increment">1</field>
     </record>
 
-    <!-- Default Kortlar -->
-    <record id="court_1" model="badminton.court">
-        <field name="name">Kort 1</field>
-        <field name="hourly_rate">15.0</field>
-        <field name="description">Əsas oyun kortu</field>
+    <!-- Sport Membership Sequence -->
+    <record id="seq_sport_membership" model="ir.sequence">
+        <field name="name">Sport Membership Sequence</field>
+        <field name="code">sport.membership</field>
+        <field name="prefix">SM</field>
+        <field name="padding">3</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
     </record>
 
-    <record id="court_2" model="badminton.court">
-        <field name="name">Kort 2</field>
-        <field name="hourly_rate">15.0</field>
-        <field name="description">İkinci oyun kortu</field>
+    <!-- Default İdman Növləri -->
+    <record id="sport_badminton" model="sport.branch">
+        <field name="name">Badminton</field>
+        <field name="code">badminton</field>
+        <field name="is_hourly">True</field>
+        <field name="description">Saatlıq badminton oyunu</field>
     </record>
 
-    <record id="court_3" model="badminton.court">
-        <field name="name">Kort 3</field>
-        <field name="hourly_rate">12.0</field>
-        <field name="description">Kiçik kort</field>
+    <record id="sport_basketball" model="sport.branch">
+        <field name="name">Basketbol</field>
+        <field name="code">basketball</field>
+        <field name="is_monthly">True</field>
+        <field name="description">Aylıq basketbol dərsləri</field>
+    </record>
+
+    <!-- Default Filiallar -->
+    <record id="filial_main" model="sport.filial">
+        <field name="name">Əsas Filial</field>
+        <field name="code">MAIN</field>
+        <field name="badminton_hourly_rate">15.0</field>
+        <field name="basketball_monthly_rate">80.0</field>
+        <field name="address">Bakı şəhəri</field>
+    </record>
+
+    <record id="filial_secondary" model="sport.filial">
+        <field name="name">İkinci Filial</field>
+        <field name="code">SEC</field>
+        <field name="badminton_hourly_rate">12.0</field>
+        <field name="basketball_monthly_rate">70.0</field>
+        <field name="address">Gəncə şəhəri</field>
     </record>
 </odoo>

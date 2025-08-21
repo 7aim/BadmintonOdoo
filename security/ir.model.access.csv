@@ -1,0 +1,8 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_badminton_session,badminton.session,model_badminton_session,base.group_user,1,1,1,1
+access_qr_scanner_wizard,qr.scanner.wizard,model_qr_scanner_wizard,base.group_user,1,1,1,1
+access_sport_branch,sport.branch,model_sport_branch,base.group_user,1,1,1,1
+access_sport_filial,sport.filial,model_sport_filial,base.group_user,1,1,1,1
+access_sport_schedule,sport.schedule,model_sport_schedule,base.group_user,1,1,1,1
+access_sport_membership,sport.membership,model_sport_membership,base.group_user,1,1,1,1
+access_sport_attendance,sport.attendance,model_sport_attendance,base.group_user,1,1,1,1

@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Sport System Views -->
+    
+    <!-- Sport Branch Views -->
+    <record id="view_sport_branch_form" model="ir.ui.view">
+        <field name="name">sport.branch.form</field>
+        <field name="model">sport.branch</field>
+        <field name="arch" type="xml">
+            <form string="İdman Növü">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="İdman növünün adı..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="is_hourly"/>
+                            <field name="is_monthly"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="description" placeholder="İdman növü haqqında məlumat..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sport_branch_list" model="ir.ui.view">
+        <field name="name">sport.branch.list</field>
+        <field name="model">sport.branch</field>
+        <field name="arch" type="xml">
+            <list string="İdman Növləri">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="is_hourly"/>
+                <field name="is_monthly"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Sport Filial Views -->
+    <record id="view_sport_filial_form" model="ir.ui.view">
+        <field name="name">sport.filial.form</field>
+        <field name="model">sport.filial</field>
+        <field name="arch" type="xml">
+            <form string="İdman Filialı">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" placeholder="Filial adı..."/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="phone"/>
+                            <field name="manager_id"/>
+                            <field name="is_active"/>
+                        </group>
+                        <group>
+                            <field name="badminton_hourly_rate"/>
+                            <field name="basketball_monthly_rate"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="address" placeholder="Filialın ünvanı..."/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sport_filial_list" model="ir.ui.view">
+        <field name="name">sport.filial.list</field>
+        <field name="model">sport.filial</field>
+        <field name="arch" type="xml">
+            <list string="İdman Filialları" decoration-success="is_active==True" decoration-danger="is_active==False">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="badminton_hourly_rate"/>
+                <field name="basketball_monthly_rate"/>
+                <field name="is_active"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Sport Schedule Views -->
+    <record id="view_sport_schedule_form" model="ir.ui.view">
+        <field name="name">sport.schedule.form</field>
+        <field name="model">sport.schedule</field>
+        <field name="arch" type="xml">
+            <form string="İdman Qrafiki">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="filial_id"/>
+                            <field name="branch_id"/>
+                            <field name="day_of_week"/>
+                            <field name="is_active"/>
+                        </group>
+                        <group>
+                            <field name="start_time" widget="float_time"/>
+                            <field name="end_time" widget="float_time"/>
+                            <field name="instructor_id"/>
+                            <field name="max_students"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sport_schedule_list" model="ir.ui.view">
+        <field name="name">sport.schedule.list</field>
+        <field name="model">sport.schedule</field>
+        <field name="arch" type="xml">
+            <list string="İdman Qrafiki" decoration-success="is_active==True" decoration-danger="is_active==False">
+                <field name="name"/>
+                <field name="filial_id"/>
+                <field name="branch_id"/>
+                <field name="day_of_week"/>
+                <field name="start_time" widget="float_time"/>
+                <field name="end_time" widget="float_time"/>
+                <field name="instructor_id"/>
+                <field name="is_active"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Sport Membership Views -->
+    <record id="view_sport_membership_form" model="ir.ui.view">
+        <field name="name">sport.membership.form</field>
+        <field name="model">sport.membership</field>
+        <field name="arch" type="xml">
+            <form string="İdman Üzvlüyü">
+                <header>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,active,expired,cancelled"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="filial_id"/>
+                            <field name="branch_id"/>
+                            <field name="is_paid"/>
+                            <field name="is_active"/>
+                        </group>
+                        <group>
+                            <field name="month"/>
+                            <field name="year"/>
+                            <field name="monthly_fee" readonly="1"/>
+                            <field name="total_lessons" readonly="1"/>
+                            <field name="attended_lessons" readonly="1"/>
+                            <field name="remaining_lessons" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Qrafiklər">
+                            <field name="schedule_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="day_of_week"/>
+                                    <field name="start_time" widget="float_time"/>
+                                    <field name="end_time" widget="float_time"/>
+                                    <field name="instructor_id"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sport_membership_list" model="ir.ui.view">
+        <field name="name">sport.membership.list</field>
+        <field name="model">sport.membership</field>
+        <field name="arch" type="xml">
+            <list string="İdman Üzvlükləri" decoration-success="state=='active'" 
+                  decoration-warning="state=='draft'" decoration-danger="state=='expired'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="filial_id"/>
+                <field name="branch_id"/>
+                <field name="month"/>
+                <field name="year"/>
+                <field name="total_lessons"/>
+                <field name="attended_lessons"/>
+                <field name="remaining_lessons"/>
+                <field name="monthly_fee"/>
+                <field name="is_paid"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Sport Attendance Views -->
+    <record id="view_sport_attendance_form" model="ir.ui.view">
+        <field name="name">sport.attendance.form</field>
+        <field name="model">sport.attendance</field>
+        <field name="arch" type="xml">
+            <form string="Dərsə İştirak">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Dərsə İştirak</h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="membership_id"/>
+                            <field name="schedule_id"/>
+                            <field name="attendance_date"/>
+                            <field name="attendance_time"/>
+                        </group>
+                        <group>
+                            <field name="qr_scanned"/>
+                            <field name="is_valid" readonly="1"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="scan_result"/>
+                        <field name="notes"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_sport_attendance_list" model="ir.ui.view">
+        <field name="name">sport.attendance.list</field>
+        <field name="model">sport.attendance</field>
+        <field name="arch" type="xml">
+            <list string="Dərsə İştiraklar" decoration-success="is_valid==True" decoration-danger="is_valid==False">
+                <field name="membership_id"/>
+                <field name="schedule_id"/>
+                <field name="attendance_date"/>
+                <field name="attendance_time"/>
+                <field name="qr_scanned"/>
+                <field name="is_valid"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_sport_branch" model="ir.actions.act_window">
+        <field name="name">İdman Növləri</field>
+        <field name="res_model">sport.branch</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_sport_filial" model="ir.actions.act_window">
+        <field name="name">İdman Filialları</field>
+        <field name="res_model">sport.filial</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_sport_schedule" model="ir.actions.act_window">
+        <field name="name">İdman Qrafiki</field>
+        <field name="res_model">sport.schedule</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_sport_membership" model="ir.actions.act_window">
+        <field name="name">İdman Üzvlükləri</field>
+        <field name="res_model">sport.membership</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_sport_attendance" model="ir.actions.act_window">
+        <field name="name">Dərsə İştiraklar</field>
+        <field name="res_model">sport.attendance</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_active_memberships" model="ir.actions.act_window">
+        <field name="name">Aktiv Üzvlüklər</field>
+        <field name="res_model">sport.membership</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '=', 'active'), ('is_active', '=', True)]</field>
+        <field name="context">{'default_state': 'active'}</field>
+    </record>
+
+</odoo>

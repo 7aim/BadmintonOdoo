@@ -7,27 +7,17 @@
         <field name="arch" type="xml">
             <form string="QR Kod Scanner">
                 <sheet>
-                    <div class="oe_title">
-                        <h1>🔍 2D Barcode Scanner</h1>
-                        <div class="alert alert-info">
-                            <strong>📋 İstifadə Qaydası:</strong><br/>
-                            1️⃣ Aşağıdakı sahəyə kursor qoyun (click edin)<br/>
-                            2️⃣ Scanner cihazını müştərinin QR koduna tutun<br/>
-                            3️⃣ Cihaz "bip" səsi çıxaracaq və kod avtomatik yazılacaq<br/>
-                            4️⃣ "Sessiya Başlat" düyməsini basın
-                        </div>
-                    </div>
                     
                     <group>
-                        <label for="qr_code_input" string="📱 QR Kod Sahəsi:"/>
+                        <field name="service_type" widget="radio" options="{'horizontal': true}"/>
+                    </group>
+                    
+                    <group>
                         <field name="qr_code_input" 
                                placeholder="🔍 Bu sahəyə click edin və scanner cihazını QR koda tutun..." 
                                widget="char" 
                                style="font-size: 18px; font-family: monospace; background-color: #f8f9fa; border: 2px dashed #007bff; padding: 10px;"
                                required="1"/>
-                        <p style="color: #6c757d; font-style: italic;">
-                            💡 Scanner cihazı klaviatura kimi işləyir - oxuduğu məlumatı bu sahəyə yazacaq
-                        </p>
                     </group>
                     
                     <group invisible="not result_message">
@@ -38,20 +28,28 @@
                     <group invisible="not session_id">
                         <field name="session_id" readonly="1"/>
                     </group>
+                    
+                    <group invisible="not attendance_id">
+                        <field name="attendance_id" readonly="1"/>
+                    </group>
                 </sheet>
                 
                 <footer>
-                    <button name="scan_and_start_session" string="🚀 Sessiya Başlat" 
+                    <button name="scan_and_start_session" string="🚀 Xidməti Başlat" 
                             type="object" class="btn-primary"
-                            invisible="session_id"/>
+                            invisible="session_id or attendance_id"/>
                     
-                    <button name="open_session" string="📋 Sessiyanı Aç" 
+                    <button name="open_session" string="📋 Badminton Sessiyanı Aç" 
                             type="object" class="btn-success"
                             invisible="not session_id"/>
+                            
+                    <button name="open_attendance" string="📋 Basketbol İştirakını Aç" 
+                            type="object" class="btn-success"
+                            invisible="not attendance_id"/>
                     
                     <button name="scan_new_qr" string="🔄 Yeni QR Scan" 
                             type="object" class="btn-warning"
-                            invisible="not session_id"/>
+                            invisible="not session_id and not attendance_id"/>
                     
                     <button string="❌ Bağla" class="btn-secondary" special="cancel"/>
                 </footer>
@@ -68,10 +66,6 @@
         <field name="target">new</field>
     </record>
 
-    <!-- Menu üçün QR Scanner -->
-    <menuitem id="menu_qr_scanner_new" name="🔍 QR Scanner" 
-              parent="menu_badminton_sessions" 
-              action="action_qr_scanner_wizard" 
-              sequence="1"/>
+
 
 </odoo>
