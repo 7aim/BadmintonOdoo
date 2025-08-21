@@ -10,7 +10,7 @@
                     <button name="complete_session" string="Sessiyanı Tamamla" 
                             type="object" class="btn-primary"
                             invisible="state not in ['active', 'extended']"/>
-                    <button name="extend_session" string="1 Saat Uzat" 
+                    <button name="action_extend_session_wizard" string="Sessiyanı Uzat" 
                             type="object" class="btn-warning"
                             invisible="state not in ['active', 'extended']"/>
                     <field name="state" widget="statusbar" 

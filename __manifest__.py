@@ -7,6 +7,9 @@
     'website': 'https://github.com/7aim/BadmintonOdoo',
     'category': 'Services/Sport Management',
     'license': 'LGPL-3',
+    'images': [
+        'static/description/icon.png',
+    ],
     'depends': ['base', 'contacts', 'mail'],
     'data': [
         'security/ir.model.access.csv',
@@ -18,8 +21,14 @@
         'views/badminton_lesson_views.xml',
         'views/customer_wizard_views.xml',
         'views/qr_scanner_views.xml',
+        'views/session_extend_wizard_views.xml',
         'views/menu_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'volan_badminton/static/src/css/style.css',
+        ],
+    },
     'demo': [],
     'installable': True,
     'application': True,
@@ -28,4 +37,5 @@
     'external_dependencies': {
         'python': ['qrcode', 'pillow'],
     },
+    'web_icon': 'volan_badminton/static/description/icon.png'
 }

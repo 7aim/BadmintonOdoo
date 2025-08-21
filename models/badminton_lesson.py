@@ -20,13 +20,7 @@ class BadmintonLesson(models.Model):
     # Ödəniş məlumatları
     lesson_fee = fields.Float(string="Dərs Haqqı", required=True)
     total_amount = fields.Float(string="Ümumi Məbləğ", compute='_compute_total_amount', store=True)
-    payment_method = fields.Selection([
-        ('cash', 'Nəğd'),
-        ('card', 'Kart'),
-        ('bank_transfer', 'Bank Köçürməsi')
-    ], string="Ödəniş Növü", required=True, default='cash')
     
-    is_paid = fields.Boolean(string="Ödənib", default=False)
     payment_date = fields.Datetime(string="Ödəniş Tarixi")
     
     # Tarix məlumatları
@@ -75,45 +69,6 @@ class BadmintonLesson(models.Model):
         if vals.get('name', 'Yeni') == 'Yeni':
             vals['name'] = self.env['ir.sequence'].next_by_code('badminton.lesson') or 'BL001'
         return super(BadmintonLesson, self).create(vals)
-    
-    def action_confirm(self):
-        """Dərsi təsdiqləyir və qrafik yaradır"""
-        for lesson in self:
-            if lesson.state == 'draft':
-                lesson.state = 'confirmed'
-                lesson._create_lesson_schedule()
-    
-    def action_activate(self):
-        """Dərsi aktivləşdirir"""
-        for lesson in self:
-            if lesson.state == 'confirmed' and lesson.is_paid:
-                lesson.state = 'active'
-    
-    def action_mark_paid(self):
-        """Ödənişi qeyd edir"""
-        for lesson in self:
-            if lesson.state == 'confirmed' and not lesson.is_paid:
-                lesson.is_paid = True
-                lesson.payment_date = fields.Datetime.now()
-                lesson.action_activate()
-    
-    def action_complete(self):
-        """Dərsi tamamlayır"""
-        for lesson in self:
-            if lesson.state == 'active':
-                lesson.state = 'completed'
-    
-    def action_cancel(self):
-        """Dərsi ləğv edir"""
-        for lesson in self:
-            if lesson.state in ['draft', 'confirmed', 'active']:
-                lesson.state = 'cancelled'
-    
-    def _create_lesson_schedule(self):
-        """Dərs qrafiki yaradır"""
-        # Bu funksiya manual olaraq dərs qrafiki yaratmaq üçün istifadə ediləcək
-        # Hazırda boşdur, sonradan inkişaf etdiriləcək
-        pass
 
 
 class BadmintonLessonSchedule(models.Model):

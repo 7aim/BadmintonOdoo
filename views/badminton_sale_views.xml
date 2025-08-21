@@ -6,15 +6,7 @@
         <field name="model">badminton.sale</field>
         <field name="arch" type="xml">
             <form string="Badminton Satışı">
-                <header>
-                    <button name="action_confirm" type="object" string="Təsdiqləmək" 
-                            invisible="[('state', '!=', 'draft')]" class="btn-primary"/>
-                    <button name="action_mark_paid" type="object" string="Ödənib Qeyd Et" 
-                            invisible="[('state', '!=', 'confirmed'), ('is_paid', '=', True)]" class="btn-success"/>
-                    <button name="action_cancel" type="object" string="Ləğv Et" 
-                            invisible="[('state', 'in', ['paid', 'cancelled'])]" class="btn-secondary"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,paid"/>
-                </header>
+
                 <sheet>
                     <div class="oe_title">
                         <h1>
@@ -32,12 +24,10 @@
                             <field name="hours_quantity"/>
                             <field name="unit_price" readonly="1"/>
                             <field name="total_amount" readonly="1"/>
-                            <field name="payment_method"/>
                         </group>
                     </group>
                     <group string="Ödəniş Məlumatları">
                         <group>
-                            <field name="is_paid" readonly="1"/>
                             <field name="payment_date" readonly="1"/>
                         </group>
                         <group>
@@ -63,8 +53,6 @@
                 <field name="filial_id"/>
                 <field name="hours_quantity"/>
                 <field name="total_amount"/>
-                <field name="payment_method"/>
-                <field name="is_paid"/>
                 <field name="sale_date"/>
                 <field name="state"/>
             </list>
@@ -80,9 +68,6 @@
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="filial_id"/>
-                <filter name="paid" string="Ödənilib" domain="[('is_paid', '=', True)]"/>
-                <filter name="unpaid" string="Ödənilməyib" domain="[('is_paid', '=', False)]"/>
-                <filter name="active" string="Aktiv" domain="[('state', 'in', ['confirmed', 'paid'])]"/>
                 <group expand="0" string="Qrupla">
                     <filter name="group_by_partner" string="Müştəri" context="{'group_by': 'partner_id'}"/>
                     <filter name="group_by_filial" string="Filial" context="{'group_by': 'filial_id'}"/>

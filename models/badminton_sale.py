@@ -17,14 +17,6 @@ class BadmintonSale(models.Model):
     unit_price = fields.Float(string="Saatlıq Qiymət", compute='_compute_unit_price', store=True)
     total_amount = fields.Float(string="Ümumi Məbləğ", compute='_compute_total_amount', store=True)
     
-    # Ödəniş məlumatları
-    payment_method = fields.Selection([
-        ('cash', 'Nəğd'),
-        ('card', 'Kart'),
-        ('bank_transfer', 'Bank Köçürməsi')
-    ], string="Ödəniş Növü", required=True, default='cash')
-    
-    is_paid = fields.Boolean(string="Ödənib", default=False)
     payment_date = fields.Datetime(string="Ödəniş Tarixi")
     
     # Vəziyyət
@@ -73,32 +65,6 @@ class BadmintonSale(models.Model):
             vals['name'] = self.env['ir.sequence'].next_by_code('badminton.sale') or 'BS001'
         return super(BadmintonSale, self).create(vals)
     
-    def action_confirm(self):
-        """Satışı təsdiqləyir"""
-        for sale in self:
-            if sale.state == 'draft':
-                sale.state = 'confirmed'
-    
-    def action_mark_paid(self):
-        """Ödənişi qeyd edir və müştəri hesabına saatları əlavə edir"""
-        for sale in self:
-            if sale.state == 'confirmed' and not sale.is_paid:
-                sale.is_paid = True
-                sale.payment_date = fields.Datetime.now()
-                sale.state = 'paid'
-                
-                # Müştəri hesabına saatları əlavə et
-                sale._add_hours_to_customer()
-                
-                # Müştəri hesabında saatları yenilə
-                sale.credited_hours = sale.hours_quantity
-    
-    def action_cancel(self):
-        """Satışı ləğv edir"""
-        for sale in self:
-            if sale.state in ['draft', 'confirmed']:
-                sale.state = 'cancelled'
-    
     def _add_hours_to_customer(self):
         """Müştəri hesabına badminton saatlarını əlavə edir"""
         for sale in self:
@@ -131,6 +97,7 @@ class BadmintonBalanceHistory(models.Model):
     transaction_type = fields.Selection([
         ('purchase', 'Alış'),
         ('usage', 'İstifadə'),
+        ('extension', 'Uzatma'),
         ('refund', 'Geri Ödəmə'),
         ('adjustment', 'Düzəliş')
     ], string="Əməliyyat Növü", required=True)

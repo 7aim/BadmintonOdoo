@@ -26,7 +26,6 @@
                             <field name="sale_date"/>
                             <field name="hours_quantity"/>
                             <field name="total_amount"/>
-                            <field name="is_paid"/>
                             <field name="state"/>
                         </list>
                     </field>
@@ -52,7 +51,6 @@
                             <field name="year"/>
                             <field name="total_lessons"/>
                             <field name="attended_lessons"/>
-                            <field name="is_paid"/>
                             <field name="state"/>
                         </list>
                     </field>

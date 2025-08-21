@@ -94,7 +94,6 @@ class SportMembership(models.Model):
     
     # Ödəniş və vəziyyət
     monthly_fee = fields.Float(string="Aylıq Ödəniş", compute='_compute_monthly_fee', store=True)
-    is_paid = fields.Boolean(string="Ödənib", default=False)
     is_active = fields.Boolean(string="Aktiv", default=True)
     
     state = fields.Selection([

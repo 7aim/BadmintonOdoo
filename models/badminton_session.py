@@ -55,6 +55,21 @@ class BadmintonSession(models.Model):
             if active_session:
                 raise ValidationError(f'{self.partner_id.name} üçün artıq aktiv sessiya var!')
             
+            # Balansdan çıx
+            new_balance = customer_balance - required_hours
+            self.partner_id.badminton_balance = new_balance
+            
+            # Balans tarixçəsi yarat
+            self.env['badminton.balance.history'].create({
+                'partner_id': self.partner_id.id,
+                'session_id': self.id,
+                'hours_used': required_hours,
+                'balance_before': customer_balance,
+                'balance_after': new_balance,
+                'transaction_type': 'usage',
+                'description': f"Manual sessiya başladıldı: {self.name}"
+            })
+            
             # Sessiya məlumatlarını yenilə
             self.start_time = fields.Datetime.now()
             self.end_time = fields.Datetime.now() + timedelta(hours=self.duration_hours)
@@ -65,7 +80,7 @@ class BadmintonSession(models.Model):
                 'type': 'ir.actions.client',
                 'tag': 'display_notification',
                 'params': {
-                    'message': f'{self.partner_id.name} üçün sessiya başladıldı! Qalan balans: {customer_balance - required_hours} saat',
+                    'message': f'{self.partner_id.name} üçün sessiya başladıldı! Köhnə balans: {customer_balance}, Yeni balans: {new_balance} saat',
                     'type': 'success',
                     'sticky': False,
                 }
@@ -106,6 +121,10 @@ class BadmintonSession(models.Model):
                             'message': f'{partner.name} üçün artıq aktiv sessiya var!'
                         }
                     
+                    # Balansdan çıx
+                    new_balance = customer_balance - required_hours
+                    partner.badminton_balance = new_balance
+                    
                     # Yeni sessiya yarat
                     session = self.create({
                         'partner_id': partner_id,
@@ -115,9 +134,20 @@ class BadmintonSession(models.Model):
                         'qr_scanned': True
                     })
                     
+                    # Balans tarixçəsi yarat
+                    self.env['badminton.balance.history'].create({
+                        'partner_id': partner_id,
+                        'session_id': session.id,
+                        'hours_used': required_hours,
+                        'balance_before': customer_balance,
+                        'balance_after': new_balance,
+                        'transaction_type': 'usage',
+                        'description': f"QR kod ilə sessiya başladıldı: {session.name}"
+                    })
+                    
                     return {
                         'status': 'success',
-                        'message': f'{partner.name} üçün sessiya başladıldı! Qalan balans: {customer_balance - required_hours} saat',
+                        'message': f'{partner.name} üçün sessiya başladıldı! Köhnə balans: {customer_balance}, Yeni balans: {new_balance} saat',
                         'session_id': session.id
                     }
                 else:
@@ -138,38 +168,57 @@ class BadmintonSession(models.Model):
     
     # Sessiya uzatma funksiyası
     def extend_session(self, additional_hours=1.0):
-        """Sessiyanı uzat"""
+        """Sessiyanı uzat və balansdan çıx"""
         for session in self:
             if session.state in ['active', 'extended']:
-                session.extended_time += additional_hours
-                session.end_time = session.end_time + timedelta(hours=additional_hours)
-                session.state = 'extended'
-                session.notes = f"Sessiya {additional_hours} saat uzadıldı"
-    
-    # Sessiyanı tamamla
-    def complete_session(self):
-        """Sessiyanı tamamla və balansdan düş"""
-        for session in self:
-            if session.state in ['active', 'extended']:
-                # Müştərinin balansından saatları düş
-                total_hours_used = session.duration_hours + session.extended_time
+                # Müştərinin balansını yoxla
                 current_balance = session.partner_id.badminton_balance or 0
-                new_balance = max(0, current_balance - total_hours_used)
+                
+                if current_balance < additional_hours:
+                    raise ValidationError(f'{session.partner_id.name} müştərisinin kifayət qədər balansı yoxdur! '
+                                         f'Mövcud balans: {current_balance} saat, '
+                                         f'Uzatmaq üçün tələb olunan: {additional_hours} saat')
+                
+                # Balansdan çıx
+                new_balance = current_balance - additional_hours
                 session.partner_id.badminton_balance = new_balance
                 
-                # Balans tarixçəsi yaradırıq
+                # Balans tarixçəsi yarat
                 self.env['badminton.balance.history'].create({
                     'partner_id': session.partner_id.id,
                     'session_id': session.id,
-                    'hours_used': total_hours_used,
+                    'hours_used': additional_hours,
                     'balance_before': current_balance,
                     'balance_after': new_balance,
-                    'transaction_type': 'usage',
-                    'description': f"Badminton sessiyası: {session.name}"
+                    'transaction_type': 'extension',
+                    'description': f"Sessiya uzadıldı: {session.name} (+{additional_hours} saat)"
                 })
                 
+                session.extended_time += additional_hours
+                session.end_time = session.end_time + timedelta(hours=additional_hours)
+                session.state = 'extended'
+                session.notes = f"Sessiya {additional_hours} saat uzadıldı. Balans: {current_balance} → {new_balance} saat"
+    
+    def action_extend_session_wizard(self):
+        """Sessiya uzatma wizard-ini aç"""
+        return {
+            'type': 'ir.actions.act_window',
+            'name': 'Sessiyanı Uzat',
+            'res_model': 'badminton.session.extend.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {
+                'default_session_id': self.id,
+            }
+        }
+    
+    # Sessiyanı tamamla
+    def complete_session(self):
+        """Sessiyanı tamamla (balans artıq çıxılıb)"""
+        for session in self:
+            if session.state in ['active', 'extended']:
                 session.state = 'completed'
-                session.notes = f"Sessiya tamamlandı: {fields.Datetime.now()}. İstifadə edilən saat: {total_hours_used}"
+                session.notes = f"Sessiya tamamlandı: {fields.Datetime.now()}. İstifadə edilən saat: {session.duration_hours + session.extended_time}"
     
     # Sessiyaları avtomatik yoxla (cron job üçün)
     @api.model

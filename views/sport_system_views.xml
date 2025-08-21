@@ -156,7 +156,6 @@
                             <field name="partner_id"/>
                             <field name="filial_id"/>
                             <field name="branch_id"/>
-                            <field name="is_paid"/>
                             <field name="is_active"/>
                         </group>
                         <group>
@@ -202,7 +201,6 @@
                 <field name="attended_lessons"/>
                 <field name="remaining_lessons"/>
                 <field name="monthly_fee"/>
-                <field name="is_paid"/>
                 <field name="state"/>
             </list>
         </field>

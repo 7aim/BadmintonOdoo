@@ -51,7 +51,6 @@
                         <field name="hours_quantity"/>
                         <field name="unit_price" readonly="1"/>
                         <field name="total_amount" readonly="1" style="font-weight: bold; color: #28a745;"/>
-                        <field name="payment_method"/>
                     </group>
                 </group>
                 <footer>

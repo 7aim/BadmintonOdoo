@@ -52,11 +52,6 @@ class BadmintonSaleWizard(models.TransientModel):
     partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
     filial_id = fields.Many2one('sport.filial', string="Filial", required=True)
     hours_quantity = fields.Integer(string="Saat Sayı", required=True, default=1)
-    payment_method = fields.Selection([
-        ('cash', 'Nəğd'),
-        ('card', 'Kart'),
-        ('bank_transfer', 'Bank Köçürməsi')
-    ], string="Ödəniş Növü", required=True, default='cash')
     
     unit_price = fields.Float(string="Saatlıq Qiymət", compute='_compute_unit_price', store=True)
     total_amount = fields.Float(string="Ümumi Məbləğ", compute='_compute_total_amount', store=True)
@@ -87,7 +82,6 @@ class BadmintonSaleWizard(models.TransientModel):
             'partner_id': self.partner_id.id,
             'filial_id': self.filial_id.id,
             'hours_quantity': self.hours_quantity,
-            'payment_method': self.payment_method,
         })
         
         # Təsdiqləyirik və ödənib qeyd edirik

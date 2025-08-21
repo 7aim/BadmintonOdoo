@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Ana Menu və Alt Menular -->
-    <menuitem id="menu_sport_main" name="🏟️ İdman İdarəetməsi" sequence="100" web_icon="volan_badminton,static/description/icon.png"/>
+    <menuitem id="menu_sport_main" name="Volan Badminton" sequence="100" web_icon="volan_badminton,static/description/icon.png"/>
     
     <!-- Badminton Bölməsi -->
     <menuitem id="menu_badminton_section" name="🏸 Badminton" parent="menu_sport_main" sequence="10"/>
-    <menuitem id="menu_badminton_sale_wizard" name="💰 Satış (Tez)" parent="menu_badminton_section" 
-              action="action_badminton_sale_wizard" sequence="4"/>
+    <menuitem id="menu_badminton_sale_wizard" name="Satış" parent="menu_badminton_section" 
+              action="action_badminton_sale_wizard" sequence="3"/>
     <menuitem id="menu_badminton_sales" name="Satış Tarixçəsi" parent="menu_badminton_section" 
-              action="action_badminton_sale" sequence="2"/>
+              action="action_badminton_sale" sequence="4"/>
     <menuitem id="menu_badminton_lessons" name="Dərslər" parent="menu_badminton_section" 
-              action="action_badminton_lesson" sequence="3"/>
+              action="action_badminton_lesson" sequence="6"/>
     <menuitem id="menu_active_sessions" name="Aktiv Sessiyalar" parent="menu_badminton_section" 
               action="action_active_sessions" sequence="1"/>
     <menuitem id="menu_all_sessions" name="Bütün Sessiyalar" parent="menu_badminton_section" 
-              action="action_badminton_session" sequence="5"/>
+              action="action_badminton_session" sequence="2"/>
     <menuitem id="menu_badminton_balance_history" name="Balans Tarixçəsi" parent="menu_badminton_section" 
-              action="action_badminton_balance_history" sequence="6"/>
+              action="action_badminton_balance_history" sequence="5"/>
     
     <!-- Basketbol Bölməsi -->
     <menuitem id="menu_basketball_section" name="🏀 Basketbol" parent="menu_sport_main" sequence="20"/>
@@ -35,7 +35,7 @@
     
     <!-- Tənzimləmələr Bölməsi -->
     <menuitem id="menu_sport_config" name="⚙️ Tənzimləmələr" parent="menu_sport_main" sequence="40"/>
-    <menuitem id="menu_customer_lookup" name="🔍 Müştəri Axtarışı" parent="menu_sport_config" 
+    <menuitem id="menu_customer_lookup" name="Müştəri Axtarışı" parent="menu_sport_config" 
               action="action_customer_lookup_wizard" sequence="1"/>
     <menuitem id="menu_sport_branches" name="İdman Növləri" parent="menu_sport_config" 
               action="action_sport_branch" sequence="2"/>

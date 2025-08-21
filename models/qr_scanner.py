@@ -43,6 +43,14 @@ class QRScannerWizard(models.TransientModel):
                     self.result_message = f"❌ Xəta: ID={partner_id} olan müştəri tapılmadı!\nQR Kod: {qr_data}"
                     return self._return_wizard()
                 
+                # Müştərinin badminton balansını yoxla
+                current_balance = partner.badminton_balance or 0
+                required_hours = 1.0  # Standart 1 saat
+                
+                if current_balance < required_hours:
+                    self.result_message = f"❌ Balans kifayət deyil!\n👤 Müştəri: {partner.name}\n💰 Mövcud balans: {current_balance} saat\n⚠️ Tələb olunan: {required_hours} saat\n\nZəhmət olmasa balansı artırın!"
+                    return self._return_wizard()
+                
                 # Aktiv badminton sessiya var mı yoxla
                 active_session = self.env['badminton.session'].search([
                     ('partner_id', '=', partner_id),
@@ -53,8 +61,9 @@ class QRScannerWizard(models.TransientModel):
                     self.result_message = f"⚠️ Diqqət: {partner.name} üçün artıq aktiv badminton sessiyası var!\nSessiya: {active_session.name}\nBaşlama vaxtı: {active_session.start_time}"
                     return self._return_wizard()
                 
-                # Filiala görə qiymət al
-                default_filial = self.env['sport.filial'].search([('is_active', '=', True)], limit=1)
+                # Balansdan 1 saat çıx
+                new_balance = current_balance - required_hours
+                partner.badminton_balance = new_balance
                 
                 # Yeni sessiya yarat
                 session = self.env['badminton.session'].create({
@@ -66,7 +75,18 @@ class QRScannerWizard(models.TransientModel):
                     'duration_hours': 1.0,
                 })
                 
-                self.result_message = f"✅ BADMINTON UĞURLU!\n👤 Müştəri: {partner.name}\n🎮 Sessiya: {session.name}\n⏰ Başlama: {session.start_time}\n💰 "
+                # Balans tarixçəsi yarat
+                self.env['badminton.balance.history'].create({
+                    'partner_id': partner_id,
+                    'session_id': session.id,
+                    'hours_used': required_hours,
+                    'balance_before': current_balance,
+                    'balance_after': new_balance,
+                    'transaction_type': 'usage',
+                    'description': f"QR kod ilə sessiya başladıldı: {session.name}"
+                })
+                
+                self.result_message = f"✅ BADMINTON UĞURLU!\n👤 Müştəri: {partner.name}\n🎮 Sessiya: {session.name}\n⏰ Başlama: {session.start_time}\n💰 Köhnə balans: {current_balance} saat\n💰 Yeni balans: {new_balance} saat"
                 self.session_id = session.id
                 
                 return self._return_wizard()

@@ -6,19 +6,6 @@
         <field name="model">badminton.lesson</field>
         <field name="arch" type="xml">
             <form string="Badminton Dərsi">
-                <header>
-                    <button name="action_confirm" type="object" string="Təsdiqləmək" 
-                            invisible="[('state', '!=', 'draft')]" class="btn-primary"/>
-                    <button name="action_mark_paid" type="object" string="Ödənib Qeyd Et" 
-                            invisible="[('state', '!=', 'confirmed'), ('is_paid', '=', True)]" class="btn-success"/>
-                    <button name="action_activate" type="object" string="Aktivləşdirmək" 
-                            invisible="[('state', '!=', 'confirmed'), ('is_paid', '=', False)]" class="btn-info"/>
-                    <button name="action_complete" type="object" string="Tamamlamaq" 
-                            invisible="[('state', '!=', 'active')]" class="btn-success"/>
-                    <button name="action_cancel" type="object" string="Ləğv Et" 
-                            invisible="[('state', 'in', ['completed', 'cancelled'])]" class="btn-secondary"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,active,completed"/>
-                </header>
                 <sheet>
                     <div class="oe_title">
                         <h1>
@@ -35,7 +22,6 @@
                             <field name="start_date"/>
                             <field name="end_date"/>
                             <field name="lesson_fee"/>
-                            <field name="payment_method"/>
                         </group>
                     </group>
                     <group>
@@ -46,7 +32,6 @@
                             <field name="total_amount" readonly="1"/>
                         </group>
                         <group string="Ödəniş Məlumatları">
-                            <field name="is_paid" readonly="1"/>
                             <field name="payment_date" readonly="1"/>
                         </group>
                     </group>
@@ -99,7 +84,6 @@
                 <field name="total_lessons"/>
                 <field name="attended_lessons"/>
                 <field name="total_amount"/>
-                <field name="is_paid"/>
                 <field name="state"/>
             </list>
         </field>
@@ -115,9 +99,6 @@
                 <field name="partner_id"/>
                 <field name="filial_id"/>
                 <field name="instructor_id"/>
-                <filter name="active" string="Aktiv" domain="[('state', '=', 'active')]"/>
-                <filter name="paid" string="Ödənilib" domain="[('is_paid', '=', True)]"/>
-                <filter name="unpaid" string="Ödənilməyib" domain="[('is_paid', '=', False)]"/>
                 <group expand="0" string="Qrupla">
                     <filter name="group_by_partner" string="Müştəri" context="{'group_by': 'partner_id'}"/>
                     <filter name="group_by_filial" string="Filial" context="{'group_by': 'filial_id'}"/>
