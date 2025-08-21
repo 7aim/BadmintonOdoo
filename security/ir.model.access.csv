@@ -1,6 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_badminton_session,badminton.session,model_badminton_session,base.group_user,1,1,1,1
-access_badminton_sale,badminton.sale,model_badminton_sale,base.group_user,1,1,1,1
 access_badminton_balance_history,badminton.balance.history,model_badminton_balance_history,base.group_user,1,1,1,1
 access_badminton_lesson,badminton.lesson,model_badminton_lesson,base.group_user,1,1,1,1
 access_badminton_lesson_schedule,badminton.lesson.schedule,model_badminton_lesson_schedule,base.group_user,1,1,1,1

@@ -1,6 +1,6 @@
 from . import res_partner
 from . import badminton_session
-from . import badminton_sale
+from ..zzz import badminton_sale
 from . import badminton_lesson
 from . import customer_wizards
 from . import qr_scanner

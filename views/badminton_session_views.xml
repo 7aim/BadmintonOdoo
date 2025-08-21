@@ -32,8 +32,6 @@
                         <group>
                             <field name="duration_hours"/>
                             <field name="extended_time" readonly="1"/>
-                            <field name="hourly_rate"/>
-                            <field name="total_amount" readonly="1"/>
                         </group>
                     </group>
                     <notebook>
@@ -58,7 +56,6 @@
                 <field name="start_time"/>
                 <field name="end_time"/>
                 <field name="duration_hours"/>
-                <field name="total_amount"/>
                 <field name="state"/>
             </list>
         </field>
@@ -74,7 +71,6 @@
                 <field name="partner_id"/>
                 <field name="start_time"/>
                 <field name="end_time"/>
-                <field name="total_amount"/>
                 <field name="state"/>
                 <button name="extend_session" string="Uzat" type="object" icon="fa-clock-o"/>
                 <button name="complete_session" string="Tamamla" type="object" icon="fa-check"/>
@@ -95,7 +91,6 @@
                     <group>
                         <field name="partner_id" string="Müştəri Seçin (Manual)"/>
                         <field name="duration_hours"/>
-                        <field name="hourly_rate"/>
                     </group>
                     <footer>
                         <button name="start_session_manual" string="Sessiyanı Başlat" 

@@ -7,8 +7,6 @@ import io
 class VolanPartner(models.Model):
     _inherit = 'res.partner'
 
-    # --- Yeni Sahələri (Fields) Təyin Edirik ---
-
     # 1. Doğum Tarixi Sahəsi
     birth_date = fields.Date(string="Doğum Tarixi")
 
@@ -29,24 +27,6 @@ class VolanPartner(models.Model):
     # 6. Basketbol Üzvlüklər
     basketball_membership_ids = fields.One2many('sport.membership', 'partner_id', string="Basketbol Üzvlüklər")
 
-    @api.model
-    def _auto_init(self):
-        """Ensure badminton_balance column exists"""
-        res = super(VolanPartner, self)._auto_init()
-        
-        # Check if badminton_balance column exists, if not add it
-        try:
-            self.env.cr.execute("SELECT badminton_balance FROM res_partner LIMIT 1")
-        except Exception:
-            # Column doesn't exist, create it
-            self.env.cr.execute("ALTER TABLE res_partner ADD COLUMN badminton_balance INTEGER DEFAULT 0")
-            self.env.cr.execute("UPDATE res_partner SET badminton_balance = 0 WHERE badminton_balance IS NULL")
-            self.env.cr.commit()
-        
-        return res
-
-    # --- Hesablama Funksiyası ---
-
     @api.depends('name', 'write_date')
     def _compute_qr_code(self):
         """Her müşteri üçün unikal ID və adına əsaslanan bir QR kod yaradır."""
@@ -64,3 +44,19 @@ class VolanPartner(models.Model):
                     partner.qr_code_image = False
             else:
                 partner.qr_code_image = False
+
+
+    """@api.model
+    def _auto_init(self):
+        res = super(VolanPartner, self)._auto_init()
+        
+        # Check if badminton_balance column exists, if not add it
+        try:
+            self.env.cr.execute("SELECT badminton_balance FROM res_partner LIMIT 1")
+        except Exception:
+            # Column doesn't exist, create it
+            self.env.cr.execute("ALTER TABLE res_partner ADD COLUMN badminton_balance INTEGER DEFAULT 0")
+            self.env.cr.execute("UPDATE res_partner SET badminton_balance = 0 WHERE badminton_balance IS NULL")
+            self.env.cr.commit()
+        
+        return res"""

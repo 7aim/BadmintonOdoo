@@ -134,11 +134,11 @@ class BadmintonBalanceHistory(models.Model):
         ('refund', 'Geri Ödəmə'),
         ('adjustment', 'Düzəliş')
     ], string="Əməliyyat Növü", required=True)
-    
-    hours_added = fields.Integer(string="Əlavə Edilən Saatlar", default=0)
-    hours_used = fields.Integer(string="İstifadə Edilən Saatlar", default=0)
+
+    hours_added = fields.Integer(string="Alındı", default=0)
+    hours_used = fields.Integer(string="İstifadə", default=0)
     balance_before = fields.Integer(string="Əvvəlki Balans")
-    balance_after = fields.Integer(string="Sonrakı Balans")
+    balance_after = fields.Integer(string="Balans")
     
     description = fields.Text(string="Təsvir")
     transaction_date = fields.Datetime(string="Əməliyyat Tarixi", default=fields.Datetime.now)

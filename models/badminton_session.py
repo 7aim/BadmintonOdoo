@@ -15,8 +15,6 @@ class BadmintonSession(models.Model):
     start_time = fields.Datetime(string="Başlama Vaxtı", readonly=True)
     end_time = fields.Datetime(string="Bitmə Vaxtı")
     duration_hours = fields.Float(string="Müddət (saat)", default=1.0)
-    hourly_rate = fields.Float(string="Saatlıq Qiymət", default=10.0)
-    total_amount = fields.Float(string="Ümumi Məbləğ", compute='_compute_total_amount', store=True)
     
     state = fields.Selection([
         ('draft', 'Gözləmədə'),
@@ -29,13 +27,6 @@ class BadmintonSession(models.Model):
     qr_scanned = fields.Boolean(string="QR Oxunub", default=False)
     extended_time = fields.Float(string="Əlavə Vaxt (saat)", default=0.0)
     notes = fields.Text(string="Qeydlər")
-    
-    # Compute metodları
-    @api.depends('duration_hours', 'extended_time', 'hourly_rate')
-    def _compute_total_amount(self):
-        for session in self:
-            total_hours = session.duration_hours + session.extended_time
-            session.total_amount = total_hours * session.hourly_rate
     
     @api.model
     def create(self, vals):

@@ -41,4 +41,6 @@
               action="action_sport_branch" sequence="2"/>
     <menuitem id="menu_sport_filials" name="Filiallar" parent="menu_sport_config" 
               action="action_sport_filial" sequence="3"/>
+
+    
 </odoo>

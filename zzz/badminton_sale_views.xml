@@ -120,7 +120,6 @@
                 <field name="transaction_type"/>
                 <field name="hours_added"/>
                 <field name="hours_used"/>
-                <field name="balance_before"/>
                 <field name="balance_after"/>
                 <field name="description"/>
             </list>

@@ -55,7 +55,6 @@ class QRScannerWizard(models.TransientModel):
                 
                 # Filiala görə qiymət al
                 default_filial = self.env['sport.filial'].search([('is_active', '=', True)], limit=1)
-                hourly_rate = default_filial.badminton_hourly_rate if default_filial else 15.0
                 
                 # Yeni sessiya yarat
                 session = self.env['badminton.session'].create({
@@ -65,10 +64,9 @@ class QRScannerWizard(models.TransientModel):
                     'state': 'active',
                     'qr_scanned': True,
                     'duration_hours': 1.0,
-                    'hourly_rate': hourly_rate
                 })
                 
-                self.result_message = f"✅ BADMINTON UĞURLU!\n👤 Müştəri: {partner.name}\n🎮 Sessiya: {session.name}\n⏰ Başlama: {session.start_time}\n💰 Qiymət: {session.hourly_rate} AZN/saat"
+                self.result_message = f"✅ BADMINTON UĞURLU!\n👤 Müştəri: {partner.name}\n🎮 Sessiya: {session.name}\n⏰ Başlama: {session.start_time}\n💰 "
                 self.session_id = session.id
                 
                 return self._return_wizard()
