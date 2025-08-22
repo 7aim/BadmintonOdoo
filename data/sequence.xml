@@ -65,13 +65,23 @@
         <field name="number_increment">1</field>
     </record>
 
+    <!-- Basketball Lesson Simple Sequence -->
+    <record id="seq_basketball_lesson_simple" model="ir.sequence">
+        <field name="name">Basketball Lesson Simple Sequence</field>
+        <field name="code">basketball.lesson.simple</field>
+        <field name="prefix">BBLS</field>
+        <field name="padding">3</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+    </record>
+
     <!-- Default Sport Filials -->
     <record id="filial_main" model="sport.filial">
         <field name="name">Əsas Filial</field>
         <field name="code">MAIN</field>
         <field name="badminton_hourly_rate">15.0</field>
         <field name="badminton_lesson_rate">50.0</field>
-        <field name="basketball_monthly_rate">80.0</field>
+        <field name="basketball_lesson_rate">80.0</field>
         <field name="address">Bakı şəhəri</field>
     </record>
 
@@ -80,7 +90,7 @@
         <field name="code">SEC</field>
         <field name="badminton_hourly_rate">12.0</field>
         <field name="badminton_lesson_rate">45.0</field>
-        <field name="basketball_monthly_rate">70.0</field>
+        <field name="basketball_lesson_rate">70.0</field>
         <field name="address">Gəncə şəhəri</field>
     </record>
 </odoo>

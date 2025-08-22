@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Sport System Views -->
     
     <!-- Sport Branch Views -->
     <record id="view_sport_branch_form" model="ir.ui.view">
@@ -64,7 +63,7 @@
                         <group>
                             <field name="badminton_hourly_rate"/>
                             <field name="badminton_lesson_rate"/>
-                            <field name="basketball_monthly_rate"/>
+                            <field name="basketball_lesson_rate"/>
                         </group>
                     </group>
                     <group>
@@ -84,7 +83,7 @@
                 <field name="code"/>
                 <field name="badminton_hourly_rate"/>
                 <field name="badminton_lesson_rate"/>
-                <field name="basketball_monthly_rate"/>
+                <field name="basketball_lesson_rate"/>
                 <field name="is_active"/>
             </list>
         </field>

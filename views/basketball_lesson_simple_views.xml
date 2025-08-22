@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Basketbol Lesson Simple Form View -->
+    <record id="view_basketball_lesson_simple_form" model="ir.ui.view">
+        <field name="name">basketball.lesson.simple.form</field>
+        <field name="model">basketball.lesson.simple</field>
+        <field name="arch" type="xml">
+            <form string="Basketbol Dərsi">
+                <header>
+                    <button name="action_confirm" string="Təsdiqlə" 
+                            type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_renew" string="Yenilə (+1 ay)" 
+                            type="object" class="btn-success"
+                            invisible="state != 'active'"/>
+                    <button name="action_complete" string="Tamamla" 
+                            type="object" class="btn-secondary"
+                            invisible="state != 'active'"/>
+                    <button name="action_cancel" string="Ləğv et" 
+                            type="object" class="btn-danger"
+                            invisible="state not in ['draft', 'active']"/>
+                    <field name="state" widget="statusbar" 
+                           statusbar_visible="draft,active,completed"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id" options="{'no_create': True}"/>
+                            <field name="filial_id" options="{'no_create': True}"/>
+                            <field name="group_id" options="{'no_create': True}" domain="[('filial_id', '=', filial_id)]"/>
+                            <field name="lesson_fee" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="start_date" readonly="1"/>
+                            <field name="end_date" readonly="1"/>
+                            <field name="payment_date" readonly="1"/>
+                        </group>
+                    </group>
+                    
+                    <group string="Abunəlik Məlumatları">
+                        <group>
+                            <field name="total_months" readonly="1"/>
+                            <field name="total_payments" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="total_attendances" readonly="1"/>
+                        </group>
+                    </group>
+                    
+                    <notebook>
+                        <page string="Həftəlik Qrafik">
+                            <field name="schedule_ids">
+                                <list string="Həftəlik Qrafik" editable="bottom">
+                                    <field name="day_of_week"/>
+                                    <field name="start_time" widget="float_time"/>
+                                    <field name="end_time" widget="float_time"/>
+                                    <field name="is_active"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                            <div class="mt-3">
+                                <p><strong>Nümunə:</strong></p>
+                                <ul>
+                                    <li>Çərşənbə → 12:00–13:00</li>
+                                    <li>Bazar → 11:00–12:00</li>
+                                </ul>
+                            </div>
+                        </page>
+                        <page string="Dərsə İştiraklar">
+                            <field name="attendance_ids">
+                                <list string="İştiraklar" create="false">
+                                    <field name="attendance_date"/>
+                                    <field name="attendance_time"/>
+                                    <field name="schedule_id"/>
+                                    <field name="qr_scanned"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Qeydlər">
+                            <field name="notes" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- basketball Lesson Simple List View -->
+    <record id="view_basketball_lesson_simple_list" model="ir.ui.view">
+        <field name="name">basketball.lesson.simple.list</field>
+        <field name="model">basketball.lesson.simple</field>
+        <field name="arch" type="xml">
+            <list string="Basketbol Dərsləri" decoration-success="state=='active'" 
+                  decoration-info="state=='completed'" decoration-muted="state=='cancelled'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="filial_id"/>
+                <field name="group_id"/>
+                <field name="lesson_fee"/>
+                <field name="total_months"/>
+                <field name="total_payments"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="total_attendances"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- basketball Lesson Simple Search View -->
+    <record id="view_basketball_lesson_simple_search" model="ir.ui.view">
+        <field name="name">basketball.lesson.simple.search</field>
+        <field name="model">basketball.lesson.simple</field>
+        <field name="arch" type="xml">
+            <search string="Basketbol Dərsləri">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <group expand="0" string="Qruplaşdırma">
+                    <filter string="Müştəri" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Vəziyyət" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Actions -->
+    <record id="action_basketball_lesson_simple" model="ir.actions.act_window">
+        <field name="name">Basketbol Dərsləri (Sadə)</field>
+        <field name="res_model">basketball.lesson.simple</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{}</field>
+    </record>
+
+    <!-- Menu Items -->
+
+</odoo>

@@ -29,7 +29,7 @@ class SportFilial(models.Model):
     # Filiala görə qiymətlər
     badminton_hourly_rate = fields.Float(string="Badminton Saatlıq Qiymət", default=15.0)
     badminton_lesson_rate = fields.Float(string="Badminton Dərs Qiyməti (Aylıq)", default=50.0)
-    basketball_monthly_rate = fields.Float(string="Basketbol Aylıq Qiymət", default=80.0)
+    basketball_lesson_rate = fields.Float(string="Basketbol Dərs Qiyməti (Aylıq)", default=80.0)
 
 
 class SportSchedule(models.Model):
@@ -143,7 +143,7 @@ class SportMembership(models.Model):
         for membership in self:
             if membership.filial_id and membership.branch_id:
                 if membership.branch_id.code == 'basketball':
-                    membership.monthly_fee = membership.filial_id.basketball_monthly_rate
+                    membership.monthly_fee = membership.filial_id.basketball_lesson_rate
                 else:
                     membership.monthly_fee = 0.0
             else:

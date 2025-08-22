@@ -27,15 +27,11 @@
     
     <!-- Basketbol Bölməsi -->
     <menuitem id="menu_basketball_section" name="🏀 Basketbol" parent="menu_sport_main" sequence="20"/>
-    <menuitem id="menu_active_memberships" name="Aktiv Üzvlüklər" parent="menu_basketball_section" 
-              action="action_active_memberships" sequence="1"/>
-    <menuitem id="menu_all_memberships" name="Bütün Üzvlüklər" parent="menu_basketball_section" 
-              action="action_sport_membership" sequence="2"/>
-    <menuitem id="menu_attendances" name="Dərsə İştiraklar" parent="menu_basketball_section" 
-              action="action_sport_attendance" sequence="3"/>
-    <menuitem id="menu_schedules" name="Dərs Qrafiki" parent="menu_basketball_section" 
-              action="action_sport_schedule" sequence="4"/>
-
+    <menuitem id="menu_basketball_lessons" name="Basketbol Dərsləri" parent="menu_basketball_section" sequence="25"/>
+    <menuitem id="menu_basketball_lessons_simple" name="Abunəliklər" parent="menu_basketball_lessons" 
+              action="action_basketball_lesson_simple" sequence="1"/>
+    <menuitem id="menu_basketball_groups" name="Basketbol Qrupları" parent="menu_basketball_lessons" 
+              action="action_basketball_group" sequence="2"/>
     <!-- Diger Bölmələr -->
     <menuitem id="menu_qr_section" name="🔍 QR Scanner" parent="menu_sport_main" 
               action="action_qr_scanner_wizard" sequence="30"/>

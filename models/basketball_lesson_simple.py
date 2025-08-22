@@ -3,21 +3,21 @@ from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 from datetime import datetime, timedelta
 
-class BadmintonLessonSimple(models.Model):
-    _name = 'badminton.lesson.simple'
-    _description = 'Badminton Dərsi (Sadə)'
+class BasketballLessonSimple(models.Model):
+    _name = 'basketball.lesson.simple'
+    _description = 'Basketbol Dərsi (Sadə)'
     _order = 'create_date desc'
     
     name = fields.Char(string="Dərs Nömrəsi", readonly=True, default="Yeni")
     partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
     filial_id = fields.Many2one('sport.filial', string="Filial", required=True)
-    group_id = fields.Many2one('badminton.group', string="Qrup", domain="[('filial_id', '=', filial_id)]")
-    
+    group_id = fields.Many2one('basketball.group', string="Qrup", domain="[('filial_id', '=', filial_id)]")
+
     # Dərs Qrafiki (həftənin günləri)
-    schedule_ids = fields.One2many('badminton.lesson.schedule.simple', 'lesson_id', string="Həftəlik Qrafik")
-    
+    schedule_ids = fields.One2many('basketball.lesson.schedule.simple', 'lesson_id', string="Həftəlik Qrafik")
+
     # İştiraklar
-    attendance_ids = fields.One2many('badminton.lesson.attendance.simple', 'lesson_id', string="Dərsə İştiraklar")
+    attendance_ids = fields.One2many('basketball.lesson.attendance.simple', 'lesson_id', string="Dərsə İştiraklar")
     total_attendances = fields.Integer(string="Ümumi İştirak", compute='_compute_total_attendances')
     
     # Ödəniş məlumatları
@@ -58,7 +58,7 @@ class BadmintonLessonSimple(models.Model):
     def _compute_lesson_fee(self):
         for lesson in self:
             if lesson.filial_id:
-                lesson.lesson_fee = lesson.filial_id.badminton_lesson_rate
+                lesson.lesson_fee = lesson.filial_id.basketball_lesson_rate
             else:
                 lesson.lesson_fee = 50.0
     
@@ -71,7 +71,7 @@ class BadmintonLessonSimple(models.Model):
     def _compute_total_attendances(self):
         for lesson in self:
             lesson.total_attendances = len(lesson.attendance_ids)
-    
+
     @api.onchange('group_id')
     def _onchange_group_id(self):
         """Qrup seçildikdə avtomatik qrafik əlavə et"""
@@ -97,10 +97,10 @@ class BadmintonLessonSimple(models.Model):
     @api.model
     def create(self, vals):
         if vals.get('name', 'Yeni') == 'Yeni':
-            vals['name'] = self.env['ir.sequence'].next_by_code('badminton.lesson.simple') or 'BLS001'
-            
-        return super(BadmintonLessonSimple, self).create(vals)
-    
+            vals['name'] = self.env['ir.sequence'].next_by_code('basketball.lesson.simple') or 'BLS001'
+
+        return super(BasketballLessonSimple, self).create(vals)
+
     def action_confirm(self):
         """Dərsi təsdiqlə və ödənişi qəbul et"""
         for lesson in self:
@@ -133,12 +133,12 @@ class BadmintonLessonSimple(models.Model):
                 lesson.state = 'cancelled'
 
 
-class BadmintonLessonScheduleSimple(models.Model):
-    _name = 'badminton.lesson.schedule.simple'
+class BasketballLessonScheduleSimple(models.Model):
+    _name = 'basketball.lesson.schedule.simple'
     _description = 'Həftəlik Dərs Qrafiki (Sadə)'
     _order = 'day_of_week, start_time'
     
-    lesson_id = fields.Many2one('badminton.lesson.simple', string="Dərs", required=True, ondelete='cascade')
+    lesson_id = fields.Many2one('basketball.lesson.simple', string="Dərs", required=True, ondelete='cascade')
     partner_id = fields.Many2one(related='lesson_id.partner_id', string="Müştəri", store=True)
     
     # Həftənin günü
@@ -173,13 +173,13 @@ class BadmintonLessonScheduleSimple(models.Model):
                 raise ValidationError("Bitmə vaxtı 0-24 aralığında olmalıdır!")
 
 
-class BadmintonLessonAttendanceSimple(models.Model):
-    _name = 'badminton.lesson.attendance.simple'
-    _description = 'Badminton Dərs İştirakı (Sadə)'
+class BasketballLessonAttendanceSimple(models.Model):
+    _name = 'basketball.lesson.attendance.simple'
+    _description = 'Basketbol Dərs İştirakı (Sadə)'
     _order = 'attendance_date desc, attendance_time desc'
-    
-    lesson_id = fields.Many2one('badminton.lesson.simple', string="Dərs Abunəliyi", required=True)
-    schedule_id = fields.Many2one('badminton.lesson.schedule.simple', string="Dərs Qrafiki", required=True)
+
+    lesson_id = fields.Many2one('basketball.lesson.simple', string="Dərs Abunəliyi", required=True)
+    schedule_id = fields.Many2one('basketball.lesson.schedule.simple', string="Dərs Qrafiki", required=True)
     partner_id = fields.Many2one(related='lesson_id.partner_id', string="Müştəri", store=True)
     
     # İştirak məlumatları
