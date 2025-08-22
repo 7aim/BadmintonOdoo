@@ -63,11 +63,46 @@ class BadmintonSale(models.Model):
     def create(self, vals):
         if vals.get('name', 'Yeni') == 'Yeni':
             vals['name'] = self.env['ir.sequence'].next_by_code('badminton.sale') or 'BS001'
-        return super(BadmintonSale, self).create(vals)
+        
+        sale = super(BadmintonSale, self).create(vals)
+        
+        # Əgər satış 'paid' vəziyyətində yaradılırsa, dərhal balansı artır
+        if sale.state == 'paid':
+            sale._add_hours_to_customer()
+            sale.credited_hours = sale.hours_quantity
+            
+        return sale
+    
+    def action_confirm(self):
+        """Satışı təsdiqləyir"""
+        for sale in self:
+            if sale.state == 'draft':
+                sale.state = 'confirmed'
+    
+    def action_mark_paid(self):
+        """Ödənişi qeyd edir və müştəri hesabına saatları əlavə edir"""
+        for sale in self:
+            if sale.state in ['draft', 'confirmed'] and sale.credited_hours == 0:
+                sale.state = 'paid'
+                sale.payment_date = fields.Datetime.now()
+                
+                # Müştəri hesabına saatları əlavə et
+                sale._add_hours_to_customer()
+                sale.credited_hours = sale.hours_quantity
+    
+    def action_cancel(self):
+        """Satışı ləğv edir"""
+        for sale in self:
+            if sale.state in ['draft', 'confirmed']:
+                sale.state = 'cancelled'
     
     def _add_hours_to_customer(self):
         """Müştəri hesabına badminton saatlarını əlavə edir"""
         for sale in self:
+            # Əgər artıq hesaba əlavə edilmişsə, təkrar etmə
+            if sale.credited_hours > 0:
+                return
+                
             # Müştərinin badminton balansını yenilə
             partner = sale.partner_id
             current_balance = partner.badminton_balance or 0

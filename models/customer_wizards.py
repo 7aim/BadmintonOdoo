@@ -73,20 +73,20 @@ class BadmintonSaleWizard(models.TransientModel):
             wizard.total_amount = wizard.hours_quantity * wizard.unit_price
     
     def action_create_sale(self):
-        """Satış yaradır və ödənib qeyd edir"""
+        """Satış yaradır və dərhal balansı artırır"""
         if not self.partner_id or not self.filial_id or self.hours_quantity <= 0:
             raise ValidationError("Zəhmət olmasa bütün sahələri doldurun!")
         
-        # Badminton satışı yaradırıq
+        # Badminton satışı yaradırıq (dərhal ödənilib statusunda)
         sale = self.env['badminton.sale'].create({
             'partner_id': self.partner_id.id,
             'filial_id': self.filial_id.id,
             'hours_quantity': self.hours_quantity,
+            'state': 'paid',  # Dərhal ödənilib
+            'payment_date': fields.Datetime.now(),
         })
         
-        # Təsdiqləyirik və ödənib qeyd edirik
-        sale.action_confirm()
-        sale.action_mark_paid()
+        # Balans create funksiyasında avtomatik artırılacaq
         
         return {
             'type': 'ir.actions.client',

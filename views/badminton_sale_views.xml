@@ -6,7 +6,19 @@
         <field name="model">badminton.sale</field>
         <field name="arch" type="xml">
             <form string="Badminton Satışı">
-
+                <header>
+                    <button name="action_confirm" string="Təsdiqlə" 
+                            type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_mark_paid" string="Ödənilib" 
+                            type="object" class="btn-success"
+                            invisible="state not in ['draft', 'confirmed']"/>
+                    <button name="action_cancel" string="Ləğv et" 
+                            type="object" class="btn-secondary"
+                            invisible="state not in ['draft', 'confirmed']"/>
+                    <field name="state" widget="statusbar" 
+                           statusbar_visible="draft,confirmed,paid"/>
+                </header>
                 <sheet>
                     <div class="oe_title">
                         <h1>
@@ -24,6 +36,7 @@
                             <field name="hours_quantity"/>
                             <field name="unit_price" readonly="1"/>
                             <field name="total_amount" readonly="1"/>
+                            <field name="state" readonly="1"/>
                         </group>
                     </group>
                     <group string="Ödəniş Məlumatları">
