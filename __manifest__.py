@@ -18,7 +18,7 @@
         'views/sport_system_views.xml',
         'views/badminton_session_views.xml',
         'views/badminton_sale_views.xml',
-        'views/badminton_lesson_views.xml',
+        'views/badminton_lesson_simple_views.xml',
         'views/customer_wizard_views.xml',
         'views/qr_scanner_views.xml',
         'views/session_extend_wizard_views.xml',

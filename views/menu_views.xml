@@ -9,14 +9,14 @@
               action="action_badminton_sale_wizard" sequence="3"/>
     <menuitem id="menu_badminton_sales" name="Satış Tarixçəsi" parent="menu_badminton_section" 
               action="action_badminton_sale" sequence="4"/>
-    <menuitem id="menu_badminton_lessons" name="Dərslər" parent="menu_badminton_section" 
-              action="action_badminton_lesson" sequence="6"/>
     <menuitem id="menu_active_sessions" name="Aktiv Sessiyalar" parent="menu_badminton_section" 
               action="action_active_sessions" sequence="1"/>
     <menuitem id="menu_all_sessions" name="Bütün Sessiyalar" parent="menu_badminton_section" 
               action="action_badminton_session" sequence="2"/>
     <menuitem id="menu_badminton_balance_history" name="Balans Tarixçəsi" parent="menu_badminton_section" 
               action="action_badminton_balance_history" sequence="5"/>
+    <menuitem id="menu_badminton_lessons_simple" name="Dərslər (Sadə)" parent="volan_badminton.menu_badminton_section" 
+              action="action_badminton_lesson_simple" sequence="7"/>
     
     <!-- Basketbol Bölməsi -->
     <menuitem id="menu_basketball_section" name="🏀 Basketbol" parent="menu_sport_main" sequence="20"/>

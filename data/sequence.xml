@@ -53,9 +53,19 @@
         <field name="code">basketball</field>
         <field name="is_monthly">True</field>
         <field name="description">Aylıq basketbol dərsləri</field>
+        </record>
+
+    <!-- Badminton Lesson Simple Sequence -->
+    <record id="seq_badminton_lesson_simple" model="ir.sequence">
+        <field name="name">Badminton Lesson Simple Sequence</field>
+        <field name="code">badminton.lesson.simple</field>
+        <field name="prefix">BLS</field>
+        <field name="padding">3</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
     </record>
 
-    <!-- Default Filiallar -->
+    <!-- Default Sport Filials -->
     <record id="filial_main" model="sport.filial">
         <field name="name">Əsas Filial</field>
         <field name="code">MAIN</field>
