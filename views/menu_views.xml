@@ -32,7 +32,13 @@
     <!-- QR Scanner Bölməsi -->
     <menuitem id="menu_qr_section" name="🔍 QR Scanner" parent="menu_sport_main" 
               action="action_qr_scanner_wizard" sequence="30"/>
-    
+
+    <menuitem id="menu_customers" name="🤵‍♂️ Müştərilər" parent="menu_sport_main" 
+              action="contacts.action_contacts" sequence="31"/>
+
+    <menuitem id="menu_employees" name="🧑‍🔧 İşçilər" parent="menu_sport_main" 
+              action="hr.open_view_employee_list_my" sequence="32"/>
+
     <!-- Tənzimləmələr Bölməsi -->
     <menuitem id="menu_sport_config" name="⚙️ Tənzimləmələr" parent="menu_sport_main" sequence="40"/>
     <menuitem id="menu_customer_lookup" name="Müştəri Axtarışı" parent="menu_sport_config" 

@@ -14,8 +14,8 @@ class QRScannerWizard(models.TransientModel):
     
     # Xidmət növü seçimi
     service_type = fields.Selection([
-        ('badminton', 'Badminton (Saatlıq)'),
-        ('basketball', 'Basketbol (Dərs)')
+        ('badminton', 'Badminton'),
+        ('basketball', 'Basketbol')
     ], string="Xidmət Növü", default='badminton', required=True)
 
     def scan_and_start_session(self):
@@ -41,6 +41,12 @@ class QRScannerWizard(models.TransientModel):
                 
                 if not partner.exists():
                     self.result_message = f"❌ Xəta: ID={partner_id} olan müştəri tapılmadı!\nQR Kod: {qr_data}"
+                    return self._return_wizard()
+                
+                # ÖNCə AKTIV DƏRS ABUNƏLİYİNİ YOXLA
+                lesson_check = self._check_active_lesson(partner)
+                if lesson_check['has_lesson']:
+                    self.result_message = lesson_check['message']
                     return self._return_wizard()
                 
                 # Müştərinin badminton balansını yoxla
@@ -98,6 +104,85 @@ class QRScannerWizard(models.TransientModel):
         except Exception as e:
             self.result_message = f"❌ Badminton xətası: {str(e)}\nOxunan kod: '{self.qr_code_input}'"
             return self._return_wizard()
+    
+    def _check_active_lesson(self, partner):
+        """Müştərinin aktiv dərs abunəliyini və dərs vaxtını yoxla"""
+        try:
+            # Aktiv dərs abunəliyini tap
+            active_lesson = self.env['badminton.lesson.simple'].search([
+                ('partner_id', '=', partner.id),
+                ('state', '=', 'active'),
+                ('start_date', '<=', fields.Date.today()),
+                ('end_date', '>=', fields.Date.today())
+            ], limit=1)
+            
+            if not active_lesson:
+                return {'has_lesson': False, 'message': ''}
+            
+            # İndi dərs vaxtında olub-olmadığını yoxla
+            today = fields.Date.today()
+            current_time = fields.Datetime.now().time()
+            current_weekday = str(today.weekday())  # 0=Bazar ertəsi, 6=Bazar
+            current_hour = current_time.hour + current_time.minute / 60.0
+            
+            # Bu günə aid qrafik var mı?
+            matching_schedule = active_lesson.schedule_ids.filtered(
+                lambda s: s.day_of_week == current_weekday and s.is_active
+            )
+            
+            if not matching_schedule:
+                return {'has_lesson': False, 'message': ''}
+            
+            # Dərs vaxtında mı?
+            for schedule in matching_schedule:
+                # 30 dəqiqə əvvəl və 30 dəqiqə sonra QR kodu qəbul et
+                start_with_buffer = schedule.start_time - 0.5  # 30 dəq əvvəl
+                end_with_buffer = schedule.end_time + 0.5     # 30 dəq sonra
+                
+                if start_with_buffer <= current_hour <= end_with_buffer:
+                    # Həftənin günü adlarını əlavə edək
+                    day_names = {
+                        '0': 'Bazar ertəsi',
+                        '1': 'Çərşənbə axşamı', 
+                        '2': 'Çərşənbə',
+                        '3': 'Cümə axşamı',
+                        '4': 'Cümə',
+                        '5': 'Şənbə',
+                        '6': 'Bazar'
+                    }
+                    
+                    # Bu gün artıq bu dərsə iştirak var mı yoxla
+                    existing_attendance = self.env['badminton.lesson.attendance.simple'].search([
+                        ('lesson_id', '=', active_lesson.id),
+                        ('schedule_id', '=', schedule.id),
+                        ('attendance_date', '=', today)
+                    ], limit=1)
+                    
+                    if existing_attendance:
+                        return {
+                            'has_lesson': True,
+                            'message': f"⚠️ ARTIQ İŞTİRAK EDİB!\n👤 Müştəri: {partner.name}\n📚 Abunəlik: {active_lesson.name}\n📅 Bu gün artıq bu dərsə iştirak edilib\n⏰ İştirak vaxtı: {existing_attendance.attendance_time.strftime('%H:%M')}"
+                        }
+                    
+                    # Yeni attendance yarat
+                    attendance = self.env['badminton.lesson.attendance.simple'].create({
+                        'lesson_id': active_lesson.id,
+                        'schedule_id': schedule.id,
+                        'attendance_date': today,
+                        'attendance_time': fields.Datetime.now(),
+                        'qr_scanned': True,
+                        'scan_result': f"QR: {partner.name} (ID: {partner.id})"
+                    })
+                    
+                    return {
+                        'has_lesson': True,
+                        'message': f"✅ DƏRSƏ GİRİŞ UĞURLU!\n👤 Müştəri: {partner.name}\n📚 Abunəlik: {active_lesson.name}\n📅 Dərs günü: {day_names.get(schedule.day_of_week, 'N/A')}\n⏰ Dərs saatı: {int(schedule.start_time):02d}:{int((schedule.start_time % 1) * 60):02d} - {int(schedule.end_time):02d}:{int((schedule.end_time % 1) * 60):02d}\n💡 Balans dəyişmədi (Dərs abunəliyi aktiv)\n📊 Bu aya iştirak: {active_lesson.total_attendances + 1}"
+                    }
+            
+            return {'has_lesson': False, 'message': ''}
+            
+        except Exception as e:
+            return {'has_lesson': False, 'message': f'Dərs yoxlama xətası: {str(e)}'}
     
     def _handle_basketball_attendance(self):
         """Basketbol dərsinə iştirak üçün QR kod oxuma"""

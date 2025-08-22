@@ -14,6 +14,10 @@ class BadmintonLessonSimple(models.Model):
     # Dərs Qrafiki (həftənin günləri)
     schedule_ids = fields.One2many('badminton.lesson.schedule.simple', 'lesson_id', string="Həftəlik Qrafik")
     
+    # İştiraklar
+    attendance_ids = fields.One2many('badminton.lesson.attendance.simple', 'lesson_id', string="Dərsə İştiraklar")
+    total_attendances = fields.Integer(string="Ümumi İştirak", compute='_compute_total_attendances')
+    
     # Ödəniş məlumatları
     lesson_fee = fields.Float(string="Aylıq Dərs Haqqı", required=True, default=50.0)
     
@@ -43,6 +47,11 @@ class BadmintonLessonSimple(models.Model):
                 lesson.end_date = lesson.start_date + timedelta(days=30)
             else:
                 lesson.end_date = False
+    
+    @api.depends('attendance_ids')
+    def _compute_total_attendances(self):
+        for lesson in self:
+            lesson.total_attendances = len(lesson.attendance_ids)
     
     @api.model
     def create(self, vals):
@@ -120,3 +129,24 @@ class BadmintonLessonScheduleSimple(models.Model):
                 raise ValidationError("Başlama vaxtı 0-24 aralığında olmalıdır!")
             if schedule.end_time < 0 or schedule.end_time > 24:
                 raise ValidationError("Bitmə vaxtı 0-24 aralığında olmalıdır!")
+
+
+class BadmintonLessonAttendanceSimple(models.Model):
+    _name = 'badminton.lesson.attendance.simple'
+    _description = 'Badminton Dərs İştirakı (Sadə)'
+    _order = 'attendance_date desc, attendance_time desc'
+    
+    lesson_id = fields.Many2one('badminton.lesson.simple', string="Dərs Abunəliyi", required=True)
+    schedule_id = fields.Many2one('badminton.lesson.schedule.simple', string="Dərs Qrafiki", required=True)
+    partner_id = fields.Many2one(related='lesson_id.partner_id', string="Müştəri", store=True)
+    
+    # İştirak məlumatları
+    attendance_date = fields.Date(string="İştirak Tarixi", default=fields.Date.today)
+    attendance_time = fields.Datetime(string="İştirak Vaxtı", default=fields.Datetime.now)
+    
+    # QR scan məlumatları  
+    qr_scanned = fields.Boolean(string="QR ilə Giriş", default=True)
+    scan_result = fields.Text(string="QR Nəticəsi")
+    
+    # Qeydlər
+    notes = fields.Text(string="Qeydlər")

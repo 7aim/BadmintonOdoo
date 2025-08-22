@@ -37,6 +37,7 @@
                             <field name="start_date"/>
                             <field name="end_date" readonly="1"/>
                             <field name="payment_date" readonly="1"/>
+                            <field name="total_attendances" readonly="1"/>
                         </group>
                     </group>
                     
@@ -58,6 +59,17 @@
                                     <li>Bazar → 11:00–12:00</li>
                                 </ul>
                             </div>
+                        </page>
+                        <page string="Dərsə İştiraklar">
+                            <field name="attendance_ids">
+                                <list string="İştiraklar" create="false">
+                                    <field name="attendance_date"/>
+                                    <field name="attendance_time"/>
+                                    <field name="schedule_id"/>
+                                    <field name="qr_scanned"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
                         </page>
                         <page string="Qeydlər">
                             <field name="notes" nolabel="1"/>
