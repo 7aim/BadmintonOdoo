@@ -32,6 +32,7 @@
                         <group>
                             <field name="partner_id" options="{'no_create': True}"/>
                             <field name="filial_id" options="{'no_create': True}"/>
+                            <field name="group_id" options="{'no_create': True}"/>
                             <field name="lesson_fee" readonly="1"/>
                         </group>
                         <group>
@@ -100,6 +101,7 @@
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="filial_id"/>
+                <field name="group_id"/>
                 <field name="lesson_fee"/>
                 <field name="total_months"/>
                 <field name="total_payments"/>

@@ -15,6 +15,7 @@ class CustomerLookupWizard(models.TransientModel):
             domain = [
                 '|', '|',
                 ('name', 'ilike', self.search_term),
+                ('qr', 'ilike', self.search_term),
                 ('phone', 'ilike', self.search_term),
                 ('mobile', 'ilike', self.search_term)
             ]

@@ -11,6 +11,7 @@ class BadmintonLessonSimple(models.Model):
     name = fields.Char(string="Dərs Nömrəsi", readonly=True, default="Yeni")
     partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
     filial_id = fields.Many2one('sport.filial', string="Filial", required=True)
+    group_id = fields.Many2one('badminton.group', string="Qrup", domain="[('filial_id', '=', filial_id)]")
     
     # Dərs Qrafiki (həftənin günləri)
     schedule_ids = fields.One2many('badminton.lesson.schedule.simple', 'lesson_id', string="Həftəlik Qrafik")
@@ -70,6 +71,28 @@ class BadmintonLessonSimple(models.Model):
     def _compute_total_attendances(self):
         for lesson in self:
             lesson.total_attendances = len(lesson.attendance_ids)
+    
+    @api.onchange('group_id')
+    def _onchange_group_id(self):
+        """Qrup seçildikdə avtomatik qrafik əlavə et"""
+        if self.group_id:
+            # Əvvəlki qrafiki sil
+            self.schedule_ids = [(5, 0, 0)]
+            
+            # Qrupun qrafikini kopyala
+            schedule_vals = []
+            for group_schedule in self.group_id.schedule_ids:
+                if group_schedule.is_active:
+                    schedule_vals.append((0, 0, {
+                        'day_of_week': group_schedule.day_of_week,
+                        'start_time': group_schedule.start_time,
+                        'end_time': group_schedule.end_time,
+                        'is_active': True,
+                        'notes': f"Qrup qrafiki: {self.group_id.name}"
+                    }))
+            
+            if schedule_vals:
+                self.schedule_ids = schedule_vals
     
     @api.model
     def create(self, vals):
