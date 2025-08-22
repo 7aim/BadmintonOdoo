@@ -28,6 +28,7 @@ class SportFilial(models.Model):
     
     # Filiala görə qiymətlər
     badminton_hourly_rate = fields.Float(string="Badminton Saatlıq Qiymət", default=15.0)
+    badminton_lesson_rate = fields.Float(string="Badminton Dərs Qiyməti (Aylıq)", default=50.0)
     basketball_monthly_rate = fields.Float(string="Basketbol Aylıq Qiymət", default=80.0)
 
 

@@ -10,6 +10,7 @@ class BadmintonLessonSimple(models.Model):
     
     name = fields.Char(string="Dərs Nömrəsi", readonly=True, default="Yeni")
     partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
+    filial_id = fields.Many2one('sport.filial', string="Filial", required=True)
     
     # Dərs Qrafiki (həftənin günləri)
     schedule_ids = fields.One2many('badminton.lesson.schedule.simple', 'lesson_id', string="Həftəlik Qrafik")
@@ -19,11 +20,15 @@ class BadmintonLessonSimple(models.Model):
     total_attendances = fields.Integer(string="Ümumi İştirak", compute='_compute_total_attendances')
     
     # Ödəniş məlumatları
-    lesson_fee = fields.Float(string="Aylıq Dərs Haqqı", required=True, default=50.0)
+    lesson_fee = fields.Float(string="Aylıq Dərs Haqqı", compute='_compute_lesson_fee', store=True)
     
-    # Tarix məlumatları (1 aylıq)
-    start_date = fields.Date(string="Başlama Tarixi", default=fields.Date.today, required=True)
-    end_date = fields.Date(string="Bitmə Tarixi", compute='_compute_end_date', store=True)
+    # Tarix məlumatları
+    start_date = fields.Date(string="Cari Dövr Başlama", required=True, default=fields.Date.today)
+    end_date = fields.Date(string="Cari Dövr Bitmə", compute='_compute_end_date', store=True)
+    
+    # Abunəlik məlumatları
+    total_months = fields.Integer(string="Ümumi Abunəlik (ay)", default=1)
+    total_payments = fields.Float(string="Ümumi Ödəniş", compute='_compute_total_payments')
     
     # Vəziyyət
     state = fields.Selection([
@@ -48,6 +53,19 @@ class BadmintonLessonSimple(models.Model):
             else:
                 lesson.end_date = False
     
+    @api.depends('filial_id')
+    def _compute_lesson_fee(self):
+        for lesson in self:
+            if lesson.filial_id:
+                lesson.lesson_fee = lesson.filial_id.badminton_lesson_rate
+            else:
+                lesson.lesson_fee = 50.0
+    
+    @api.depends('total_months', 'lesson_fee')
+    def _compute_total_payments(self):
+        for lesson in self:
+            lesson.total_payments = lesson.total_months * lesson.lesson_fee
+    
     @api.depends('attendance_ids')
     def _compute_total_attendances(self):
         for lesson in self:
@@ -57,6 +75,7 @@ class BadmintonLessonSimple(models.Model):
     def create(self, vals):
         if vals.get('name', 'Yeni') == 'Yeni':
             vals['name'] = self.env['ir.sequence'].next_by_code('badminton.lesson.simple') or 'BLS001'
+            
         return super(BadmintonLessonSimple, self).create(vals)
     
     def action_confirm(self):
@@ -70,13 +89,13 @@ class BadmintonLessonSimple(models.Model):
         """Abunəliyi 1 ay uzat və yenidən ödəniş qəbul et"""
         for lesson in self:
             if lesson.state == 'active':
-                # Tarixi uzat
-                lesson.start_date = lesson.end_date
+                # Başlama tarixi sabit qalır, yalnız end_date uzanır
                 lesson.end_date = lesson.end_date + timedelta(days=30)
+                lesson.total_months += 1
                 lesson.payment_date = fields.Datetime.now()
                 
-                # Yeni sequence nömrəsi ver
-                lesson.name = self.env['ir.sequence'].next_by_code('badminton.lesson.simple') or f"{lesson.name}-R"
+                # Yeni sequence nömrəsi ver (isteğe bağlı)
+                lesson.name = f"{lesson.name.split('-')[0]}-R{lesson.total_months}"
     
     def action_complete(self):
         """Dərsi tamamla"""

@@ -70,6 +70,7 @@
         <field name="name">Əsas Filial</field>
         <field name="code">MAIN</field>
         <field name="badminton_hourly_rate">15.0</field>
+        <field name="badminton_lesson_rate">50.0</field>
         <field name="basketball_monthly_rate">80.0</field>
         <field name="address">Bakı şəhəri</field>
     </record>
@@ -78,6 +79,7 @@
         <field name="name">İkinci Filial</field>
         <field name="code">SEC</field>
         <field name="badminton_hourly_rate">12.0</field>
+        <field name="badminton_lesson_rate">45.0</field>
         <field name="basketball_monthly_rate">70.0</field>
         <field name="address">Gəncə şəhəri</field>
     </record>

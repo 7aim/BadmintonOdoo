@@ -63,6 +63,7 @@
                         </group>
                         <group>
                             <field name="badminton_hourly_rate"/>
+                            <field name="badminton_lesson_rate"/>
                             <field name="basketball_monthly_rate"/>
                         </group>
                     </group>
@@ -82,6 +83,7 @@
                 <field name="name"/>
                 <field name="code"/>
                 <field name="badminton_hourly_rate"/>
+                <field name="badminton_lesson_rate"/>
                 <field name="basketball_monthly_rate"/>
                 <field name="is_active"/>
             </list>
