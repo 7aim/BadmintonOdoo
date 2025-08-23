@@ -33,7 +33,7 @@
     <menuitem id="menu_basketball_groups" name="Basketbol Qrupları" parent="menu_basketball_lessons" 
               action="action_basketball_group" sequence="2"/>
     <!-- Diger Bölmələr -->
-    <menuitem id="menu_qr_section" name="🔍 QR Scanner" parent="menu_sport_main" 
+    <menuitem id="menu_qr_section" name="🔍 QR Scan" parent="menu_sport_main" 
               action="action_qr_scanner_wizard" sequence="30"/>
 
     <menuitem id="menu_customers" name="🤵‍♂️ Müştərilər" parent="menu_sport_main" 
