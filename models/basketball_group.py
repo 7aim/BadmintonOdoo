@@ -37,7 +37,7 @@ class BasketballGroupSchedule(models.Model):
     _order = 'day_of_week, start_time'
 
     group_id = fields.Many2one('basketball.group', string="Qrup", required=True, ondelete='cascade')
-    filial_id = fields.Many2one(related='group_id.filial_id', string="Filial", store=True)
+    filial_id = fields.Many2one('sport.filial', related='group_id.filial_id', string="Filial", store=True)
     
     # Həftənin günü
     day_of_week = fields.Selection([

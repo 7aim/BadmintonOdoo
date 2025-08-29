@@ -29,7 +29,7 @@
     ],
     'assets': {
         'web.assets_backend': [
-            'volan_badminton/static/src/css/style.css',
+            'volan_yasamal/static/src/css/style.css',
         ],
     },
     'demo': [],
@@ -40,5 +40,5 @@
     'external_dependencies': {
         'python': ['qrcode', 'pillow'],
     },
-    'web_icon': 'volan_badminton/static/description/icon.png'
+    'web_icon': 'volan_yasamal/static/description/icon.png'
 }
