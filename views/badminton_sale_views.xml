@@ -28,7 +28,6 @@
                     <group>
                         <group>
                             <field name="partner_id" options="{'no_create': True}"/>
-                            <field name="filial_id" options="{'no_create': True}"/>
                             <field name="sale_date"/>
                             <field name="expiry_date" readonly="1"/>
                         </group>
@@ -63,7 +62,6 @@
             <list string="Badminton Satışları" decoration-success="state=='paid'" decoration-info="state=='confirmed'" decoration-muted="state=='cancelled'">
                 <field name="name"/>
                 <field name="partner_id"/>
-                <field name="filial_id"/>
                 <field name="hours_quantity"/>
                 <field name="total_amount"/>
                 <field name="sale_date"/>
@@ -80,10 +78,8 @@
             <search string="Badminton Satışları">
                 <field name="name"/>
                 <field name="partner_id"/>
-                <field name="filial_id"/>
                 <group expand="0" string="Qrupla">
                     <filter name="group_by_partner" string="Müştəri" context="{'group_by': 'partner_id'}"/>
-                    <filter name="group_by_filial" string="Filial" context="{'group_by': 'filial_id'}"/>
                     <filter name="group_by_state" string="Vəziyyət" context="{'group_by': 'state'}"/>
                     <filter name="group_by_date" string="Tarix" context="{'group_by': 'sale_date'}"/>
                 </group>

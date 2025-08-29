@@ -9,13 +9,12 @@ class BadmintonGroup(models.Model):
     
     name = fields.Char(string="Qrup Adı", required=True)
     description = fields.Text(string="Təsvir")
-    filial_id = fields.Many2one('sport.filial', string="Filial", required=True)
     
     # Qrup qrafiki
     schedule_ids = fields.One2many('badminton.group.schedule', 'group_id', string="Qrup Qrafiki")
     
-    # Qrup üzvləri
-    member_ids = fields.One2many('badminton.lesson.simple', 'group_id', string="Qrup Üzvləri")
+    # Qrup üzvləri - relation_field explicitly tells Odoo which field to use for the inverse relation
+    member_ids = fields.One2many('badminton.lesson.simple', 'group_id', string="Qrup Üzvləri", relation_field='group_id')
     member_count = fields.Integer(string="Üzv Sayı", compute='_compute_member_count')
     
     # Aktivlik
@@ -36,7 +35,6 @@ class BadmintonGroupSchedule(models.Model):
     _order = 'day_of_week, start_time'
     
     group_id = fields.Many2one('badminton.group', string="Qrup", required=True, ondelete='cascade')
-    filial_id = fields.Many2one(related='group_id.filial_id', string="Filial", store=True)
     
     # Həftənin günü
     day_of_week = fields.Selection([

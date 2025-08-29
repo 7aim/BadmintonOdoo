@@ -10,7 +10,6 @@ class BadmintonSale(models.Model):
     
     name = fields.Char(string="Satış Nömrəsi", readonly=True, default="Yeni")
     partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
-    filial_id = fields.Many2one('sport.filial', string="Filial", required=True)
     
     # Satış məlumatları
     hours_quantity = fields.Integer(string="Saat Sayı", required=True, default=1)
@@ -36,14 +35,6 @@ class BadmintonSale(models.Model):
     
     # Qeydlər
     notes = fields.Text(string="Qeydlər")
-    
-    @api.depends('filial_id')
-    def _compute_unit_price(self):
-        for sale in self:
-            if sale.filial_id:
-                sale.unit_price = sale.filial_id.badminton_hourly_rate
-            else:
-                sale.unit_price = 0.0
     
     @api.depends('hours_quantity', 'unit_price')
     def _compute_total_amount(self):

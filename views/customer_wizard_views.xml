@@ -45,7 +45,6 @@
                     <group>
                         <field name="partner_id" options="{'no_create': True}"/>
                         <field name="current_balance" readonly="1" style="font-weight: bold; color: #007bff;"/>
-                        <field name="filial_id" options="{'no_create': True}"/>
                     </group>
                     <group>
                         <field name="hours_quantity"/>

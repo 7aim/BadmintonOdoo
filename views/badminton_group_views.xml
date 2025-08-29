@@ -14,7 +14,6 @@
                     </div>
                     <group>
                         <group>
-                            <field name="filial_id" options="{'no_create': True}"/>
                             <field name="is_active"/>
                         </group>
                         <group>
@@ -74,7 +73,6 @@
             <list string="Badminton Qrupları" decoration-success="is_active==True" 
                   decoration-muted="is_active==False">
                 <field name="name"/>
-                <field name="filial_id"/>
                 <field name="member_count"/>
                 <field name="is_active"/>
             </list>
@@ -88,11 +86,9 @@
         <field name="arch" type="xml">
             <search string="Badminton Qrupları">
                 <field name="name"/>
-                <field name="filial_id"/>
                 <filter string="Aktiv Qruplar" name="active" domain="[('is_active', '=', True)]"/>
                 <filter string="Passiv Qruplar" name="inactive" domain="[('is_active', '=', False)]"/>
                 <group expand="0" string="Qruplaşdırma">
-                    <filter string="Filial" name="group_filial" context="{'group_by': 'filial_id'}"/>
                     <filter string="Aktivlik" name="group_active" context="{'group_by': 'is_active'}"/>
                 </group>
             </search>

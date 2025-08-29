@@ -51,7 +51,6 @@ class BadmintonSaleWizard(models.TransientModel):
     _description = 'Badminton Satış Sihirbazı'
     
     partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
-    filial_id = fields.Many2one('sport.filial', string="Filial", required=True)
     hours_quantity = fields.Integer(string="Saat Sayı", required=True, default=1)
     
     unit_price = fields.Float(string="Saatlıq Qiymət", compute='_compute_unit_price', store=True)
@@ -60,14 +59,6 @@ class BadmintonSaleWizard(models.TransientModel):
     # Display müştərinin cari balansını
     current_balance = fields.Integer(string="Cari Balans", related='partner_id.badminton_balance', readonly=True)
     
-    @api.depends('filial_id')
-    def _compute_unit_price(self):
-        for wizard in self:
-            if wizard.filial_id:
-                wizard.unit_price = wizard.filial_id.badminton_hourly_rate
-            else:
-                wizard.unit_price = 0.0
-    
     @api.depends('hours_quantity', 'unit_price')
     def _compute_total_amount(self):
         for wizard in self:
@@ -75,13 +66,12 @@ class BadmintonSaleWizard(models.TransientModel):
     
     def action_create_sale(self):
         """Satış yaradır və dərhal balansı artırır"""
-        if not self.partner_id or not self.filial_id or self.hours_quantity <= 0:
+        if not self.partner_id  or self.hours_quantity <= 0:
             raise ValidationError("Zəhmət olmasa bütün sahələri doldurun!")
         
         # Badminton satışı yaradırıq (dərhal ödənilib statusunda)
         sale = self.env['badminton.sale'].create({
             'partner_id': self.partner_id.id,
-            'filial_id': self.filial_id.id,
             'hours_quantity': self.hours_quantity,
             'state': 'paid',  # Dərhal ödənilib
             'payment_date': fields.Datetime.now(),

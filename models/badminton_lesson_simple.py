@@ -10,8 +10,7 @@ class BadmintonLessonSimple(models.Model):
     
     name = fields.Char(string="Dərs Nömrəsi", readonly=True, default="Yeni")
     partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
-    filial_id = fields.Many2one('sport.filial', string="Filial", required=True)
-    group_id = fields.Many2one('badminton.group', string="Qrup", domain="[('filial_id', '=', filial_id)]")
+    group_id = fields.Many2one('badminton.group', string="Qrup")
     
     # Dərs Qrafiki (həftənin günləri)
     schedule_ids = fields.One2many('badminton.lesson.schedule.simple', 'lesson_id', string="Həftəlik Qrafik")
@@ -53,14 +52,6 @@ class BadmintonLessonSimple(models.Model):
                 lesson.end_date = lesson.start_date + timedelta(days=30)
             else:
                 lesson.end_date = False
-    
-    @api.depends('filial_id')
-    def _compute_lesson_fee(self):
-        for lesson in self:
-            if lesson.filial_id:
-                lesson.lesson_fee = lesson.filial_id.badminton_lesson_rate
-            else:
-                lesson.lesson_fee = 50.0
     
     @api.depends('total_months', 'lesson_fee')
     def _compute_total_payments(self):

@@ -41,54 +41,6 @@
         </field>
     </record>
 
-    <!-- Sport Filial Views -->
-    <record id="view_sport_filial_form" model="ir.ui.view">
-        <field name="name">sport.filial.form</field>
-        <field name="model">sport.filial</field>
-        <field name="arch" type="xml">
-            <form string="İdman Filialı">
-                <sheet>
-                    <div class="oe_title">
-                        <h1>
-                            <field name="name" placeholder="Filial adı..."/>
-                        </h1>
-                    </div>
-                    <group>
-                        <group>
-                            <field name="code"/>
-                            <field name="phone"/>
-                            <field name="manager_id"/>
-                            <field name="is_active"/>
-                        </group>
-                        <group>
-                            <field name="badminton_hourly_rate"/>
-                            <field name="badminton_lesson_rate"/>
-                            <field name="basketball_lesson_rate"/>
-                        </group>
-                    </group>
-                    <group>
-                        <field name="address" placeholder="Filialın ünvanı..."/>
-                    </group>
-                </sheet>
-            </form>
-        </field>
-    </record>
-
-    <record id="view_sport_filial_list" model="ir.ui.view">
-        <field name="name">sport.filial.list</field>
-        <field name="model">sport.filial</field>
-        <field name="arch" type="xml">
-            <list string="İdman Filialları" decoration-success="is_active==True" decoration-danger="is_active==False">
-                <field name="name"/>
-                <field name="code"/>
-                <field name="badminton_hourly_rate"/>
-                <field name="badminton_lesson_rate"/>
-                <field name="basketball_lesson_rate"/>
-                <field name="is_active"/>
-            </list>
-        </field>
-    </record>
-
     <!-- Sport Schedule Views -->
     <record id="view_sport_schedule_form" model="ir.ui.view">
         <field name="name">sport.schedule.form</field>
@@ -103,7 +55,6 @@
                     </div>
                     <group>
                         <group>
-                            <field name="filial_id"/>
                             <field name="branch_id"/>
                             <field name="day_of_week"/>
                             <field name="is_active"/>
@@ -126,7 +77,6 @@
         <field name="arch" type="xml">
             <list string="İdman Qrafiki" decoration-success="is_active==True" decoration-danger="is_active==False">
                 <field name="name"/>
-                <field name="filial_id"/>
                 <field name="branch_id"/>
                 <field name="day_of_week"/>
                 <field name="start_time" widget="float_time"/>
@@ -155,7 +105,6 @@
                     <group>
                         <group>
                             <field name="partner_id"/>
-                            <field name="filial_id"/>
                             <field name="branch_id"/>
                             <field name="is_active"/>
                         </group>
@@ -194,7 +143,6 @@
                   decoration-warning="state=='draft'" decoration-danger="state=='expired'">
                 <field name="name"/>
                 <field name="partner_id"/>
-                <field name="filial_id"/>
                 <field name="branch_id"/>
                 <field name="month"/>
                 <field name="year"/>
@@ -257,12 +205,6 @@
     <record id="action_sport_branch" model="ir.actions.act_window">
         <field name="name">İdman Növləri</field>
         <field name="res_model">sport.branch</field>
-        <field name="view_mode">list,form</field>
-    </record>
-
-    <record id="action_sport_filial" model="ir.actions.act_window">
-        <field name="name">İdman Filialları</field>
-        <field name="res_model">sport.filial</field>
         <field name="view_mode">list,form</field>
     </record>
 

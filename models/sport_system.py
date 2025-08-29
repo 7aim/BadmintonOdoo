@@ -14,30 +14,11 @@ class SportBranch(models.Model):
     is_hourly = fields.Boolean(string="Saatlıq Xidmət", default=False, help="Badminton kimi saatlıq xidmət")
     is_monthly = fields.Boolean(string="Aylıq Dərs", default=False, help="Basketbol kimi aylıq dərs sistemi")
 
-
-class SportFilial(models.Model):
-    _name = 'sport.filial'
-    _description = 'İdman Filialı'
-    
-    name = fields.Char(string="Filial Adı", required=True)
-    code = fields.Char(string="Filial Kodu", required=True)
-    address = fields.Text(string="Ünvan")
-    phone = fields.Char(string="Telefon")
-    manager_id = fields.Many2one('res.partner', string="Menecer")
-    is_active = fields.Boolean(string="Aktiv", default=True)
-    
-    # Filiala görə qiymətlər
-    badminton_hourly_rate = fields.Float(string="Badminton Saatlıq Qiymət", default=15.0)
-    badminton_lesson_rate = fields.Float(string="Badminton Dərs Qiyməti (Aylıq)", default=50.0)
-    basketball_lesson_rate = fields.Float(string="Basketbol Dərs Qiyməti (Aylıq)", default=80.0)
-
-
 class SportSchedule(models.Model):
     _name = 'sport.schedule'
     _description = 'İdman Qrafiki'
     
     name = fields.Char(string="Qrafik Adı", compute='_compute_name', store=True)
-    filial_id = fields.Many2one('sport.filial', string="Filial", required=True)
     branch_id = fields.Many2one('sport.branch', string="İdman Növü", required=True)
     
     # Vaxt məlumatları
@@ -58,20 +39,20 @@ class SportSchedule(models.Model):
     instructor_id = fields.Many2one('res.partner', string="Müəllim")
     max_students = fields.Integer(string="Maksimum Tələbə Sayı", default=12)
     is_active = fields.Boolean(string="Aktiv", default=True)
-    
-    @api.depends('filial_id', 'branch_id', 'day_of_week', 'start_time')
+
+    @api.depends('branch_id', 'day_of_week', 'start_time')
     def _compute_name(self):
         days = {
             '0': 'B.ertəsi', '1': 'Ç.axşamı', '2': 'Çərşənbə', 
             '3': 'C.axşamı', '4': 'Cümə', '5': 'Şənbə', '6': 'Bazar'
         }
         for schedule in self:
-            if schedule.filial_id and schedule.branch_id and schedule.day_of_week:
+            if schedule.branch_id and schedule.day_of_week:
                 day_name = days.get(schedule.day_of_week, '')
                 hour = int(schedule.start_time)
                 minute = int((schedule.start_time - hour) * 60)
                 time_str = f"{hour:02d}:{minute:02d}"
-                schedule.name = f"{schedule.filial_id.name} - {schedule.branch_id.name} - {day_name} {time_str}"
+                schedule.name = f"{schedule.branch_id.name} - {day_name} {time_str}"
             else:
                 schedule.name = "Yeni Qrafik"
 
@@ -82,7 +63,6 @@ class SportMembership(models.Model):
     
     name = fields.Char(string="Üzvlük Nömrəsi", readonly=True, default="Yeni")
     partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
-    filial_id = fields.Many2one('sport.filial', string="Filial", required=True)
     branch_id = fields.Many2one('sport.branch', string="İdman Növü", required=True)
     schedule_ids = fields.Many2many('sport.schedule', string="Qrafiklər")
     
@@ -137,13 +117,13 @@ class SportMembership(models.Model):
     def _compute_remaining_lessons(self):
         for membership in self:
             membership.remaining_lessons = membership.total_lessons - membership.attended_lessons
-    
-    @api.depends('filial_id', 'branch_id')
+
+    @api.depends('branch_id')
     def _compute_monthly_fee(self):
         for membership in self:
-            if membership.filial_id and membership.branch_id:
+            if  membership.branch_id:
                 if membership.branch_id.code == 'basketball':
-                    membership.monthly_fee = membership.filial_id.basketball_lesson_rate
+                    membership.monthly_fee = membership.basketball_lesson_rate
                 else:
                     membership.monthly_fee = 0.0
             else:

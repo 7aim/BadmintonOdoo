@@ -46,7 +46,6 @@
                     <field name="basketball_membership_ids" context="{'default_partner_id': id}">
                         <list string="Basketbol Üzvlüklər" create="false" edit="false">
                             <field name="name"/>
-                            <field name="filial_id"/>
                             <field name="month"/>
                             <field name="year"/>
                             <field name="total_lessons"/>
