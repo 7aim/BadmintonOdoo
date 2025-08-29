@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- list View for Basketball Demo Lessons -->
+    <record id="view_basketball_demo_lesson_list" model="ir.ui.view">
+        <field name="name">basketball.demo.lesson.list</field>
+        <field name="model">basketball.demo.lesson</field>
+        <field name="arch" type="xml">
+            <list string="Demo Dərslər" decoration-success="state == 'done' and converted == True" decoration-info="state == 'confirmed'" decoration-muted="state == 'cancelled'">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="partner_phone"/>
+                <field name="date"/>
+                <field name="time" widget="float_time"/>
+                <field name="coach_id"/>
+                <field name="court_id"/>
+                <field name="attended"/>
+                <field name="converted"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'confirmed'" decoration-warning="state == 'draft'" decoration-danger="state == 'cancelled'"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Form View for Basketball Demo Lessons -->
+    <record id="view_basketball_demo_lesson_form" model="ir.ui.view">
+        <field name="name">basketball.demo.lesson.form</field>
+        <field name="model">basketball.demo.lesson</field>
+        <field name="arch" type="xml">
+            <form string="Demo Dərs">
+                <header>
+                    <button name="action_confirm" string="Təsdiqlə" type="object" class="oe_highlight" invisible="[('state', '!=', 'draft')]"/>
+                    <button name="action_mark_done" string="Keçirilib" type="object" class="oe_highlight" invisible="[('state', '!=', 'confirmed')]"/>
+                    <button name="action_cancel" string="Ləğv et" type="object" invisible="[('state', 'in', ['cancelled', 'done'])]"/>
+                    <button name="action_reset_to_draft" string="Qaralama et" type="object" invisible="[('state', '=', 'draft')]"/>
+                    <button name="action_mark_converted" string="Abunə oldu" type="object" class="oe_highlight" invisible="['|', ('state', '!=', 'done'), ('converted', '=', True)]"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                            <field name="partner_phone" readonly="1"/>
+                            <field name="partner_email" readonly="1"/>
+                            <field name="attended" invisible="[('state', '!=', 'done')]"/>
+                            <field name="attendance_time" readonly="1" invisible="[('attended', '=', False), ('state', '!=', 'done')]"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <field name="time" widget="float_time"/>
+                            <field name="duration" widget="float_time"/>
+                            <field name="coach_id"/>
+                            <field name="court_id"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Qeydlər">
+                            <field name="notes"/>
+                        </page>
+                        <page string="Abunəlik məlumatı" invisible="[('converted', '=', False)]">
+                            <group>
+                                <field name="converted"/>
+                                <field name="conversion_date" readonly="1" invisible="[('converted', '=', False)]"/>
+                                <field name="subscription_id" invisible="[('converted', '=', False)]"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Search View for Basketball Demo Lessons -->
+    <record id="view_basketball_demo_lesson_search" model="ir.ui.view">
+        <field name="name">basketball.demo.lesson.search</field>
+        <field name="model">basketball.demo.lesson</field>
+        <field name="arch" type="xml">
+            <search string="Demo Dərs Axtarışı">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="date"/>
+                <field name="coach_id"/>
+                <field name="court_id"/>
+                <filter string="Bugün" name="today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter string="Bu həftə" name="this_week" domain="[('date', '&gt;=', (context_today() + relativedelta(weeks=-1,days=1,weekday=0)).strftime('%Y-%m-%d')), ('date', '&lt;=', (context_today() + relativedelta(weekday=6)).strftime('%Y-%m-%d'))]"/>
+                <filter string="İştirak edilib" name="attended" domain="[('attended', '=', True)]"/>
+                <filter string="Abunə olub" name="converted" domain="[('converted', '=', True)]"/>
+                <separator/>
+                <filter string="Planlaşdırılıb" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Təsdiqlənib" name="confirmed" domain="[('state', '=', 'confirmed')]"/>
+                <filter string="Keçirilib" name="done" domain="[('state', '=', 'done')]"/>
+                <filter string="Ləğv edilib" name="cancelled" domain="[('state', '=', 'cancelled')]"/>
+                <group expand="0" string="Qruplaşdır">
+                    <filter string="Müştəri" name="partner_id" context="{'group_by':'partner_id'}"/>
+                    <filter string="Məşqçi" name="coach_id" context="{'group_by':'coach_id'}"/>
+                    <filter string="Kort/Meydança" name="court_id" context="{'group_by':'court_id'}"/>
+                    <filter string="Tarix" name="date" context="{'group_by':'date'}"/>
+                    <filter string="Vəziyyət" name="state" context="{'group_by':'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- Action for Basketball Demo Lessons -->
+    <record id="action_basketball_demo_lesson" model="ir.actions.act_window">
+        <field name="name">Demo Dərslər</field>
+        <field name="res_model">basketball.demo.lesson</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_basketball_demo_lesson_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Yeni Demo Dərs Yarat
+            </p>
+        </field>
+    </record>
+
+</odoo>

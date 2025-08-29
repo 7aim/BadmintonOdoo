@@ -22,6 +22,16 @@ class BadmintonLessonSimple(models.Model):
     # Ödəniş məlumatları
     lesson_fee = fields.Float(string="Aylıq Dərs Haqqı", compute='_compute_lesson_fee', store=True)
     
+    @api.depends('group_id')
+    def _compute_lesson_fee(self):
+        """Qrupun haqqı və ya standart bir dəyər təyin edir"""
+        for lesson in self:
+            if lesson.group_id:
+                # Burada qrupun dərs haqqını təyin edə bilərsiniz
+                lesson.lesson_fee = 100.0  # Default dəyər, gələcəkdə qrup modelində saxlana bilər
+            else:
+                lesson.lesson_fee = 100.0  # Qrup olmadıqda standart dəyər
+
     # Tarix məlumatları
     start_date = fields.Date(string="Cari Dövr Başlama", required=True, default=fields.Date.today)
     end_date = fields.Date(string="Cari Dövr Bitmə", compute='_compute_end_date', store=True)
@@ -52,6 +62,8 @@ class BadmintonLessonSimple(models.Model):
                 lesson.end_date = lesson.start_date + timedelta(days=30)
             else:
                 lesson.end_date = False
+    
+
     
     @api.depends('total_months', 'lesson_fee')
     def _compute_total_payments(self):

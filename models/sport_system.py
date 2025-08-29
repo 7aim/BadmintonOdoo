@@ -2,7 +2,6 @@
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
 from datetime import datetime, timedelta, date
-import calendar
 
 class SportBranch(models.Model):
     _name = 'sport.branch'

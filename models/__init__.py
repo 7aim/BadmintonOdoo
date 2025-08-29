@@ -5,6 +5,7 @@ from . import badminton_group
 from . import basketball_group
 from . import badminton_lesson_simple
 from . import basketball_lesson_simple
+from . import basketball_demo_lesson
 from . import customer_wizards
 from . import qr_scanner
 from . import sport_system

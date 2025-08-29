@@ -28,6 +28,8 @@
     <!-- Basketbol Bölməsi -->
     <menuitem id="menu_basketball_section" name="🏀 Basketbol" parent="menu_sport_main" sequence="20"/>
     <menuitem id="menu_basketball_lessons" name="Basketbol Dərsləri" parent="menu_basketball_section" sequence="25"/>
+    <menuitem id="menu_basketball_demo_lesson" name="Demo Dərs" parent="menu_basketball_lessons"
+              action="action_basketball_demo_lesson" sequence="30"/> 
     <menuitem id="menu_basketball_lessons_simple" name="Abunəliklər" parent="menu_basketball_lessons" 
               action="action_basketball_lesson_simple" sequence="1"/>
     <menuitem id="menu_basketball_groups" name="Basketbol Qrupları" parent="menu_basketball_lessons" 

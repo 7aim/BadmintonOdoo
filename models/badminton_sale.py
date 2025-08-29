@@ -13,7 +13,7 @@ class BadmintonSale(models.Model):
     
     # Satış məlumatları
     hours_quantity = fields.Integer(string="Saat Sayı", required=True, default=1)
-    unit_price = fields.Float(string="Saatlıq Qiymət", compute='_compute_unit_price', store=True)
+    unit_price = fields.Float(string="Saatlıq Qiymət", default=8, store=True)
     total_amount = fields.Float(string="Ümumi Məbləğ", compute='_compute_total_amount', store=True)
     
     payment_date = fields.Datetime(string="Ödəniş Tarixi")
