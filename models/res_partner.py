@@ -10,7 +10,24 @@ class VolanPartner(models.Model):
     # 1. Doğum Tarixi Sahəsi
     birth_date = fields.Date(string="Doğum Tarixi")
 
-    # 2. Əlavə Məlumatlar Sahəsi
+    age = fields.Integer(string="Yaş", compute='_compute_age', store=False)
+
+    # 2. Filial Sahəsi
+    branch = fields.Selection([
+        ('genclik', 'Gənclik'),
+        ('yasamal', 'Yasamal')
+    ], string="Filial", required=True)
+    
+    # 3. Müştəri Mənbəyi
+    customer_source = fields.Selection([
+        ('instagram', 'Instagram'),
+        ('facebook', 'Facebook'),
+        ('friends', 'Dost və Tanışlar'),
+        ('outdoor', 'Küçə Reklamı'),
+        ('other', 'Digər')
+    ], string="Müştəri Mənbəyi")
+    
+    # 4. Əlavə Məlumatlar Sahəsi
     additional_info = fields.Text(string="Əlavə Məlumatlar")
 
     # 3. QR Kod Şəkli Sahəsi (Hesablanan)
@@ -26,6 +43,18 @@ class VolanPartner(models.Model):
     
     # 6. Basketbol Üzvlüklər
     basketball_membership_ids = fields.One2many('sport.membership', 'partner_id', string="Basketbol Üzvlüklər")
+
+    @api.depends('birth_date')
+    def _compute_age(self):
+        """Müştərinin doğum tarixindən yaşını hesablayır"""
+        today = fields.Date.today()
+        for partner in self:
+            if partner.birth_date:
+                birth_date = partner.birth_date
+                age = today.year - birth_date.year - ((today.month, today.day) < (birth_date.month, birth_date.day))
+                partner.age = age
+            else:
+                partner.age = 0
 
     @api.depends('name', 'write_date')
     def _compute_qr_code(self):
@@ -44,6 +73,8 @@ class VolanPartner(models.Model):
                     partner.qr_code_image = False
             else:
                 partner.qr_code_image = False
+
+
 
 
     """@api.model

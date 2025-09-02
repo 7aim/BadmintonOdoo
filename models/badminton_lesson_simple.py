@@ -44,6 +44,7 @@ class BadmintonLessonSimple(models.Model):
     state = fields.Selection([
         ('draft', 'Layihə'),
         ('active', 'Aktiv'),
+        ('frozen', 'Dondurulmuş'),
         ('completed', 'Tamamlanıb'),
         ('cancelled', 'Ləğv Edilib')
     ], default='draft', string="Vəziyyət")
@@ -129,10 +130,22 @@ class BadmintonLessonSimple(models.Model):
             if lesson.state == 'active':
                 lesson.state = 'completed'
     
+    def action_freeze(self):
+        """Abunəliyi dondur"""
+        for lesson in self:
+            if lesson.state == 'active':
+                lesson.state = 'frozen'
+    
+    def action_unfreeze(self):
+        """Abunəliyi aktiv et"""
+        for lesson in self:
+            if lesson.state == 'frozen':
+                lesson.state = 'active'
+    
     def action_cancel(self):
         """Dərsi ləğv et"""
         for lesson in self:
-            if lesson.state in ['draft', 'active']:
+            if lesson.state in ['draft', 'active', 'frozen']:
                 lesson.state = 'cancelled'
 
 

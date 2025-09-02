@@ -8,6 +8,9 @@
             <xpath expr="//field[@name='vat']" position="after">
                 <group string="Şəxsi Məlumatlar">
                     <field name="birth_date"/>
+                    <field name="age" readonly="1"/>
+                    <field name="branch"/>
+                    <field name="customer_source"/>
                     <field name="additional_info"/>
                 </group>
                 <group string="QR Kod">

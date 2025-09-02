@@ -13,14 +13,20 @@
                     <button name="action_renew" string="Yenilə (+1 ay)" 
                             type="object" class="btn-success"
                             invisible="state != 'active'"/>
+                    <button name="action_freeze" string="Dondur" 
+                            type="object" class="btn-warning"
+                            invisible="state != 'active'"/>
+                    <button name="action_unfreeze" string="Aktiv et" 
+                            type="object" class="btn-info"
+                            invisible="state != 'frozen'"/>
                     <button name="action_complete" string="Tamamla" 
                             type="object" class="btn-secondary"
                             invisible="state != 'active'"/>
                     <button name="action_cancel" string="Ləğv et" 
                             type="object" class="btn-danger"
-                            invisible="state not in ['draft', 'active']"/>
+                            invisible="state not in ['draft', 'active', 'frozen']"/>
                     <field name="state" widget="statusbar" 
-                           statusbar_visible="draft,active,completed"/>
+                           statusbar_visible="draft,active,frozen,completed"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -96,7 +102,7 @@
         <field name="model">badminton.lesson.simple</field>
         <field name="arch" type="xml">
             <list string="Badminton Dərsləri" decoration-success="state=='active'" 
-                  decoration-info="state=='completed'" decoration-muted="state=='cancelled'">
+                  decoration-warning="state=='frozen'" decoration-info="state=='completed'" decoration-muted="state=='cancelled'">
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="group_id"/>
@@ -119,9 +125,14 @@
             <search string="Badminton Dərsləri">
                 <field name="name"/>
                 <field name="partner_id"/>
+                <filter string="Aktiv" name="active" domain="[('state','=','active')]"/>
+                <filter string="Dondurulmuş" name="frozen" domain="[('state','=','frozen')]"/>
+                <filter string="Tamamlanmış" name="completed" domain="[('state','=','completed')]"/>
+                <filter string="Ləğv Edilmiş" name="cancelled" domain="[('state','=','cancelled')]"/>
                 <group expand="0" string="Qruplaşdırma">
                     <filter string="Müştəri" name="group_partner" context="{'group_by': 'partner_id'}"/>
                     <filter string="Vəziyyət" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Qrup" name="group_group" context="{'group_by': 'group_id'}"/>
                 </group>
             </search>
         </field>

@@ -13,8 +13,8 @@ class BadmintonGroup(models.Model):
     # Qrup qrafiki
     schedule_ids = fields.One2many('badminton.group.schedule', 'group_id', string="Qrup Qrafiki")
     
-    # Qrup üzvləri - relation_field explicitly tells Odoo which field to use for the inverse relation
-    member_ids = fields.One2many('badminton.lesson.simple', 'group_id', string="Qrup Üzvləri", relation_field='group_id')
+    # Qrup üzvləri
+    member_ids = fields.One2many('badminton.lesson.simple', 'group_id', string="Qrup Üzvləri")
     member_count = fields.Integer(string="Üzv Sayı", compute='_compute_member_count')
     
     # Aktivlik
@@ -26,7 +26,7 @@ class BadmintonGroup(models.Model):
     @api.depends('member_ids')
     def _compute_member_count(self):
         for group in self:
-            group.member_count = len(group.member_ids.filtered(lambda l: l.state == 'active'))
+            group.member_count = len(group.member_ids.filtered(lambda l: l.state in ['active', 'frozen']))
 
 
 class BadmintonGroupSchedule(models.Model):
