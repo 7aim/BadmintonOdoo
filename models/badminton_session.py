@@ -27,6 +27,17 @@ class BadmintonSession(models.Model):
     qr_scanned = fields.Boolean(string="QR Oxunub", default=False)
     extended_time = fields.Float(string="Əlavə Vaxt (saat)", default=0.0)
     notes = fields.Text(string="Qeydlər")
+    time_expired = fields.Boolean(string="Vaxt Bitib", compute="_compute_time_expired", store=False)
+
+    @api.depends('end_time', 'state')
+    def _compute_time_expired(self):
+        """Check if the session's time has expired but it's still active"""
+        now = fields.Datetime.now()
+        for session in self:
+            if session.state in ['active', 'extended'] and session.end_time:
+                session.time_expired = now > session.end_time
+            else:
+                session.time_expired = False
     
     @api.model
     def create(self, vals):
@@ -212,13 +223,29 @@ class BadmintonSession(models.Model):
             }
         }
     
+    # Compute method for recently_completed field
+    @api.depends('state', 'completion_time')
+    def _compute_recently_completed(self):
+        """Check if the session was completed within the last 15 minutes"""
+        now = fields.Datetime.now()
+        for session in self:
+            if session.state == 'completed' and session.completion_time:
+                time_diff = now - session.completion_time
+                # If completed less than 15 minutes ago
+                session.recently_completed = time_diff.total_seconds() < 900  # 15 minutes in seconds
+            else:
+                session.recently_completed = False
+    
     # Sessiyanı tamamla
     def complete_session(self):
         """Sessiyanı tamamla (balans artıq çıxılıb)"""
         for session in self:
             if session.state in ['active', 'extended']:
-                session.state = 'completed'
-                session.notes = f"Sessiya tamamlandı: {fields.Datetime.now()}. İstifadə edilən saat: {session.duration_hours + session.extended_time}"
+                session.write({
+                    'state': 'completed',
+                    'completion_time': fields.Datetime.now(),
+                    'notes': f"Sessiya tamamlandı: {fields.Datetime.now()}. İstifadə edilən saat: {session.duration_hours + session.extended_time}"
+                })
     
     # Sessiyaları avtomatik yoxla (cron job üçün)
     @api.model

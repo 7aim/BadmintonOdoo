@@ -1,6 +1,6 @@
 {
     'name': '🏟️ Volan Sport Management System',
-    'version': '2.4.1',
+    'version': '2.4.6',
     'summary': 'Badminton və Basketbol üçün tam idman idarəetmə sistemi',
 
     'author': 'Volan Sport Center',

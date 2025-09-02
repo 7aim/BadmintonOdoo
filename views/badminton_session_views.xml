@@ -66,12 +66,16 @@
         <field name="name">active.badminton.session.list</field>
         <field name="model">badminton.session</field>
         <field name="arch" type="xml">
-            <list string="Aktiv Sessiyalar" decoration-warning="state=='active'" 
-                  decoration-info="state=='extended'" create="false">
+            <list string="Aktiv Sessiyalar" 
+                  decoration-warning="state=='active' and not time_expired" 
+                  decoration-info="state=='extended' and not time_expired"
+                  decoration-danger="time_expired"
+                  create="false">
                 <field name="partner_id"/>
                 <field name="start_time"/>
                 <field name="end_time"/>
                 <field name="state"/>
+                <field name="time_expired" invisible="1"/>
                 <button name="extend_session" string="Uzat" type="object" icon="fa-clock-o"/>
                 <button name="complete_session" string="Tamamla" type="object" icon="fa-check"/>
             </list>
