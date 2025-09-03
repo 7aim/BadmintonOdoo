@@ -43,6 +43,9 @@ class VolanPartner(models.Model):
     
     # 6. Basketbol Üzvlüklər
     basketball_membership_ids = fields.One2many('sport.membership', 'partner_id', string="Basketbol Üzvlüklər")
+    
+    # 7. Məşqçi bayrağı
+    is_coach = fields.Boolean(string="Məşqçidir", default=False, help="İşçinin məşqçi olub olmadığını göstərir")
 
     @api.depends('birth_date')
     def _compute_age(self):

@@ -25,6 +25,11 @@
     <menuitem id="menu_badminton_groups" name="Badminton Qrupları" parent="menu_badminton_lessons" 
               action="action_badminton_group" sequence="6"/>
     
+    <!-- Yoxlama Bölməsi -->
+    <menuitem id="menu_badminton_attendance_check" name="Yoxlama" parent="menu_badminton_section" sequence="27"/>
+    <menuitem id="menu_badminton_attendance_check_list" name="İştirak Yoxlaması" parent="menu_badminton_attendance_check" 
+              action="action_badminton_attendance_check" sequence="1"/>
+    
     <!-- Basketbol Bölməsi -->
     <menuitem id="menu_basketball_section" name="🏀 Basketbol" parent="menu_sport_main" sequence="20"/>
     <menuitem id="menu_basketball_lessons" name="Basketbol Dərsləri" parent="menu_basketball_section" sequence="25"/>

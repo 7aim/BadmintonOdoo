@@ -26,6 +26,7 @@
         'views/customer_wizard_views.xml',
         'views/qr_scanner_views.xml',
         'views/session_extend_wizard_views.xml',
+        'views/badminton_attendance_check_views.xml',
         'views/menu_views.xml',
     ],
     'assets': {

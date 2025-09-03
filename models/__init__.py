@@ -10,3 +10,4 @@ from . import customer_wizards
 from . import qr_scanner
 from . import sport_system
 from . import session_extend_wizard
+from . import badminton_attendance_check

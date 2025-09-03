@@ -12,6 +12,7 @@
                     <field name="branch"/>
                     <field name="customer_source"/>
                     <field name="additional_info"/>
+                    <field name="is_coach"/>
                 </group>
                 <group string="QR Kod">
                     <field name="qr_code_image" widget="image" string=" "/>
