@@ -20,17 +20,7 @@ class BadmintonLessonSimple(models.Model):
     total_attendances = fields.Integer(string="Ümumi İştirak", compute='_compute_total_attendances')
     
     # Ödəniş məlumatları
-    lesson_fee = fields.Float(string="Aylıq Dərs Haqqı", compute='_compute_lesson_fee', store=True)
-    
-    @api.depends('group_id')
-    def _compute_lesson_fee(self):
-        """Qrupun haqqı və ya standart bir dəyər təyin edir"""
-        for lesson in self:
-            if lesson.group_id:
-                # Burada qrupun dərs haqqını təyin edə bilərsiniz
-                lesson.lesson_fee = 100.0  # Default dəyər, gələcəkdə qrup modelində saxlana bilər
-            else:
-                lesson.lesson_fee = 100.0  # Qrup olmadıqda standart dəyər
+    lesson_fee = fields.Float(string="Aylıq Dərs Haqqı", default=100.0, store=True)
 
     # Tarix məlumatları
     start_date = fields.Date(string="Cari Dövr Başlama", required=True, default=fields.Date.today)
