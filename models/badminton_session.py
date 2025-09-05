@@ -286,3 +286,73 @@ class BadmintonSession(models.Model):
             })
         
         return session_data
+        
+    @api.model
+    def get_sessions_ending_soon(self, warning_minutes=5, urgent_minutes=1):
+        """
+        Tezliklə bitəcək sessiyaları tapır
+        :param warning_minutes: İlk xəbərdarlıq üçün dəqiqə
+        :param urgent_minutes: Təcili xəbərdarlıq üçün dəqiqə
+        :return: Tezliklə bitəcək sessiyaların siyahısı
+        """
+        now = fields.Datetime.now()
+        
+        # Sessiyaların bitməsinə qalan vaxtı hesablayırıq
+        active_sessions = self.search([
+            ('state', 'in', ['active', 'extended']),
+            ('end_time', '>', now),
+            ('end_time', '<=', now + timedelta(minutes=warning_minutes))
+        ])
+        
+        sessions_ending_soon = []
+        for session in active_sessions:
+            remaining_time = session.end_time - now
+            remaining_minutes = int(remaining_time.total_seconds() / 60)
+            
+            # Yalnız xəbərdarlıq və təcili dəqiqə həddində olan sessiyaları əlavə edir
+            if remaining_minutes <= warning_minutes:
+                sessions_ending_soon.append({
+                    'id': session.id,
+                    'partner_name': session.partner_id.name,
+                    'minutes_remaining': remaining_minutes,
+                    'end_time': fields.Datetime.to_string(session.end_time),
+                    'urgent': remaining_minutes <= urgent_minutes
+                })
+                
+        return {
+            'sessions': sessions_ending_soon
+        }
+        
+    @api.model
+    def get_active_sessions(self):
+        """
+        Bütün aktiv sessiyaları tapır və geri qaytarır
+        :return: Aktiv sessiyaların siyahısı və onların məlumatları
+        """
+        now = fields.Datetime.now()
+        
+        # Bütün aktiv sessiyaları tapırıq
+        active_sessions = self.search([
+            ('state', 'in', ['active', 'extended']),
+            ('end_time', '>', now)
+        ], order='end_time asc')
+        
+        sessions_data = []
+        for session in active_sessions:
+            remaining_time = session.end_time - now
+            remaining_seconds = int(remaining_time.total_seconds())
+            remaining_minutes = int(remaining_seconds / 60)
+            
+            sessions_data.append({
+                'id': session.id,
+                'name': session.name,
+                'partner_name': session.partner_id.name,
+                'seconds_remaining': remaining_seconds,
+                'minutes_remaining': remaining_minutes,
+                'end_datetime': fields.Datetime.to_string(session.end_time),
+                'start_datetime': fields.Datetime.to_string(session.start_time),
+            })
+                
+        return {
+            'sessions': sessions_data
+        }

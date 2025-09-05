@@ -4,3 +4,16 @@
     background-repeat: no-repeat !important;
     background-position: center !important;
 }
+
+/* Fix spacing for inline buttons */
+.ml-2 {
+    margin-left: 0.5rem !important;
+}
+
+.mt-2 {
+    margin-top: 0.5rem !important;
+}
+
+.mt-3 {
+    margin-top: 1rem !important;
+}
