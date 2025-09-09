@@ -24,6 +24,32 @@ class CashFlow(models.Model):
     partner_id = fields.Many2one('res.partner', string='Müştəri')
     related_model = fields.Char('Əlaqəli Model', readonly=True)
     related_id = fields.Integer('Əlaqəli ID', readonly=True)
+    
+    @api.constrains('amount', 'transaction_type')
+    def _check_negative_balance(self):
+        """Xərc əməliyyatı balansı mənfiyə düşürməməlidir"""
+        for record in self:
+            if record.transaction_type == 'expense':
+                # Cari balansı hesablayırıq
+                cash_balance = self.env['volan.cash.balance'].create({})
+                if cash_balance.current_balance < record.amount:
+                    raise ValidationError('Xəbərdarlıq: Yetərsiz balans! Bu xərc əməliyyatı balansı mənfiyə düşürəcək. '
+                                          'Cari balans: {:.2f}, Xərc məbləği: {:.2f}'.format(
+                                              cash_balance.current_balance, record.amount))
+                    
+    @api.model
+    def create(self, vals):
+        """Yazarkən xərc üçün balans yoxlaması"""
+        # Əvvəlcə yaratmadan xərc və məbləğ kontrolunu yoxlayaq
+        if vals.get('transaction_type') == 'expense':
+            amount = vals.get('amount', 0)
+            if amount > 0:  # Məbləğ müsbət olarsa (xərclər üçün normal)
+                cash_balance = self.env['volan.cash.balance'].create({})
+                if cash_balance.current_balance < amount:
+                    raise ValidationError('Xəbərdarlıq: Yetərsiz balans! Bu xərc əməliyyatı balansı mənfiyə düşürəcək. '
+                                          'Cari balans: {:.2f}, Xərc məbləği: {:.2f}'.format(
+                                              cash_balance.current_balance, amount))
+        return super(CashFlow, self).create(vals)
 
 class CashBalance(models.TransientModel):
     _name = 'volan.cash.balance'
@@ -47,6 +73,9 @@ class CashBalance(models.TransientModel):
     badminton_lessons_income = fields.Float('📚 Badminton Dərs Abunəlikləri', readonly=True)
     basketball_lessons_income = fields.Float('🏀 Basketbol Dərs Abunəlikləri', readonly=True)
     other_income = fields.Float('💰 Digər Gəlirlər', readonly=True)
+    
+    # Xərclər
+    total_expenses = fields.Float('📉 Ümumi Xərclər', readonly=True)
     
     # Ümumi məlumatlar
     total_income = fields.Float('📈 Ümumi Gəlir', readonly=True)
@@ -129,13 +158,23 @@ class CashBalance(models.TransientModel):
         # Ümumi gəlir
         total_income = badminton_sales_income + badminton_lessons_income + basketball_lessons_income + other_income
         
+        # Ümumi xərclər - sadə şəkildə bütün xərcləri hesablayırıq
+        expense_domain = [
+            ('transaction_type', '=', 'expense')
+        ] + date_domain
+        total_expenses = sum(cash_flow_obj.search(expense_domain).mapped('amount'))
+        
+        # Cari balans = Ümumi gəlir - Ümumi xərc
+        current_balance = total_income - total_expenses
+        
         res.update({
             'badminton_sales_income': badminton_sales_income,
             'badminton_lessons_income': badminton_lessons_income,
             'basketball_lessons_income': basketball_lessons_income,
             'other_income': other_income,
             'total_income': total_income,
-            'current_balance': total_income,
+            'total_expenses': total_expenses,
+            'current_balance': current_balance,
         })
         
         return res
@@ -158,6 +197,38 @@ class CashBalance(models.TransientModel):
         values['transaction_type'] = 'income'
         return cash_flow_obj.create(values)
         
+    @api.model
+    def create_expense_transaction(self, values):
+        """
+        Kassa axınında yeni xərc əməliyyatı yaradır
+        Xarici modellərin cash.flow yaratması üçün istifadə olunur
+        """
+        cash_flow_obj = self.env['volan.cash.flow']
+        values['transaction_type'] = 'expense'
+        
+        # Xərc əməliyyatı yaratmadan əvvəl balansı yoxlayırıq
+        if values.get('amount', 0) > 0:
+            # Cari balansı hesablayırıq
+            current_balance = self._calculate_current_balance()
+            if current_balance < values.get('amount', 0):
+                raise ValidationError('Xəbərdarlıq: Yetərsiz balans! Bu xərc əməliyyatı balansı mənfiyə düşürəcək. '
+                                      'Cari balans: {:.2f}, Xərc məbləği: {:.2f}'.format(
+                                          current_balance, values.get('amount', 0)))
+        
+        return cash_flow_obj.create(values)
+        
+    def _calculate_current_balance(self):
+        """Cari balansı hesablayır"""
+        cash_flow_obj = self.env['volan.cash.flow']
+        
+        # Gəlirlər
+        income = sum(cash_flow_obj.search([('transaction_type', '=', 'income')]).mapped('amount'))
+        
+        # Xərclər
+        expenses = sum(cash_flow_obj.search([('transaction_type', '=', 'expense')]).mapped('amount'))
+        
+        return income - expenses
+        
     def generate_cash_report(self):
         """Nağd pul hesabat səhifəsini açır"""
         self.ensure_one()
@@ -167,8 +238,10 @@ class CashBalance(models.TransientModel):
             'type': 'ir.actions.act_window',
             'res_model': 'volan.cash.flow',
             'view_mode': 'pivot,graph,list,form',
-            'domain': [('transaction_type', '=', 'income')] + domain,
+            'domain': domain,  # Bütün əməliyyatları göstər (həm gəlir, həm xərc)
             'context': {
+                'pivot_measures': ['amount'],
+                'search_default_group_by_transaction_type': 1,  # Əməliyyat növünə görə qruplaşdır
                 'search_default_group_by_category': 1,
                 'search_default_group_by_date': 1
             }
