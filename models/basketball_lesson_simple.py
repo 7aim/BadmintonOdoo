@@ -100,18 +100,45 @@ class BasketballLessonSimple(models.Model):
             if lesson.state == 'draft':
                 lesson.state = 'active'
                 lesson.payment_date = fields.Datetime.now()
+                
+                # Kassaya əməliyyatı əlavə et
+                self.env['volan.cash.flow'].create({
+                    'name': f"Basketbol dərs abunəliyi: {lesson.name}",
+                    'date': fields.Date.today(),
+                    'amount': lesson.lesson_fee,
+                    'transaction_type': 'income',
+                    'category': 'basketball_lesson',
+                    'partner_id': lesson.partner_id.id,
+                    'related_model': 'basketball.lesson.simple',
+                    'related_id': lesson.id,
+                    'notes': f"Abunəlik dövrü: {lesson.start_date} - {lesson.end_date}"
+                })
     
     def action_renew(self):
         """Abunəliyi 1 ay uzat və yenidən ödəniş qəbul et"""
         for lesson in self:
             if lesson.state == 'active':
                 # Başlama tarixi sabit qalır, yalnız end_date uzanır
+                old_end_date = lesson.end_date
                 lesson.end_date = lesson.end_date + timedelta(days=30)
                 lesson.total_months += 1
                 lesson.payment_date = fields.Datetime.now()
                 
                 # Yeni sequence nömrəsi ver (isteğe bağlı)
                 lesson.name = f"{lesson.name.split('-')[0]}-R{lesson.total_months}"
+                
+                # Kassaya əməliyyatı əlavə et
+                self.env['volan.cash.flow'].create({
+                    'name': f"Basketbol dərs yeniləməsi: {lesson.name}",
+                    'date': fields.Date.today(),
+                    'amount': lesson.lesson_fee,
+                    'transaction_type': 'income',
+                    'category': 'basketball_lesson',
+                    'partner_id': lesson.partner_id.id,
+                    'related_model': 'basketball.lesson.simple',
+                    'related_id': lesson.id,
+                    'notes': f"Abunəlik yeniləməsi: {old_end_date} - {lesson.end_date}"
+                })
     
     def action_complete(self):
         """Dərsi tamamla"""

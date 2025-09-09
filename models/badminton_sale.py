@@ -77,6 +77,19 @@ class BadmintonSale(models.Model):
                 sale.state = 'paid'
                 sale.payment_date = fields.Datetime.now()
                 
+                # Kassaya əməliyyatı əlavə et
+                self.env['volan.cash.flow'].create({
+                    'name': f"Badminton satışı: {sale.name}",
+                    'date': fields.Date.today(),
+                    'amount': sale.total_amount,
+                    'transaction_type': 'income',
+                    'category': 'badminton_sale',
+                    'partner_id': sale.partner_id.id,
+                    'related_model': 'badminton.sale',
+                    'related_id': sale.id,
+                    'notes': f"{sale.hours_quantity} saat, {sale.unit_price} AZN/saat"
+                })
+                
                 # Müştəri hesabına saatları əlavə et
                 sale._add_hours_to_customer()
                 sale.credited_hours = sale.hours_quantity

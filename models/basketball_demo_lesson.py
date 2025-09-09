@@ -22,8 +22,6 @@ class BasketballDemoLesson(models.Model):
     
     # Demo dərs məlumatları
     coach_id = fields.Many2one('res.partner', string="Məşqçi", domain=[('is_coach', '=', True)])
-    court_id = fields.Many2one('sport.branch', string="Kort/Meydança", domain=[('sport_type', '=', 'basketball')])
-    
     # Vəziyyət
     state = fields.Selection([
         ('draft', 'Planlaşdırılıb'),

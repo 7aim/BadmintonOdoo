@@ -22,3 +22,5 @@ access_basketball_demo_lesson,basketball.demo.lesson,model_basketball_demo_lesso
 access_badminton_sale,badminton.sale,model_badminton_sale,base.group_user,1,1,1,1
 access_badminton_attendance_check,badminton.attendance.check,model_badminton_attendance_check,base.group_user,1,1,1,1
 access_badminton_attendance_check_line,badminton.attendance.check.line,model_badminton_attendance_check_line,base.group_user,1,1,1,1
+access_volan_cash_flow,volan.cash.flow,model_volan_cash_flow,base.group_user,1,1,1,1
+access_volan_cash_balance,volan.cash.balance,model_volan_cash_balance,base.group_user,1,1,1,1

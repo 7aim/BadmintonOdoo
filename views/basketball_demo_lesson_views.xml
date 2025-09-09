@@ -12,7 +12,6 @@
                 <field name="date"/>
                 <field name="time" widget="float_time"/>
                 <field name="coach_id"/>
-                <field name="court_id"/>
                 <field name="attended"/>
                 <field name="converted"/>
                 <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'confirmed'" decoration-warning="state == 'draft'" decoration-danger="state == 'cancelled'"/>
@@ -53,7 +52,6 @@
                             <field name="time" widget="float_time"/>
                             <field name="duration" widget="float_time"/>
                             <field name="coach_id"/>
-                            <field name="court_id"/>
                         </group>
                     </group>
                     <notebook>
@@ -83,7 +81,6 @@
                 <field name="partner_id"/>
                 <field name="date"/>
                 <field name="coach_id"/>
-                <field name="court_id"/>
                 <filter string="Bugün" name="today" domain="[('date', '=', context_today().strftime('%Y-%m-%d'))]"/>
                 <filter string="Bu həftə" name="this_week" domain="[('date', '&gt;=', (context_today() + relativedelta(weeks=-1,days=1,weekday=0)).strftime('%Y-%m-%d')), ('date', '&lt;=', (context_today() + relativedelta(weekday=6)).strftime('%Y-%m-%d'))]"/>
                 <filter string="İştirak edilib" name="attended" domain="[('attended', '=', True)]"/>
@@ -96,7 +93,6 @@
                 <group expand="0" string="Qruplaşdır">
                     <filter string="Müştəri" name="partner_id" context="{'group_by':'partner_id'}"/>
                     <filter string="Məşqçi" name="coach_id" context="{'group_by':'coach_id'}"/>
-                    <filter string="Kort/Meydança" name="court_id" context="{'group_by':'court_id'}"/>
                     <filter string="Tarix" name="date" context="{'group_by':'date'}"/>
                     <filter string="Vəziyyət" name="state" context="{'group_by':'state'}"/>
                 </group>

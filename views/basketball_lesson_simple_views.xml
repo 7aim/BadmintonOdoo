@@ -38,7 +38,7 @@
                         <group>
                             <field name="partner_id" options="{'no_create': True}"/>
                             <field name="group_id" options="{'no_create': True}"/>
-                            <field name="lesson_fee" readonly="1"/>
+                            <field name="lesson_fee"/>
                         </group>
                         <group>
                             <field name="start_date" readonly="1"/>

@@ -1,5 +1,5 @@
 {
-    'name': '🏟️ Volan Sport Management System',
+    'name': 'Volan Yasamal',
     'version': '2.4.6',
     'summary': 'Badminton və Basketbol üçün tam idman idarəetmə sistemi',
 
@@ -27,6 +27,7 @@
         'views/qr_scanner_views.xml',
         'views/session_extend_wizard_views.xml',
         'views/badminton_attendance_check_views.xml',
+        'views/cash_views.xml',
         'views/menu_views.xml',
         'views/session_notification_views.xml',
     ],
