@@ -18,6 +18,7 @@
         'views/sport_system_views.xml',
         'views/badminton_session_views.xml',
         'views/badminton_sale_views.xml',
+        'views/badminton_lesson_freeze_views.xml',
         'views/badminton_lesson_simple_views.xml',
         'views/badminton_group_views.xml',
         'views/basketball_lesson_simple_views.xml',
@@ -27,8 +28,8 @@
         'views/qr_scanner_views.xml',
         'views/session_extend_wizard_views.xml',
         'views/badminton_attendance_check_views.xml',
-        'views/cash_views.xml',
         'views/menu_views.xml',
+        'views/cash_views.xml',
         'views/session_notification_views.xml',
     ],
     'assets': {

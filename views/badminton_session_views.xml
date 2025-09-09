@@ -27,11 +27,13 @@
                             <field name="partner_id"/>
                             <field name="start_time"/>
                             <field name="end_time"/>
+                            <field name="completion_time" readonly="1" invisible="[('state', '!=', 'completed')]"/>
                             <field name="qr_scanned" readonly="1"/>
                         </group>
                         <group>
                             <field name="duration_hours"/>
                             <field name="extended_time" readonly="1"/>
+                            <field name="recently_completed" invisible="1"/>
                         </group>
                     </group>
                     <notebook>
@@ -49,14 +51,19 @@
         <field name="name">badminton.session.list</field>
         <field name="model">badminton.session</field>
         <field name="arch" type="xml">
-            <list string="Badminton Sessiyaları" decoration-success="state=='completed'" 
-                  decoration-warning="state=='active'" decoration-info="state=='extended'">
+            <list string="Badminton Sessiyaları" 
+                  decoration-success="state=='completed' and not recently_completed" 
+                  decoration-warning="state=='active'" 
+                  decoration-info="state=='extended'"
+                  decoration-primary="recently_completed">
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="start_time"/>
                 <field name="end_time"/>
+                <field name="completion_time"/>
                 <field name="duration_hours"/>
                 <field name="state"/>
+                <field name="recently_completed" invisible="1"/>
             </list>
         </field>
     </record>

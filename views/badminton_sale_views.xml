@@ -28,10 +28,13 @@
                     <group>
                         <group>
                             <field name="partner_id" options="{'no_create': True}"/>
+                            <field name="customer_type"/>
+                            <field name="package_type"/>
                             <field name="sale_date"/>
                             <field name="expiry_date" readonly="1"/>
                         </group>
                         <group>
+                            <field name="is_package" invisible="1"/>
                             <field name="hours_quantity"/>
                             <field name="unit_price"/>
                             <field name="total_amount" readonly="1"/>
@@ -62,9 +65,12 @@
             <list string="Badminton Satışları" decoration-success="state=='paid'" decoration-info="state=='confirmed'" decoration-muted="state=='cancelled'">
                 <field name="name"/>
                 <field name="partner_id"/>
+                <field name="customer_type"/>
+                <field name="package_type"/>
                 <field name="hours_quantity"/>
                 <field name="total_amount"/>
                 <field name="sale_date"/>
+                <field name="expiry_date"/>
                 <field name="state"/>
             </list>
         </field>
@@ -78,8 +84,19 @@
             <search string="Badminton Satışları">
                 <field name="name"/>
                 <field name="partner_id"/>
+                <field name="customer_type"/>
+                <field name="package_type"/>
+                <separator/>
+                <filter string="Uşaq" name="child" domain="[('customer_type','=','child')]"/>
+                <filter string="Böyük" name="adult" domain="[('customer_type','=','adult')]"/>
+                <separator/>
+                <filter string="Tək Saat" name="single" domain="[('package_type','=','single')]"/>
+                <filter string="8 Giriş Paketi" name="package_8" domain="[('package_type','=','package_8')]"/>
+                <filter string="12 Giriş Paketi" name="package_12" domain="[('package_type','=','package_12')]"/>
                 <group expand="0" string="Qrupla">
                     <filter name="group_by_partner" string="Müştəri" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_by_customer_type" string="Müştəri Növü" context="{'group_by': 'customer_type'}"/>
+                    <filter name="group_by_package_type" string="Paket Növü" context="{'group_by': 'package_type'}"/>
                     <filter name="group_by_state" string="Vəziyyət" context="{'group_by': 'state'}"/>
                     <filter name="group_by_date" string="Tarix" context="{'group_by': 'sale_date'}"/>
                 </group>

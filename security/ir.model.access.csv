@@ -24,3 +24,5 @@ access_badminton_attendance_check,badminton.attendance.check,model_badminton_att
 access_badminton_attendance_check_line,badminton.attendance.check.line,model_badminton_attendance_check_line,base.group_user,1,1,1,1
 access_volan_cash_flow,volan.cash.flow,model_volan_cash_flow,base.group_user,1,1,1,1
 access_volan_cash_balance,volan.cash.balance,model_volan_cash_balance,base.group_user,1,1,1,1
+access_badminton_lesson_freeze,badminton.lesson.freeze,model_badminton_lesson_freeze,base.group_user,1,1,1,1
+access_badminton_lesson_freeze_wizard,badminton.lesson.freeze.wizard,model_badminton_lesson_freeze_wizard,base.group_user,1,1,1,1

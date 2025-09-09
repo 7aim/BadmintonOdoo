@@ -11,6 +11,20 @@ class BadmintonSale(models.Model):
     name = fields.Char(string="Satış Nömrəsi", readonly=True, default="Yeni")
     partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
     
+    # Müştəri növü və paket
+    customer_type = fields.Selection([
+        ('child', 'Uşaq'),
+        ('adult', 'Böyük')
+    ], string="Müştəri Növü", required=True, default='adult')
+    
+    package_type = fields.Selection([
+        ('single', 'Tək Saat'),
+        ('package_8', '8 Giriş (Aylıq)'),
+        ('package_12', '12 Giriş (Aylıq)')
+    ], string="Paket Növü", required=True, default='single')
+    
+    is_package = fields.Boolean(string="Paketdir", compute='_compute_is_package', store=True)
+    
     # Satış məlumatları
     hours_quantity = fields.Integer(string="Saat Sayı", required=True, default=1)
     unit_price = fields.Float(string="Saatlıq Qiymət", default=8, store=True)
@@ -39,16 +53,64 @@ class BadmintonSale(models.Model):
     @api.depends('hours_quantity', 'unit_price')
     def _compute_total_amount(self):
         for sale in self:
-            sale.total_amount = sale.hours_quantity * sale.unit_price
+            if sale.customer_type == 'child':  # Uşaqlar üçün
+                if sale.package_type == 'single':
+                    sale.total_amount = sale.hours_quantity * sale.unit_price
+                elif sale.package_type == 'package_8':
+                    sale.total_amount = 75.0  # 8 giriş paketi: 75 AZN
+                elif sale.package_type == 'package_12':
+                    sale.total_amount = 105.0  # 12 giriş paketi: 105 AZN
+            else:  # Böyüklər üçün
+                if sale.package_type == 'single':
+                    sale.total_amount = sale.hours_quantity * sale.unit_price
+                elif sale.package_type == 'package_8':
+                    sale.total_amount = 55.0  # 8 giriş paketi: 55 AZN
+                elif sale.package_type == 'package_12':
+                    sale.total_amount = 85.0  # 12 giriş paketi: 85 AZN
     
-    @api.depends('sale_date')
+    @api.depends('sale_date', 'package_type')
     def _compute_expiry_date(self):
         for sale in self:
             if sale.sale_date:
-                # Badminton saatları 6 ay ərzində istifadə edilməlidir
-                sale.expiry_date = sale.sale_date + timedelta(days=180)
+                # Paketlərə görə son istifadə tarixini müəyyən et
+                if sale.package_type in ['package_8', 'package_12']:
+                    # Aylıq paketlər üçün 30 gün
+                    sale.expiry_date = sale.sale_date + timedelta(days=30)
+                else:
+                    # Tək saatlar üçün 6 ay
+                    sale.expiry_date = sale.sale_date + timedelta(days=180)
             else:
                 sale.expiry_date = False
+    
+    @api.depends('package_type')
+    def _compute_is_package(self):
+        """Seçilən paket növündən asılı olaraq is_package sahəsini təyin et"""
+        for sale in self:
+            sale.is_package = sale.package_type in ['package_8', 'package_12']
+    
+    @api.onchange('customer_type', 'package_type')
+    def _onchange_customer_package_type(self):
+        """Müştəri növü və ya paket növü dəyişəndə qiymətləri yenilə"""
+        if self.customer_type == 'child':  # Uşaqlar üçün
+            if self.package_type == 'single':
+                self.unit_price = 15.0
+                self.hours_quantity = 1
+            elif self.package_type == 'package_8':
+                self.unit_price = 9.375
+                self.hours_quantity = 8
+            elif self.package_type == 'package_12':
+                self.unit_price = 8.75
+                self.hours_quantity = 12
+        else:  # Böyüklər üçün
+            if self.package_type == 'single':
+                self.unit_price = 8.0
+                self.hours_quantity = 1
+            elif self.package_type == 'package_8':
+                self.unit_price = 6.875
+                self.hours_quantity = 8
+            elif self.package_type == 'package_12':
+                self.unit_price = 7.083
+                self.hours_quantity = 12
     
     @api.model
     def create(self, vals):

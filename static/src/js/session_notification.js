@@ -351,6 +351,7 @@ odoo.define('volan_yasamal.session_notification', function (require) {
         }
     });
     
+    // Register the client action with the action registry
     core.action_registry.add('session_notification', SessionNotification);
     
     return SessionNotification;

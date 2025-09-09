@@ -28,6 +28,8 @@ class BadmintonSession(models.Model):
     extended_time = fields.Float(string="Əlavə Vaxt (saat)", default=0.0)
     notes = fields.Text(string="Qeydlər")
     time_expired = fields.Boolean(string="Vaxt Bitib", compute="_compute_time_expired", store=False)
+    completion_time = fields.Datetime(string="Tamamlanma Vaxtı")
+    recently_completed = fields.Boolean(string="Son Tamamlanan", compute="_compute_recently_completed", store=True)
 
     @api.depends('end_time', 'state')
     def _compute_time_expired(self):

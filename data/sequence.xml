@@ -29,6 +29,16 @@
         <field name="number_next">1</field>
         <field name="number_increment">1</field>
     </record>
+    
+    <!-- Badminton Lesson Freeze Sequence -->
+    <record id="seq_badminton_lesson_freeze" model="ir.sequence">
+        <field name="name">Badminton Lesson Freeze Sequence</field>
+        <field name="code">badminton.lesson.freeze</field>
+        <field name="prefix">FRZ</field>
+        <field name="padding">3</field>
+        <field name="number_next">1</field>
+        <field name="number_increment">1</field>
+    </record>
 
     <!-- Badminton Sale Sequence -->
     <record id="seq_badminton_sale" model="ir.sequence">

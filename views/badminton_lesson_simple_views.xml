@@ -87,6 +87,26 @@
                                 </list>
                             </field>
                         </page>
+                        <page string="Dondurma Tarixçəsi">
+                            <field name="freeze_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="freeze_start_date"/>
+                                    <field name="freeze_end_date"/>
+                                    <field name="freeze_days"/>
+                                    <field name="state"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
+                            <group class="mt-3">
+                                <group>
+                                    <field name="total_freeze_days"/>
+                                </group>
+                                <group>
+                                    <field name="current_freeze_id" readonly="1"/>
+                                </group>
+                            </group>
+                        </page>
                         <page string="Qeydlər">
                             <field name="notes" nolabel="1"/>
                         </page>
@@ -108,10 +128,11 @@
                 <field name="group_id"/>
                 <field name="lesson_fee"/>
                 <field name="total_months"/>
-                <field name="total_payments"/>
                 <field name="start_date"/>
                 <field name="end_date"/>
                 <field name="total_attendances"/>
+                <field name="total_freeze_days"/>
+                <field name="current_freeze_id"/>
                 <field name="state"/>
             </list>
         </field>
