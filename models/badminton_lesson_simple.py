@@ -248,7 +248,6 @@ class BadmintonLessonScheduleSimple(models.Model):
             if schedule.end_time < 0 or schedule.end_time > 24:
                 raise ValidationError("Bitmə vaxtı 0-24 aralığında olmalıdır!")
 
-
 class BadmintonLessonAttendanceSimple(models.Model):
     _name = 'badminton.lesson.attendance.simple'
     _description = 'Badminton Dərs İştirakı (Sadə)'

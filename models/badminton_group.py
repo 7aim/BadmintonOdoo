@@ -66,3 +66,25 @@ class BadmintonGroupSchedule(models.Model):
                 raise ValidationError("Başlama vaxtı 0-24 aralığında olmalıdır!")
             if schedule.end_time < 0 or schedule.end_time > 24:
                 raise ValidationError("Bitmə vaxtı 0-24 aralığında olmalıdır!")
+            
+    def name_get(self):
+        result = []
+        days = {
+            '0': 'Bazar ertəsi',
+            '1': 'Çərşənbə axşamı',
+            '2': 'Çərşənbə',
+            '3': 'Cümə axşamı',
+            '4': 'Cümə',
+            '5': 'Şənbə',
+            '6': 'Bazar'
+        }
+
+        for record in self:
+            start_hour = int(record.start_time)
+            start_minute = int((record.start_time - start_hour) * 60)
+            end_hour = int(record.end_time)
+            end_minute = int((record.end_time - end_hour) * 60)
+
+            name = f"{days.get(record.day_of_week, 'Naməlum')} {start_hour:02d}:{start_minute:02d} - {end_hour:02d}:{end_minute:02d}"
+            result.append((record.id, name))
+        return result

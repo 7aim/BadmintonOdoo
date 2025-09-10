@@ -40,6 +40,30 @@ class BadmintonSession(models.Model):
                 session.time_expired = now > session.end_time
             else:
                 session.time_expired = False
+                
+    @api.model
+    def _auto_complete_expired_sessions(self):
+        """
+        Vaxtı bitmiş sessiyaları avtomatik tamamla
+        Bu metod cron job vasitəsilə təyin olunmuş vaxtlarda çağrılacaq
+        """
+        now = fields.Datetime.now()
+        
+        # Vaxtı bitmiş aktiv sessiyaları tapırıq
+        expired_sessions = self.search([
+            ('state', 'in', ['active', 'extended']),
+            ('end_time', '<', now)
+        ])
+        
+        # Hər bir vaxtı keçmiş sessiya üçün
+        for session in expired_sessions:
+            # Sessiyani tamamla
+            session.write({
+                'state': 'completed',
+                'completion_time': now
+            })
+            
+        return True
     
     @api.model
     def create(self, vals):

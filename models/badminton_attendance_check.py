@@ -32,7 +32,7 @@ class BadmintonAttendanceCheck(models.Model):
     
     # Qeydlər
     notes = fields.Text(string="Qeydlər")
-    
+
     @api.model
     def create(self, vals):
         if vals.get('name', 'Yeni') == 'Yeni':
