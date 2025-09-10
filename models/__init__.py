@@ -5,6 +5,8 @@ from . import badminton_group
 from . import basketball_group
 from . import badminton_lesson_freeze
 from . import badminton_lesson_freeze_wizard
+from . import basketball_lesson_freeze
+from . import basketball_lesson_freeze_wizard
 from . import badminton_lesson_simple
 from . import basketball_lesson_simple
 from . import basketball_demo_lesson

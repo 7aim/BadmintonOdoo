@@ -3,7 +3,7 @@
     'version': '2.4.6',
     'summary': 'Badminton və Basketbol üçün tam idman idarəetmə sistemi',
 
-    'author': 'Volan Sport Center',
+    'author': 'Aim',
     'website': 'https://github.com/7aim/BadmintonOdoo',
     'category': 'Services/Sport Management',
     'license': 'LGPL-3',
@@ -21,6 +21,7 @@
         'views/badminton_lesson_freeze_views.xml',
         'views/badminton_lesson_simple_views.xml',
         'views/badminton_group_views.xml',
+        'views/basketball_lesson_freeze_views.xml',
         'views/basketball_lesson_simple_views.xml',
         'views/basketball_group_views.xml',
         'views/basketball_demo_lesson_views.xml',

@@ -20,9 +20,12 @@ access_sport_membership,sport.membership,model_sport_membership,base.group_user,
 access_sport_attendance,sport.attendance,model_sport_attendance,base.group_user,1,1,1,1
 access_basketball_demo_lesson,basketball.demo.lesson,model_basketball_demo_lesson,base.group_user,1,1,1,1
 access_badminton_sale,badminton.sale,model_badminton_sale,base.group_user,1,1,1,1
+access_badminton_sale_wizard,badminton.sale.wizard,model_badminton_sale_wizard,base.group_user,1,1,1,1
 access_badminton_attendance_check,badminton.attendance.check,model_badminton_attendance_check,base.group_user,1,1,1,1
 access_badminton_attendance_check_line,badminton.attendance.check.line,model_badminton_attendance_check_line,base.group_user,1,1,1,1
 access_volan_cash_flow,volan.cash.flow,model_volan_cash_flow,base.group_user,1,1,1,1
 access_volan_cash_balance,volan.cash.balance,model_volan_cash_balance,base.group_user,1,1,1,1
 access_badminton_lesson_freeze,badminton.lesson.freeze,model_badminton_lesson_freeze,base.group_user,1,1,1,1
 access_badminton_lesson_freeze_wizard,badminton.lesson.freeze.wizard,model_badminton_lesson_freeze_wizard,base.group_user,1,1,1,1
+access_basketball_lesson_freeze,basketball.lesson.freeze,model_basketball_lesson_freeze,base.group_user,1,1,1,1
+access_basketball_lesson_freeze_wizard,basketball.lesson.freeze.wizard,model_basketball_lesson_freeze_wizard,base.group_user,1,1,1,1

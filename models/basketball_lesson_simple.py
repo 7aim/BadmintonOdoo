@@ -30,6 +30,11 @@ class BasketballLessonSimple(models.Model):
     total_months = fields.Integer(string="Ümumi Abunəlik (ay)", default=1)
     total_payments = fields.Float(string="Ümumi Ödəniş", compute='_compute_total_payments')
     
+    # Dondurma məlumatları
+    freeze_ids = fields.One2many('basketball.lesson.freeze', 'lesson_id', string="Dondurma Tarixçəsi")
+    total_freeze_days = fields.Integer(string="Ümumi Donma Günləri", compute='_compute_total_freeze_days', store=True)
+    current_freeze_id = fields.Many2one('basketball.lesson.freeze', string="Cari Dondurma", compute='_compute_current_freeze', store=True)
+    
     # Vəziyyət
     state = fields.Selection([
         ('draft', 'Layihə'),
@@ -63,6 +68,26 @@ class BasketballLessonSimple(models.Model):
     @api.depends('attendance_ids')
     def _compute_total_attendances(self):
         for lesson in self:
+            lesson.total_attendances = len(lesson.attendance_ids)
+            
+    @api.depends('freeze_ids.freeze_days', 'freeze_ids.state')
+    def _compute_total_freeze_days(self):
+        for lesson in self:
+            total_days = 0
+            for freeze in lesson.freeze_ids.filtered(lambda f: f.state in ['active', 'completed']):
+                total_days += freeze.freeze_days
+            lesson.total_freeze_days = total_days
+            
+    @api.depends('freeze_ids.state', 'freeze_ids.freeze_start_date', 'freeze_ids.freeze_end_date')
+    def _compute_current_freeze(self):
+        today = fields.Date.today()
+        for lesson in self:
+            current_freeze = lesson.freeze_ids.filtered(lambda f: 
+                f.state == 'active' and 
+                f.freeze_start_date <= today and 
+                f.freeze_end_date >= today
+            )
+            lesson.current_freeze_id = current_freeze[0].id if current_freeze else False
             lesson.total_attendances = len(lesson.attendance_ids)
 
     @api.onchange('group_id')
@@ -147,15 +172,34 @@ class BasketballLessonSimple(models.Model):
                 lesson.state = 'completed'
     
     def action_freeze(self):
-        """Abunəliyi dondur"""
+        """Abunəliyi dondur - Wizard aç"""
         for lesson in self:
             if lesson.state == 'active':
-                lesson.state = 'frozen'
+                return {
+                    'name': 'Basketbol Abunəliyi Dondur',
+                    'type': 'ir.actions.act_window',
+                    'res_model': 'basketball.lesson.freeze.wizard',
+                    'view_mode': 'form',
+                    'target': 'new',
+                    'context': {
+                        'default_lesson_id': lesson.id,
+                        'default_partner_id': lesson.partner_id.id,
+                        'default_freeze_start_date': fields.Date.today(),
+                        'default_freeze_end_date': fields.Date.today() + timedelta(days=7),  # Default 1 week
+                    }
+                }
     
     def action_unfreeze(self):
         """Abunəliyi aktiv et"""
         for lesson in self:
-            if lesson.state == 'frozen':
+            if lesson.state == 'frozen' and lesson.current_freeze_id:
+                # Cari dondurmanı tamamlandı kimi işarələ
+                lesson.current_freeze_id.action_complete()
+                # Yeni end_date hesabla - donma günləri qədər uzat
+                if lesson.end_date:
+                    freeze_days = lesson.current_freeze_id.freeze_days
+                    lesson.end_date = lesson.end_date + timedelta(days=freeze_days)
+                # Abunəliyi aktiv et
                 lesson.state = 'active'
     
     def action_cancel(self):
