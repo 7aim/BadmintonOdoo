@@ -29,8 +29,8 @@
                             <field name="check_date"/>
                         </group>
                         <group>
-                            <field name="schedule_id"/>
-                            <field name="day_of_week"/>
+                            <field name="schedule_id" options="{'no_create': True, 'no_create_edit': True}"/>
+                            <field name="day_of_week" invisible="1"/>
                             <field name="attendee_count"/>
                             <field name="present_count"/>
                         </group>
@@ -58,7 +58,7 @@
                 <field name="coach_id"/>
                 <field name="group_id"/>
                 <field name="check_date"/>
-                <field name="day_of_week"/>
+                <field name="schedule_id"/>
                 <field name="attendee_count"/>
                 <field name="present_count"/>
                 <field name="state"/>

@@ -68,23 +68,15 @@ class BadmintonGroupSchedule(models.Model):
                 raise ValidationError("Bitmə vaxtı 0-24 aralığında olmalıdır!")
             
     def name_get(self):
+        """Dərs vaxtını daha anlaşıqlı formada göstər"""
         result = []
-        days = {
-            '0': 'Bazar ertəsi',
-            '1': 'Çərşənbə axşamı',
-            '2': 'Çərşənbə',
-            '3': 'Cümə axşamı',
-            '4': 'Cümə',
-            '5': 'Şənbə',
-            '6': 'Bazar'
-        }
-
-        for record in self:
-            start_hour = int(record.start_time)
-            start_minute = int((record.start_time - start_hour) * 60)
-            end_hour = int(record.end_time)
-            end_minute = int((record.end_time - end_hour) * 60)
-
-            name = f"{days.get(record.day_of_week, 'Naməlum')} {start_hour:02d}:{start_minute:02d} - {end_hour:02d}:{end_minute:02d}"
-            result.append((record.id, name))
+        day_names = dict(self._fields['day_of_week'].selection)
+        for schedule in self:
+            start_hours = int(schedule.start_time)
+            start_minutes = int((schedule.start_time - start_hours) * 60)
+            end_hours = int(schedule.end_time)
+            end_minutes = int((schedule.end_time - end_hours) * 60)
+            
+            formatted_time = f"{day_names[schedule.day_of_week]} {start_hours:02d}:{start_minutes:02d}-{end_hours:02d}:{end_minutes:02d}"
+            result.append((schedule.id, formatted_time))
         return result

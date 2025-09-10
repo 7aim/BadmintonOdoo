@@ -247,6 +247,63 @@ class CashBalance(models.TransientModel):
             }
         }
         return action
+        
+    def _open_cash_flow_view(self, title, domain):
+        """Filtrələnmiş kassa əməliyyatı siyahısını göstərir"""
+        self.ensure_one()
+        action = {
+            'name': title,
+            'type': 'ir.actions.act_window',
+            'res_model': 'volan.cash.flow',
+            'view_mode': 'list,form',
+            'domain': domain,
+            'context': {'create': False}
+        }
+        return action
+        
+    def show_badminton_sales(self):
+        """Badminton satışlarını göstərir"""
+        self.ensure_one()
+        domain = self._get_date_domain() + [
+            ('category', '=', 'badminton_sale'),
+            ('transaction_type', '=', 'income')
+        ]
+        return self._open_cash_flow_view('Badminton Satışları', domain)
+        
+    def show_badminton_lessons(self):
+        """Badminton dərs gəlirlərini göstərir"""
+        self.ensure_one()
+        domain = self._get_date_domain() + [
+            ('category', '=', 'badminton_lesson'),
+            ('transaction_type', '=', 'income')
+        ]
+        return self._open_cash_flow_view('Badminton Dərs Gəlirləri', domain)
+        
+    def show_basketball_lessons(self):
+        """Basketbol dərs gəlirlərini göstərir"""
+        self.ensure_one()
+        domain = self._get_date_domain() + [
+            ('category', '=', 'basketball_lesson'),
+            ('transaction_type', '=', 'income')
+        ]
+        return self._open_cash_flow_view('Basketbol Dərs Gəlirləri', domain)
+        
+    def show_other_income(self):
+        """Digər gəlirləri göstərir"""
+        self.ensure_one()
+        domain = self._get_date_domain() + [
+            ('category', '=', 'other'),
+            ('transaction_type', '=', 'income')
+        ]
+        return self._open_cash_flow_view('Digər Gəlirlər', domain)
+        
+    def show_expenses(self):
+        """Xərcləri göstərir"""
+        self.ensure_one()
+        domain = self._get_date_domain() + [
+            ('transaction_type', '=', 'expense')
+        ]
+        return self._open_cash_flow_view('Xərclər', domain)
 
     @api.onchange('date_filter', 'date_from', 'date_to')
     def _onchange_date_filter(self):

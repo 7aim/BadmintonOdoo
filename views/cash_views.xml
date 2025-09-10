@@ -128,14 +128,24 @@
                         </group>
                     </group>
                     <group string="Gəlir Məlumatları">
-                        <field name="badminton_sales_income" widget="monetary"/>
-                        <field name="badminton_lessons_income" widget="monetary"/>
-                        <field name="basketball_lessons_income" widget="monetary"/>
-                        <field name="other_income" widget="monetary"/>
+                        <button name="show_badminton_sales" type="object" class="oe_stat_button">
+                            <field name="badminton_sales_income" widget="monetary" nolabel="1"/>🏸 Badminton Satışları
+                        </button>
+                        <button name="show_badminton_lessons" type="object" class="oe_stat_button">
+                            <field name="badminton_lessons_income" widget="monetary" nolabel="1"/> 📚 Badminton Dərs Abunəlikləri
+                        </button>
+                        <button name="show_basketball_lessons" type="object" class="oe_stat_button">
+                            <field name="basketball_lessons_income" widget="monetary" nolabel="1"/> 🏀 Basketbol Dərs Abunəlikləri
+                        </button>
+                        <button name="show_other_income" type="object" class="oe_stat_button">
+                            <field name="other_income" widget="monetary" nolabel="1"/> 💰 Digər Gəlirlər
+                        </button>
                     </group>
                     <group string="Ümumi Məlumatlar">
                         <field name="total_income" widget="monetary" style="color: green;"/>
-                        <field name="total_expenses" widget="monetary" style="color: red;"/>
+                        <button name="show_expenses" type="object" class="oe_stat_button">
+                            <field name="total_expenses" widget="monetary" nolabel="1" style="color: red;"/> 📉 Xərclər
+                        </button>
                         <field name="current_balance" widget="monetary" class="oe_subtotal_footer_separator" style="font-weight: bold;"/>
                     </group>
                 </sheet>

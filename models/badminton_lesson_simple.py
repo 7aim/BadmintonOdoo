@@ -238,6 +238,20 @@ class BadmintonLessonScheduleSimple(models.Model):
     # Qeydlər
     notes = fields.Text(string="Qeydlər")
     
+    def name_get(self):
+        """Dərs vaxtını daha anlaşıqlı formada göstər"""
+        result = []
+        day_names = dict(self._fields['day_of_week'].selection)
+        for schedule in self:
+            start_hours = int(schedule.start_time)
+            start_minutes = int((schedule.start_time - start_hours) * 60)
+            end_hours = int(schedule.end_time)
+            end_minutes = int((schedule.end_time - end_hours) * 60)
+            
+            formatted_time = f"{day_names[schedule.day_of_week]} {start_hours:02d}:{start_minutes:02d}-{end_hours:02d}:{end_minutes:02d}"
+            result.append((schedule.id, formatted_time))
+        return result
+    
     @api.constrains('start_time', 'end_time')
     def _check_time_range(self):
         for schedule in self:
