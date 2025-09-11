@@ -119,8 +119,22 @@ class BadmintonSale(models.Model):
         
         sale = super(BadmintonSale, self).create(vals)
         
-        # Əgər satış 'paid' vəziyyətində yaradılırsa, dərhal balansı artır
+        # Əgər satış 'paid' vəziyyətində yaradılırsa, dərhal balansı artır və kassaya əlavə et
         if sale.state == 'paid':
+            # Kassaya əməliyyatı əlavə et
+            self.env['volan.cash.flow'].create({
+                'name': f"Badminton satışı: {sale.name}",
+                'date': fields.Date.today(),
+                'amount': sale.total_amount,
+                'transaction_type': 'income',
+                'category': 'badminton_sale',
+                'partner_id': sale.partner_id.id,
+                'related_model': 'badminton.sale',
+                'related_id': sale.id,
+                'notes': f"{sale.hours_quantity} saat, {sale.unit_price} AZN/saat"
+            })
+            
+            # Müştəri hesabına saatları əlavə et
             sale._add_hours_to_customer()
             sale.credited_hours = sale.hours_quantity
             
