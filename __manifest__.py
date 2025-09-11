@@ -30,16 +30,13 @@
         'views/qr_scanner_views.xml',
         'views/session_extend_wizard_views.xml',
         'views/badminton_attendance_check_views.xml',
+        'views/badminton_session_filter_views.xml',
         'views/menu_views.xml',
         'views/cash_views.xml',
-        'views/session_notification_views.xml',
     ],
     'assets': {
         'web.assets_backend': [
             'volan_yasamal/static/src/css/style.css',
-            'volan_yasamal/static/src/css/session_notification.css',
-            'volan_yasamal/static/src/js/session_notification.js',
-            'volan_yasamal/static/src/xml/session_notification.xml',
         ],
     },
     'demo': [],

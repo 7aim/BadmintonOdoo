@@ -29,3 +29,4 @@ access_badminton_lesson_freeze,badminton.lesson.freeze,model_badminton_lesson_fr
 access_badminton_lesson_freeze_wizard,badminton.lesson.freeze.wizard,model_badminton_lesson_freeze_wizard,base.group_user,1,1,1,1
 access_basketball_lesson_freeze,basketball.lesson.freeze,model_basketball_lesson_freeze,base.group_user,1,1,1,1
 access_basketball_lesson_freeze_wizard,basketball.lesson.freeze.wizard,model_basketball_lesson_freeze_wizard,base.group_user,1,1,1,1
+access_badminton_session_filter,badminton.session.filter,model_badminton_session_filter,base.group_user,1,1,1,1

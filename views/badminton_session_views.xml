@@ -56,6 +56,9 @@
                   decoration-warning="state=='active'" 
                   decoration-info="state=='extended'"
                   decoration-primary="recently_completed">
+                <header>
+                    <button name="%(action_badminton_session_filter)d" string="📅 Tarixə görə filtrlə" type="action" class="btn btn-primary"/>
+                </header>
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="start_time"/>
