@@ -29,17 +29,15 @@
                             <field name="date"/>
                             <field name="name"/>
                             <field name="transaction_type"/>
-                            <field name="category"/>
+                            <field name="category" invisible="transaction_type != 'income'"/>
                         </group>
                         <group>
                             <field name="amount"/>
                             <field name="partner_id"/>
-                            <field name="related_model" readonly="1" groups="base.group_system"/>
-                            <field name="related_id" readonly="1" groups="base.group_system"/>
+                            <field name="notes" placeholder="Əlavə qeydlər..."/>
+                            <!--<field name="related_model" readonly="1" groups="base.group_system"/>
+                            <field name="related_id" readonly="1" groups="base.group_system"/>-->
                         </group>
-                    </group>
-                    <group>
-                        <field name="notes" placeholder="Əlavə qeydlər..."/>
                     </group>
                 </sheet>
             </form>
