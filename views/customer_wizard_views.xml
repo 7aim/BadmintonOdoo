@@ -44,19 +44,18 @@
                 <group>
                     <group string="Müştəri Məlumatları">
                         <field name="partner_id" options="{'no_create': True}" required="1"/>
+                        <field name="customer_type"/>
                         <field name="current_balance" readonly="1" style="font-weight: bold; color: #007bff;"/>
                     </group>
                     <group string="Satış Məlumatları">
-                        <field name="customer_type"/>
                         <field name="package_type"/>
-                        <field name="hours_quantity" invisible="package_type != 'single'"/>
-                        <field name="unit_price" readonly="1"/>
+                        <field name="hours_quantity" readonly="package_type != 'single'"/>
+                        <!--field name="unit_price" readonly="1"/>-->
                         <field name="total_amount" readonly="1" style="font-weight: bold; color: #28a745;"/>
                     </group>
                 </group>
                 <footer>
-                    <button name="action_create_sale" type="object" string="Satışı Tamamla" class="btn-primary"
-                            confirm="Bu satışı tamamlamaq istədiyinizə əminsiniz?"/>
+                    <button name="action_create_sale" type="object" string="Satışı Tamamla" class="btn-primary"/>
                     <button string="Ləğv Et" class="btn-secondary" special="cancel"/>
                 </footer>
             </form>
