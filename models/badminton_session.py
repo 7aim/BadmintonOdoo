@@ -382,3 +382,4 @@ class BadmintonSession(models.Model):
         return {
             'sessions': sessions_data
         }
+    

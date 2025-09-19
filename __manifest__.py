@@ -12,7 +12,8 @@
     ],
     'depends': ['base', 'contacts', 'mail'],
     'data': [
-        'security/ir.model.access.csv',
+        #'security/security.xml',
+        #'security/ir.model.access.csv',
         'data/sequence.xml',
         'data/cron_jobs.xml',
         'views/res_partner_views.xml',
@@ -26,6 +27,7 @@
         'views/basketball_lesson_freeze_views.xml',
         'views/basketball_lesson_simple_views.xml',
         'views/basketball_group_views.xml',
+        'views/basketball_attendance_check_views.xml',
         'views/basketball_demo_lesson_views.xml',
         'views/customer_wizard_views.xml',
         'views/qr_scanner_views.xml',

@@ -3,23 +3,23 @@ from odoo import models, fields, api
 from datetime import datetime, date
 from odoo.exceptions import ValidationError
 
-class BadmintonAttendanceCheck(models.Model):
-    _name = 'badminton.attendance.check'
-    _description = 'Badminton Dərs İştirakı Yoxlaması'
+class BasketballAttendanceCheck(models.Model):
+    _name = 'basketball.attendance.check'
+    _description = 'Basketbol Dərs İştirakı Yoxlaması'
     _order = 'check_date desc'
     
     name = fields.Char(string="Yoxlama Adı", readonly=True, default="Yeni")
     coach_id = fields.Many2one('res.partner', string="Məşqçi", required=True, domain=[('is_coach', '=', True)])
-    group_id = fields.Many2one('badminton.group', string="Qrup", required=True)
+    group_id = fields.Many2one('basketball.group', string="Qrup", required=True)
     
     # Yoxlama təfərrüatları
     check_date = fields.Date(string="Yoxlama Tarixi", required=True, default=fields.Date.today)
-    schedule_id = fields.Many2one('badminton.group.schedule', string="Dərs Vaxtı", required=True,
+    schedule_id = fields.Many2one('basketball.group.schedule', string="Dərs Vaxtı", required=True,
                                   domain="[('group_id', '=', group_id)]")
     day_of_week = fields.Selection(related='schedule_id.day_of_week', string="Həftənin Günü", store=True, readonly=True)
     
     # İştirakçılar
-    attendee_ids = fields.One2many('badminton.attendance.check.line', 'attendance_check_id', string="İştirakçılar")
+    attendee_ids = fields.One2many('basketball.attendance.check.line', 'attendance_check_id', string="İştirakçılar")
     attendee_count = fields.Integer(string="İştirakçı Sayı", compute='_compute_attendee_count')
     present_count = fields.Integer(string="İştirak Edənlərin Sayı", compute='_compute_present_count')
     
@@ -36,8 +36,8 @@ class BadmintonAttendanceCheck(models.Model):
     @api.model
     def create(self, vals):
         if vals.get('name', 'Yeni') == 'Yeni':
-            vals['name'] = self.env['ir.sequence'].next_by_code('badminton.attendance.check') or 'BAC001'
-        return super(BadmintonAttendanceCheck, self).create(vals)
+            vals['name'] = self.env['ir.sequence'].next_by_code('basketball.attendance.check') or 'BBAC001'
+        return super(BasketballAttendanceCheck, self).create(vals)
     
     @api.depends('attendee_ids')
     def _compute_attendee_count(self):
@@ -63,7 +63,7 @@ class BadmintonAttendanceCheck(models.Model):
             self.attendee_ids = [(5, 0, 0)]
             
             # Qrupun aktiv üzvlərini əldə et
-            members = self.env['badminton.lesson.simple'].search([
+            members = self.env['basketball.lesson.simple'].search([
                 ('group_id', '=', self.group_id.id),
                 ('state', 'in', ['active', 'frozen'])
             ])
@@ -99,7 +99,7 @@ class BadmintonAttendanceCheck(models.Model):
                         
                         if schedule:
                             # İştiraklara əlavə et
-                            self.env['badminton.lesson.attendance.simple'].create({
+                            self.env['basketball.lesson.attendance.simple'].create({
                                 'lesson_id': attendee.lesson_id.id,
                                 'schedule_id': schedule[0].id,
                                 'attendance_date': check.check_date,
@@ -121,14 +121,14 @@ class BadmintonAttendanceCheck(models.Model):
             check.state = 'draft'
 
 
-class BadmintonAttendanceCheckLine(models.Model):
-    _name = 'badminton.attendance.check.line'
-    _description = 'Badminton Dərs İştirakı Yoxlaması Sətri'
+class BasketballAttendanceCheckLine(models.Model):
+    _name = 'basketball.attendance.check.line'
+    _description = 'Basketbol Dərs İştirakı Yoxlaması Sətri'
     
-    attendance_check_id = fields.Many2one('badminton.attendance.check', string="İştirak Yoxlaması", 
+    attendance_check_id = fields.Many2one('basketball.attendance.check', string="İştirak Yoxlaması", 
                                          required=True, ondelete='cascade')
     partner_id = fields.Many2one('res.partner', string="İştirakçı", required=True)
-    lesson_id = fields.Many2one('badminton.lesson.simple', string="Abunəlik", required=True,
+    lesson_id = fields.Many2one('basketball.lesson.simple', string="Abunəlik", required=True,
                                domain="[('partner_id', '=', partner_id), ('state', 'in', ['active', 'frozen'])]")
     
     # İştirak statusu
@@ -150,7 +150,7 @@ class BadmintonAttendanceCheckLine(models.Model):
             if self.attendance_check_id.group_id:
                 domain.append(('group_id', '=', self.attendance_check_id.group_id.id))
                 
-            lessons = self.env['badminton.lesson.simple'].search(domain)
+            lessons = self.env['basketball.lesson.simple'].search(domain)
             
             if lessons:
                 self.lesson_id = lessons[0].id

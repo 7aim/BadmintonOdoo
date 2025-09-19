@@ -104,6 +104,14 @@
         <field name="number_increment">1</field>
     </record>
 
+    <record id="seq_basketball_attendance_check" model="ir.sequence">
+        <field name="name">Basketball Attendance Check</field>
+        <field name="code">basketball.attendance.check</field>
+        <field name="prefix">BBAC</field>
+        <field name="padding">3</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
     <!-- Basketball Lesson Simple Sequence -->
     <record id="seq_basketball_lesson_simple" model="ir.sequence">
         <field name="name">Basketball Lesson Simple Sequence</field>
