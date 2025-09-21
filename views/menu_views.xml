@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <menuitem id="menu_sport_main" name="Volan Yasamal" sequence="100" web_icon="volan_yasamal/static/description/icon.png"/>
+    <menuitem id="menu_sport_main" name="Volan Yasamal" sequence="100" 
+              web_icon="volan_yasamal/static/description/icon.png"
+              groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_nezaretci,base.group_system"/>
 
-    <!-- Badminton Bölməsi -->
     <menuitem id="menu_badminton_section" name="🏸 Badminton" parent="menu_sport_main" sequence="10"/>
 
-    <menuitem id="menu_badminton_sessions" name="Sessiyalar" parent="menu_badminton_section" sequence="15"/>
+    <menuitem id="menu_badminton_sessions" name="Sessiyalar" parent="menu_badminton_section" sequence="15" 
+              groups="volan_yasamal.group_volan_nezaretci"/>
     <menuitem id="menu_active_sessions" name="Aktiv Sessiyalar" parent="menu_badminton_sessions" 
               action="action_active_sessions" sequence="1"/>
     <menuitem id="menu_all_sessions" name="Bütün Sessiyalar" parent="menu_badminton_sessions" 
@@ -13,90 +15,70 @@
     <menuitem id="menu_session_filter" name="Tarixə görə sessiyalar" parent="menu_badminton_sessions" 
               action="action_badminton_session_filter" sequence="3"/>
 
-    <menuitem id="menu_badminton_sales" name="Satış" parent="menu_badminton_section" sequence="20"/>
+    <menuitem id="menu_badminton_sales" name="Satış" parent="menu_badminton_section" sequence="20" 
+              groups="volan_yasamal.group_volan_satici"/>
     <menuitem id="menu_badminton_sale_wizard" name="Badminton Satışı" parent="menu_badminton_sales" 
-              action="action_badminton_sale_wizard" sequence="3"/>
+              action="action_badminton_sale_wizard" sequence="4"/>
     <menuitem id="menu_badminton_sales_history" name="Satış Tarixçəsi" parent="menu_badminton_sales" 
-              action="action_badminton_sale" sequence="4"/>
+              action="action_badminton_sale" sequence="3"/>
     <menuitem id="menu_badminton_balance_history" name="Balans Tarixçəsi" parent="menu_badminton_sales" 
               action="action_badminton_balance_history" sequence="5"/>
 
-    <menuitem id="menu_badminton_lessons" name="Badmınton Dərsləri" parent="menu_badminton_section" sequence="25"/>
+    <menuitem id="menu_badminton_lessons" name="Badminton Dərsləri" parent="menu_badminton_section" sequence="25"
+              groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci"/>
     <menuitem id="menu_badminton_lessons_simple" name="Abunəliklər" parent="menu_badminton_lessons" 
-              action="action_badminton_lesson_simple" sequence="6"/>
+              action="action_badminton_lesson_simple" sequence="1" groups="volan_yasamal.group_volan_satici"/>
     <menuitem id="menu_badminton_groups" name="Badminton Qrupları" parent="menu_badminton_lessons" 
-              action="action_badminton_group" sequence="7"/>
+              action="action_badminton_group" sequence="2" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci"/>
     <menuitem id="menu_badminton_lesson_freeze" name="Dondurma Tarixçəsi" parent="menu_badminton_lessons" 
-              action="action_badminton_lesson_freeze" sequence="8"/>
+              action="action_badminton_lesson_freeze" sequence="3" groups="volan_yasamal.group_volan_satici"/>
+    <menuitem id="menu_badminton_attendance_check_list" name="İştirak Yoxlaması" parent="menu_badminton_lessons" 
+              action="action_badminton_attendance_check" sequence="4" groups="volan_yasamal.group_volan_mesqci"/>
     
-    <!-- Yoxlama Bölməsi -->
-    <menuitem id="menu_badminton_attendance_check" name="Yoxlama" parent="menu_badminton_section" sequence="27"/>
-    <menuitem id="menu_badminton_attendance_check_list" name="İştirak Yoxlaması" parent="menu_badminton_attendance_check" 
-              action="action_badminton_attendance_check" sequence="1"/>
-    
-    <!-- Basketbol Bölməsi -->
     <menuitem id="menu_basketball_section" name="🏀 Basketbol" parent="menu_sport_main" sequence="20"/>
-    <menuitem id="menu_basketball_lessons" name="Basketbol Dərsləri" parent="menu_basketball_section" sequence="25"/>
+    
+    <menuitem id="menu_basketball_lessons" name="Basketbol Dərsləri" parent="menu_basketball_section" sequence="25"
+              groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci"/>
     <menuitem id="menu_basketball_demo_lesson" name="Demo Dərs" parent="menu_basketball_lessons"
-              action="action_basketball_demo_lesson" sequence="30"/> 
+              action="action_basketball_demo_lesson" sequence="1" groups="volan_yasamal.group_volan_satici"/> 
     <menuitem id="menu_basketball_lessons_simple" name="Abunəliklər" parent="menu_basketball_lessons" 
-              action="action_basketball_lesson_simple" sequence="1"/>
+              action="action_basketball_lesson_simple" sequence="2" groups="volan_yasamal.group_volan_satici"/>
     <menuitem id="menu_basketball_groups" name="Basketbol Qrupları" parent="menu_basketball_lessons" 
-              action="action_basketball_group" sequence="2"/>
+              action="action_basketball_group" sequence="3" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci"/>
     <menuitem id="menu_basketball_lesson_freeze" name="Dondurma Tarixçəsi" parent="menu_basketball_lessons"
-              action="action_basketball_lesson_freeze" sequence="3"/>
-    <menuitem id="menu_basketball_attendance_check" name="İştirak Yoxlamaları" parent="menu_basketball_section" sequence="50" 
-              action="action_basketball_attendance_check" groups="group_volan_admin,group_volan_trainer,group_volan_supervisor"/>
-    <menuitem id="menu_basketball_attendance_check" name="Yoxlama" parent="menu_basketball_section" sequence="27"/>
-    <menuitem id="menu_basketball_attendance_check_list" name="İştirak Yoxlaması" parent="menu_basketball_attendance_check" 
-              action="action_basketball_attendance_check" sequence="1"/>
+              action="action_basketball_lesson_freeze" sequence="4" groups="volan_yasamal.group_volan_satici"/>
+    <menuitem id="menu_basketball_attendance_check_list" name="İştirak Yoxlaması" parent="menu_basketball_lessons" 
+              action="action_basketball_attendance_check" sequence="5" groups="volan_yasamal.group_volan_mesqci"/>
 
-    <!-- Diger Bölmələr -->
     <menuitem id="menu_qr_section" name="🔍 QR Scan" parent="menu_sport_main" 
-              action="action_qr_scanner_wizard" sequence="30"/>
+              action="action_qr_scanner_wizard" sequence="30" groups="volan_yasamal.group_volan_nezaretci"/>
+
+    <!-- Müştərilər menyusunda domain əlavə et -->
+    <record id="action_customers_yasamal" model="ir.actions.act_window">
+        <field name="name">Yasamal Müştəriləri</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('is_company', '=', False), ('branch', '=', 'yasamal')]</field>
+        <field name="context">{'default_is_company': False, 'default_branch': 'yasamal'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Yeni müştəri əlavə edin!
+            </p>
+            <p>
+                Bu bölmədə Yasamal filialının müştərilərini idarə edə bilərsiniz.
+            </p>
+        </field>
+    </record>
 
     <menuitem id="menu_customers" name="🤵‍♂️ Müştərilər" parent="menu_sport_main" 
-              action="contacts.action_contacts" sequence="31"/>
+            action="action_customers_yasamal" sequence="31" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_admin"/>
 
     <menuitem id="menu_employees" name="🧑‍🔧 İşçilər" parent="menu_sport_main" 
-              action="hr.open_view_employee_list_my" sequence="32"/>
-
-    <!-- Tənzimləmələr Bölməsi -->
-    <menuitem id="menu_sport_config" name="⚙️ Tənzimləmələr" parent="menu_sport_main" sequence="40"/>
+              action="hr.open_view_employee_list_my" sequence="32" groups="volan_yasamal.group_volan_admin"/>
+    <menuitem id="menu_sport_config" name="⚙️ Tənzimləmələr" parent="menu_sport_main" sequence="40"
+              groups="volan_yasamal.group_volan_admin"/>
     <menuitem id="menu_customer_lookup" name="Müştəri Axtarışı" parent="menu_sport_config" 
               action="action_customer_lookup_wizard" sequence="1"/>
     <menuitem id="menu_sport_branches" name="İdman Növləri" parent="menu_sport_config" 
               action="action_sport_branch" sequence="2"/>
-
-<!-- Əlavə ediləcək kodlar -->
-
-<!-- Ana menyular -->
-<menuitem id="menu_root" name="Volan Yasamal" groups="group_volan_admin,group_volan_trainer,group_volan_sales,group_volan_supervisor"/>
-
-<menuitem id="menu_badminton" name="Badminton" groups="group_volan_admin,group_volan_trainer,group_volan_sales,group_volan_supervisor"/>
-
-<menuitem id="menu_basketball" name="Basketbol" groups="group_volan_admin,group_volan_trainer,group_volan_sales"/>
-
-<!-- Sec
-<menuitem id="menu_badminton_session" name="Sessiyalar" parent="menu_badminton" sequence="10" groups="group_volan_admin,group_volan_sales,group_volan_trainer,group_volan_supervisor"/>
-
-<menuitem id="menu_badminton_sale" name="Satış" parent="menu_badminton" sequence="20" groups="group_volan_admin,group_volan_sales"/>
-
-<menuitem id="menu_badminton_lesson" name="Dərslər" parent="menu_badminton" sequence="30" groups="group_volan_admin,group_volan_trainer,group_volan_sales"/>
-
-<menuitem id="menu_badminton_group" name="Qruplar" parent="menu_badminton" sequence="40" groups="group_volan_admin,group_volan_trainer,group_volan_sales"/>
-
-<menuitem id="menu_badminton_attendance_check" name="İştirak Yoxlamaları" parent="menu_badminton" sequence="50" groups="group_volan_admin,group_volan_trainer,group_volan_supervisor"/>
-
-<menuitem id="menu_basketball_lesson" name="Dərslər" parent="menu_basketball" sequence="10" groups="group_volan_admin,group_volan_trainer,group_volan_sales"/>
-
-<menuitem id="menu_basketball_group" name="Qruplar" parent="menu_basketball" sequence="20" groups="group_volan_admin,group_volan_trainer,group_volan_sales"/>
-
-<menuitem id="menu_customer" name="Müştərilər" groups="group_volan_admin,group_volan_sales,group_volan_trainer,group_volan_supervisor"/>
-
-<menuitem id="menu_qr_scan" name="QR Scan" groups="group_volan_admin,group_volan_trainer,group_volan_sales,group_volan_supervisor"/>
-
-<menuitem id="menu_kassa" name="Kassa" groups="group_volan_admin,group_volan_sales,group_volan_supervisor"/>
--->
-
 </odoo>

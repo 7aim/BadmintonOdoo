@@ -10,10 +10,10 @@
     'images': [
         'static/description/icon.png',
     ],
-    'depends': ['base', 'contacts', 'mail'],
+    'depends': ['base', 'contacts', 'mail', 'hr', 'bus'],
     'data': [
-        #'security/security.xml',
-        #'security/ir.model.access.csv',
+        'security/security.xml',
+        'security/ir.model.access.csv',
         'data/sequence.xml',
         'data/cron_jobs.xml',
         'views/res_partner_views.xml',
