@@ -168,3 +168,4 @@ class BasketballAttendanceCheckLine(models.Model):
         for record in self:
             if record.partner_id and record.lesson_id and record.lesson_id.partner_id != record.partner_id:
                 raise ValidationError(f"Seçilmiş dərs {record.partner_id.name} üçün deyil. Xahiş edirik doğru dərsi seçin.")
+            
