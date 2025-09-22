@@ -16,7 +16,7 @@ class VolanPartner(models.Model):
     branch = fields.Selection([
         ('genclik', 'Gənclik'),
         ('yasamal', 'Yasamal')
-    ], string="Filial", required=False)
+    ], string="Filial", required=True)
     
     # 3. Müştəri Mənbəyi
     customer_source = fields.Selection([
