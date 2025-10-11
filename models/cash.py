@@ -382,15 +382,14 @@ class BasketballCashBalance(models.TransientModel):
         cash_flow_obj = self.env['volan.cash.flow']
         domain = self._get_date_domain()
         
-        # Basketbol dərs gəlirləri
+        # Basketbol dərs gəlirləri - ümumi kassadakı kimi
         basketball_lessons_domain = domain + [
             ('transaction_type', '=', 'income'),
-            ('sport_type', '=', 'basketball'),
             ('category', '=', 'basketball_lesson')
         ]
         basketball_lessons_income = sum(cash_flow_obj.search(basketball_lessons_domain).mapped('amount'))
         
-        # Digər basketbol gəlirləri
+        # Digər basketbol gəlirləri - yalnız sport_type=basketball olanlar
         basketball_other_domain = domain + [
             ('transaction_type', '=', 'income'),
             ('sport_type', '=', 'basketball'),
@@ -398,7 +397,7 @@ class BasketballCashBalance(models.TransientModel):
         ]
         basketball_other_income = sum(cash_flow_obj.search(basketball_other_domain).mapped('amount'))
         
-        # Basketbol xərcləri
+        # Basketbol xərcləri - yalnız sport_type=basketball olanlar
         basketball_expenses_domain = domain + [
             ('transaction_type', '=', 'expense'),
             ('sport_type', '=', 'basketball')
@@ -536,23 +535,21 @@ class BadmintonCashBalance(models.TransientModel):
         cash_flow_obj = self.env['volan.cash.flow']
         domain = self._get_date_domain()
         
-        # Badminton satış gəlirləri
+        # Badminton satış gəlirləri - ümumi kassadakı kimi
         badminton_sales_domain = domain + [
             ('transaction_type', '=', 'income'),
-            ('sport_type', '=', 'badminton'),
             ('category', '=', 'badminton_sale')
         ]
         badminton_sales_income = sum(cash_flow_obj.search(badminton_sales_domain).mapped('amount'))
         
-        # Badminton dərs gəlirləri
+        # Badminton dərs gəlirləri - ümumi kassadakı kimi
         badminton_lessons_domain = domain + [
             ('transaction_type', '=', 'income'),
-            ('sport_type', '=', 'badminton'),
             ('category', '=', 'badminton_lesson')
         ]
         badminton_lessons_income = sum(cash_flow_obj.search(badminton_lessons_domain).mapped('amount'))
         
-        # Digər badminton gəlirləri
+        # Digər badminton gəlirləri - yalnız sport_type=badminton olanlar
         badminton_other_domain = domain + [
             ('transaction_type', '=', 'income'),
             ('sport_type', '=', 'badminton'),
@@ -560,7 +557,7 @@ class BadmintonCashBalance(models.TransientModel):
         ]
         badminton_other_income = sum(cash_flow_obj.search(badminton_other_domain).mapped('amount'))
         
-        # Badminton xərcləri
+        # Badminton xərcləri - yalnız sport_type=badminton olanlar
         badminton_expenses_domain = domain + [
             ('transaction_type', '=', 'expense'),
             ('sport_type', '=', 'badminton')

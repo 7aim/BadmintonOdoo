@@ -1,6 +1,6 @@
 {
     'name': 'Volan Yasamal',
-    'version': '2.5.5',
+    'version': '2.5.6',
     'summary': 'Badminton və Basketbol üçün tam idman idarəetmə sistemi',
 
     'author': 'Aim',
