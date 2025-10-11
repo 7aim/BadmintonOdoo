@@ -10,6 +10,7 @@
                     <field name="birth_date"/>
                     <field name="age" readonly="1"/>
                     <field name="branch"/>
+                    <field name="sport_type"/>
                     <field name="customer_source"/>
                     <field name="additional_info"/>
                     <field name="is_coach"/>

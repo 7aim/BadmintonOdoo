@@ -20,6 +20,13 @@ class CashFlow(models.Model):
         ('basketball_lesson', 'Basketbol Dərs'),
         ('other', 'Digər'),
     ], string='Kateqoriya', required=True, default='other')
+    
+    # Sport növü əlavə edək
+    sport_type = fields.Selection([
+        ('badminton', 'Badminton'),
+        ('basketball', 'Basketbol'),
+        ('general', 'Ümumi')
+    ], string='İdman Növü', required=True, default='general', help='Bu əməliyyatın hansı idman növünə aid olduğunu göstərir')
     notes = fields.Text('Qeydlər')
     partner_id = fields.Many2one('res.partner', string='Müştəri')
     related_model = fields.Char('Əlaqəli Model', readonly=True)
@@ -310,5 +317,331 @@ class CashBalance(models.TransientModel):
         """Tarix filtri dəyişəndə balansı yenilə"""
         values = {}
         self._calculate_balance_data(values)
+        for field, value in values.items():
+            setattr(self, field, value)
+
+
+class BasketballCashBalance(models.TransientModel):
+    _name = 'basketball.cash.balance'
+    _description = 'Basketbol Kassa Balansı'
+
+    # Tarix filtr sahələri
+    date_filter = fields.Selection([
+        ('all', 'Bütün Tarixlər'),
+        ('today', 'Bu Gün'),
+        ('week', 'Bu Həftə'),
+        ('month', 'Bu Ay'),
+        ('year', 'Bu İl'),
+        ('custom', 'Özel Tarix')
+    ], string='📅 Tarix Filtri', default='month', required=True)
+    
+    date_from = fields.Date('📅 Başlanğıc Tarix')
+    date_to = fields.Date('📅 Bitmə Tarix')
+
+    # Basketbol gəlirləri
+    basketball_lessons_income = fields.Float('🏀 Basketbol Dərs Abunəlikləri', readonly=True)
+    basketball_other_income = fields.Float('💰 Digər Basketbol Gəlirləri', readonly=True)
+    
+    # Basketbol xərcləri
+    basketball_expenses = fields.Float('📉 Basketbol Xərcləri', readonly=True)
+    
+    # Ümumi məlumatlar
+    total_basketball_income = fields.Float('📈 Ümumi Basketbol Gəliri', readonly=True)
+    basketball_balance = fields.Float('🏀 Basketbol Balansı', readonly=True)
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        # İlkin yükləmədə cari ay filtri ilə hesabla
+        self._calculate_basketball_balance(res)
+        return res
+
+    def _get_date_domain(self):
+        """Tarix filtrinə əsasən domain qaytarır"""
+        today = fields.Date.today()
+        domain = []
+        
+        if self.date_filter == 'today':
+            domain = [('date', '=', today)]
+        elif self.date_filter == 'week':
+            week_start = today - timedelta(days=today.weekday())
+            domain = [('date', '>=', week_start), ('date', '<=', today)]
+        elif self.date_filter == 'month':
+            month_start = today.replace(day=1)
+            domain = [('date', '>=', month_start), ('date', '<=', today)]
+        elif self.date_filter == 'year':
+            year_start = today.replace(month=1, day=1)
+            domain = [('date', '>=', year_start), ('date', '<=', today)]
+        elif self.date_filter == 'custom' and self.date_from and self.date_to:
+            domain = [('date', '>=', self.date_from), ('date', '<=', self.date_to)]
+        
+        return domain
+
+    def _calculate_basketball_balance(self, values):
+        """Basketbol balansını hesablayır"""
+        cash_flow_obj = self.env['volan.cash.flow']
+        domain = self._get_date_domain()
+        
+        # Basketbol dərs gəlirləri
+        basketball_lessons_domain = domain + [
+            ('transaction_type', '=', 'income'),
+            ('sport_type', '=', 'basketball'),
+            ('category', '=', 'basketball_lesson')
+        ]
+        basketball_lessons_income = sum(cash_flow_obj.search(basketball_lessons_domain).mapped('amount'))
+        
+        # Digər basketbol gəlirləri
+        basketball_other_domain = domain + [
+            ('transaction_type', '=', 'income'),
+            ('sport_type', '=', 'basketball'),
+            ('category', '!=', 'basketball_lesson')
+        ]
+        basketball_other_income = sum(cash_flow_obj.search(basketball_other_domain).mapped('amount'))
+        
+        # Basketbol xərcləri
+        basketball_expenses_domain = domain + [
+            ('transaction_type', '=', 'expense'),
+            ('sport_type', '=', 'basketball')
+        ]
+        basketball_expenses = sum(cash_flow_obj.search(basketball_expenses_domain).mapped('amount'))
+        
+        # Ümumi hesablamalar
+        total_basketball_income = basketball_lessons_income + basketball_other_income
+        basketball_balance = total_basketball_income - basketball_expenses
+        
+        values.update({
+            'basketball_lessons_income': basketball_lessons_income,
+            'basketball_other_income': basketball_other_income,
+            'basketball_expenses': basketball_expenses,
+            'total_basketball_income': total_basketball_income,
+            'basketball_balance': basketball_balance,
+        })
+
+    def action_refresh(self):
+        """Basketbol balansını yenilə"""
+        values = {}
+        self._calculate_basketball_balance(values)
+        self.write(values)
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+    def _open_basketball_cash_view(self, name, domain):
+        """Basketbol kassa əməliyyatları view-nı açır"""
+        return {
+            'type': 'ir.actions.act_window',
+            'name': name,
+            'res_model': 'volan.cash.flow',
+            'view_mode': 'list,form',
+            'domain': domain,
+            'context': {'default_sport_type': 'basketball'},
+            'target': 'current'
+        }
+
+    def show_basketball_lessons(self):
+        """Basketbol dərs gəlirlərini göstərir"""
+        self.ensure_one()
+        domain = self._get_date_domain() + [
+            ('sport_type', '=', 'basketball'),
+            ('category', '=', 'basketball_lesson'),
+            ('transaction_type', '=', 'income')
+        ]
+        return self._open_basketball_cash_view('Basketbol Dərs Gəlirləri', domain)
+
+    def show_basketball_other_income(self):
+        """Digər basketbol gəlirlərini göstərir"""
+        self.ensure_one()
+        domain = self._get_date_domain() + [
+            ('sport_type', '=', 'basketball'),
+            ('category', '!=', 'basketball_lesson'),
+            ('transaction_type', '=', 'income')
+        ]
+        return self._open_basketball_cash_view('Digər Basketbol Gəlirləri', domain)
+        
+    def show_basketball_expenses(self):
+        """Basketbol xərclərini göstərir"""
+        self.ensure_one()
+        domain = self._get_date_domain() + [
+            ('sport_type', '=', 'basketball'),
+            ('transaction_type', '=', 'expense')
+        ]
+        return self._open_basketball_cash_view('Basketbol Xərcləri', domain)
+
+    @api.onchange('date_filter', 'date_from', 'date_to')
+    def _onchange_date_filter(self):
+        """Tarix filtri dəyişəndə basketbol balansını yenilə"""
+        values = {}
+        self._calculate_basketball_balance(values)
+        for field, value in values.items():
+            setattr(self, field, value)
+
+
+class BadmintonCashBalance(models.TransientModel):
+    _name = 'badminton.cash.balance'
+    _description = 'Badminton Kassa Balansı'
+
+    # Tarix filtr sahələri
+    date_filter = fields.Selection([
+        ('all', 'Bütün Tarixlər'),
+        ('today', 'Bu Gün'),
+        ('week', 'Bu Həftə'),
+        ('month', 'Bu Ay'),
+        ('year', 'Bu İl'),
+        ('custom', 'Özel Tarix')
+    ], string='📅 Tarix Filtri', default='month', required=True)
+    
+    date_from = fields.Date('📅 Başlanğıc Tarix')
+    date_to = fields.Date('📅 Bitmə Tarix')
+
+    # Badminton gəlirləri
+    badminton_sales_income = fields.Float('🏸 Badminton Satışları', readonly=True)
+    badminton_lessons_income = fields.Float('📚 Badminton Dərs Abunəlikləri', readonly=True)
+    badminton_other_income = fields.Float('💰 Digər Badminton Gəlirləri', readonly=True)
+    
+    # Badminton xərcləri
+    badminton_expenses = fields.Float('📉 Badminton Xərcləri', readonly=True)
+    
+    # Ümumi məlumatlar
+    total_badminton_income = fields.Float('📈 Ümumi Badminton Gəliri', readonly=True)
+    badminton_balance = fields.Float('🏸 Badminton Balansı', readonly=True)
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        # İlkin yükləmədə cari ay filtri ilə hesabla
+        self._calculate_badminton_balance(res)
+        return res
+
+    def _get_date_domain(self):
+        """Tarix filtrinə əsasən domain qaytarır"""
+        today = fields.Date.today()
+        domain = []
+        
+        if self.date_filter == 'today':
+            domain = [('date', '=', today)]
+        elif self.date_filter == 'week':
+            week_start = today - timedelta(days=today.weekday())
+            domain = [('date', '>=', week_start), ('date', '<=', today)]
+        elif self.date_filter == 'month':
+            month_start = today.replace(day=1)
+            domain = [('date', '>=', month_start), ('date', '<=', today)]
+        elif self.date_filter == 'year':
+            year_start = today.replace(month=1, day=1)
+            domain = [('date', '>=', year_start), ('date', '<=', today)]
+        elif self.date_filter == 'custom' and self.date_from and self.date_to:
+            domain = [('date', '>=', self.date_from), ('date', '<=', self.date_to)]
+        
+        return domain
+
+    def _calculate_badminton_balance(self, values):
+        """Badminton balansını hesablayır"""
+        cash_flow_obj = self.env['volan.cash.flow']
+        domain = self._get_date_domain()
+        
+        # Badminton satış gəlirləri
+        badminton_sales_domain = domain + [
+            ('transaction_type', '=', 'income'),
+            ('sport_type', '=', 'badminton'),
+            ('category', '=', 'badminton_sale')
+        ]
+        badminton_sales_income = sum(cash_flow_obj.search(badminton_sales_domain).mapped('amount'))
+        
+        # Badminton dərs gəlirləri
+        badminton_lessons_domain = domain + [
+            ('transaction_type', '=', 'income'),
+            ('sport_type', '=', 'badminton'),
+            ('category', '=', 'badminton_lesson')
+        ]
+        badminton_lessons_income = sum(cash_flow_obj.search(badminton_lessons_domain).mapped('amount'))
+        
+        # Digər badminton gəlirləri
+        badminton_other_domain = domain + [
+            ('transaction_type', '=', 'income'),
+            ('sport_type', '=', 'badminton'),
+            ('category', 'not in', ['badminton_sale', 'badminton_lesson'])
+        ]
+        badminton_other_income = sum(cash_flow_obj.search(badminton_other_domain).mapped('amount'))
+        
+        # Badminton xərcləri
+        badminton_expenses_domain = domain + [
+            ('transaction_type', '=', 'expense'),
+            ('sport_type', '=', 'badminton')
+        ]
+        badminton_expenses = sum(cash_flow_obj.search(badminton_expenses_domain).mapped('amount'))
+        
+        # Ümumi hesablamalar
+        total_badminton_income = badminton_sales_income + badminton_lessons_income + badminton_other_income
+        badminton_balance = total_badminton_income - badminton_expenses
+        
+        values.update({
+            'badminton_sales_income': badminton_sales_income,
+            'badminton_lessons_income': badminton_lessons_income,
+            'badminton_other_income': badminton_other_income,
+            'badminton_expenses': badminton_expenses,
+            'total_badminton_income': total_badminton_income,
+            'badminton_balance': badminton_balance,
+        })
+
+    def action_refresh(self):
+        """Badminton balansını yenilə"""
+        values = {}
+        self._calculate_badminton_balance(values)
+        self.write(values)
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+    def _open_badminton_cash_view(self, name, domain):
+        """Badminton kassa əməliyyatları view-nı açır"""
+        return {
+            'type': 'ir.actions.act_window',
+            'name': name,
+            'res_model': 'volan.cash.flow',
+            'view_mode': 'list,form',
+            'domain': domain,
+            'context': {'default_sport_type': 'badminton'},
+            'target': 'current'
+        }
+
+    def show_badminton_sales(self):
+        """Badminton satış gəlirlərini göstərir"""
+        self.ensure_one()
+        domain = self._get_date_domain() + [
+            ('sport_type', '=', 'badminton'),
+            ('category', '=', 'badminton_sale'),
+            ('transaction_type', '=', 'income')
+        ]
+        return self._open_badminton_cash_view('Badminton Satış Gəlirləri', domain)
+
+    def show_badminton_lessons(self):
+        """Badminton dərs gəlirlərini göstərir"""
+        self.ensure_one()
+        domain = self._get_date_domain() + [
+            ('sport_type', '=', 'badminton'),
+            ('category', '=', 'badminton_lesson'),
+            ('transaction_type', '=', 'income')
+        ]
+        return self._open_badminton_cash_view('Badminton Dərs Gəlirləri', domain)
+
+    def show_badminton_other_income(self):
+        """Digər badminton gəlirlərini göstərir"""
+        self.ensure_one()
+        domain = self._get_date_domain() + [
+            ('sport_type', '=', 'badminton'),
+            ('category', 'not in', ['badminton_sale', 'badminton_lesson']),
+            ('transaction_type', '=', 'income')
+        ]
+        return self._open_badminton_cash_view('Digər Badminton Gəlirləri', domain)
+        
+    def show_badminton_expenses(self):
+        """Badminton xərclərini göstərir"""
+        self.ensure_one()
+        domain = self._get_date_domain() + [
+            ('sport_type', '=', 'badminton'),
+            ('transaction_type', '=', 'expense')
+        ]
+        return self._open_badminton_cash_view('Badminton Xərcləri', domain)
+
+    @api.onchange('date_filter', 'date_from', 'date_to')
+    def _onchange_date_filter(self):
+        """Tarix filtri dəyişəndə badminton balansını yenilə"""
+        values = {}
+        self._calculate_badminton_balance(values)
         for field, value in values.items():
             setattr(self, field, value)

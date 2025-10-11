@@ -34,9 +34,62 @@
               action="action_badminton_lesson_freeze" sequence="3" groups="volan_yasamal.group_volan_satici"/>
     <menuitem id="menu_badminton_attendance_check_list" name="İştirak Yoxlaması" parent="menu_badminton_lessons" 
               action="action_badminton_attendance_check" sequence="4" groups="volan_yasamal.group_volan_mesqci"/>
-    
-    <menuitem id="menu_basketball_section" name="🏀 Basketbol" parent="menu_sport_main" sequence="20"/>
-    
+
+    <!-- Badminton Kassa Actions -->
+    <record id="action_badminton_cash_balance" model="ir.actions.act_window">
+        <field name="name">Badminton Kassa Balansı</field>
+        <field name="res_model">badminton.cash.balance</field>
+        <field name="view_mode">form</field>
+        <field name="target">main</field>
+    </record>
+
+    <record id="action_badminton_cash_flow" model="ir.actions.act_window">
+        <field name="name">Badminton Kassa Əməliyyatları</field>
+        <field name="res_model">volan.cash.flow</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="domain">[('sport_type', '=', 'badminton')]</field>
+        <field name="context">{'default_sport_type': 'badminton', 'default_transaction_type': 'income'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                İlk badminton kassa əməliyyatınızı yaradın!
+            </p>
+            <p>
+                Yalnız badminton ilə bağlı gəlir və xərclər burada qeyd olunur.
+            </p>
+        </field>
+    </record>
+
+    <!-- Badminton Kassa -->
+    <menuitem id="menu_badminton_cash" name="💰 Badminton Kassa" parent="menu_sport_main" sequence="34"/>
+    <menuitem id="menu_badminton_cash_balance" name="Kassa Balansı" parent="menu_badminton_cash" 
+              action="action_badminton_cash_balance" sequence="1" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
+    <menuitem id="menu_badminton_cash_flow_menu" name="Badminton Gəlirləri" parent="menu_badminton_cash" 
+              action="action_badminton_cash_flow" sequence="2" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
+
+    <menuitem id="menu_gobasketbol_main" name="Go Basketbol" sequence="100" 
+              web_icon="volan_yasamal/static/description/icon.png"
+              groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_nezaretci,base.group_system"/>
+
+    <menuitem id="menu_basketball_section" name="🏀 Basketbol" parent="menu_gobasketbol_main" sequence="20"/>
+
+    <!-- Basketbol Müştəriləri -->
+    <record id="action_basketball_customers" model="ir.actions.act_window">
+        <field name="name">Basketbol Müştəriləri</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('is_company', '=', False), ('sport_type', 'in', ['basketball', 'both'])]</field>
+        <field name="context">{'default_is_company': False, 'default_sport_type': 'basketball', 'default_branch': 'yasamal'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Yeni basketbol müştərisi əlavə edin!
+            </p>
+            <p>
+                Bu bölmədə basketbol müştərilərini idarə edə bilərsiniz.
+            </p>
+        </field>
+    </record>
+
+
     <menuitem id="menu_basketball_lessons" name="Basketbol Dərsləri" parent="menu_basketball_section" sequence="25"
               groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci"/>
     <menuitem id="menu_basketball_demo_lesson" name="Demo Dərs" parent="menu_basketball_lessons"
@@ -49,6 +102,43 @@
               action="action_basketball_lesson_freeze" sequence="4" groups="volan_yasamal.group_volan_satici"/>
     <menuitem id="menu_basketball_attendance_check_list" name="İştirak Yoxlaması" parent="menu_basketball_lessons" 
               action="action_basketball_attendance_check" sequence="5" groups="volan_yasamal.group_volan_mesqci"/>
+
+    <menuitem id="menu_basketball_customers" name="🤵‍♂️ Basketbol Müştəriləri" parent="menu_gobasketbol_main" 
+              action="action_basketball_customers" sequence="30" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_admin"/>
+        
+    <!-- Basketbol Kassa -->
+    <record id="action_basketball_cash_balance" model="ir.actions.act_window">
+        <field name="name">Basketbol Kassa Balansı</field>
+        <field name="res_model">basketball.cash.balance</field>
+        <field name="view_mode">form</field>
+        <field name="target">main</field>
+    </record>
+
+    <record id="action_basketball_cash_flow" model="ir.actions.act_window">
+        <field name="name">Basketbol Kassa Əməliyyatları</field>
+        <field name="res_model">volan.cash.flow</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="domain">[('sport_type', '=', 'basketball')]</field>
+        <field name="context">{'default_sport_type': 'basketball', 'default_transaction_type': 'income'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                İlk basketbol kassa əməliyyatınızı yaradın!
+            </p>
+            <p>
+                Basketbol ilə bağlı bütün gəlir və xərclər burada qeyd olunur.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_basketball_cash" name="💰 Basketbol Kassa" parent="menu_gobasketbol_main" sequence="50"/>
+    <menuitem id="menu_basketball_cash_balance" name="Kassa Balansı" parent="menu_basketball_cash" 
+              action="action_basketball_cash_balance" sequence="1" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
+    <menuitem id="menu_basketball_cash_flow" name="Basketbol Gəlirləri" parent="menu_basketball_cash" 
+              action="action_basketball_cash_flow" sequence="2" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
+
+    <!-- Basketbol İşçiləri -->
+    <menuitem id="menu_basketball_employees" name="🧑‍🔧 İşçilər" parent="menu_gobasketbol_main" 
+              action="hr.open_view_employee_list_my" sequence="60" groups="volan_yasamal.group_volan_admin"/>
 
     <menuitem id="menu_qr_section" name="🔍 QR Scan" parent="menu_sport_main" 
               action="action_qr_scanner_wizard" sequence="30" groups="volan_yasamal.group_volan_nezaretci"/>
@@ -71,10 +161,41 @@
     </record>
 
     <menuitem id="menu_customers" name="🤵‍♂️ Müştərilər" parent="menu_sport_main" 
-            action="action_customers_yasamal" sequence="31" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_admin"/>
+            action="action_customers_yasamal" sequence="32" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_admin"/>
+
+    <!-- Badminton Kassa Actions -->
+    <record id="action_badminton_cash_balance" model="ir.actions.act_window">
+        <field name="name">Badminton Kassa Balansı</field>
+        <field name="res_model">badminton.cash.balance</field>
+        <field name="view_mode">form</field>
+        <field name="target">main</field>
+    </record>
+
+    <record id="action_badminton_cash_flow" model="ir.actions.act_window">
+        <field name="name">Badminton Kassa Əməliyyatları</field>
+        <field name="res_model">volan.cash.flow</field>
+        <field name="view_mode">list,form,pivot,graph</field>
+        <field name="domain">[('sport_type', '=', 'badminton')]</field>
+        <field name="context">{'default_sport_type': 'badminton', 'default_transaction_type': 'income'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                İlk badminton kassa əməliyyatınızı yaradın!
+            </p>
+            <p>
+                Yalnız badminton ilə bağlı gəlir və xərclər burada qeyd olunur.
+            </p>
+        </field>
+    </record>
+
+    <!-- Ümumi Kassa (Badminton + Basketbol) -->  
+    <menuitem id="menu_cash" name="💰 Kassa" parent="menu_sport_main" sequence="35"/>
+    <menuitem id="menu_cash_balance" name="Kassa Balansı" parent="menu_cash" 
+              action="action_volan_cash_balance" sequence="1" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
+    <menuitem id="menu_cash_flow" name="Bütün Əməliyyatlar" parent="menu_cash" 
+              action="action_volan_cash_flow" sequence="2" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
 
     <menuitem id="menu_employees" name="🧑‍🔧 İşçilər" parent="menu_sport_main" 
-              action="hr.open_view_employee_list_my" sequence="32" groups="volan_yasamal.group_volan_admin"/>
+              action="hr.open_view_employee_list_my" sequence="33" groups="volan_yasamal.group_volan_admin"/>
     <menuitem id="menu_sport_config" name="⚙️ Tənzimləmələr" parent="menu_sport_main" sequence="40"
               groups="volan_yasamal.group_volan_admin"/>
     <menuitem id="menu_customer_lookup" name="Müştəri Axtarışı" parent="menu_sport_config" 

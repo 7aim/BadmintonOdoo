@@ -18,6 +18,13 @@ class VolanPartner(models.Model):
         ('yasamal', 'Yasamal')
     ], string="Filial", required=True)
     
+    # 2.1. İdman Növü Sahəsi
+    sport_type = fields.Selection([
+        ('badminton', 'Badminton'),
+        ('basketball', 'Basketbol'),
+        ('both', 'Hər İkisi')
+    ], string="İdman Növü", default='badminton', help="Müştərinin hansı idman növü ilə məşğul olduğunu göstərir")
+    
     # 3. Müştəri Mənbəyi
     customer_source = fields.Selection([
         ('instagram', 'Instagram'),

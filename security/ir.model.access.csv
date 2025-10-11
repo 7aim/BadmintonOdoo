@@ -46,6 +46,12 @@ access_admin_badminton_attendance_check,admin.badminton.attendance.check,model_b
 access_admin_badminton_attendance_check_line,admin.badminton.attendance.check.line,model_badminton_attendance_check_line,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_volan_cash_flow,admin.volan.cash.flow,model_volan_cash_flow,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_volan_cash_balance,admin.volan.cash.balance,model_volan_cash_balance,volan_yasamal.group_volan_admin,1,1,1,1
+access_admin_basketball_cash_balance,admin.basketball.cash.balance,model_basketball_cash_balance,volan_yasamal.group_volan_admin,1,1,1,1
+access_admin_badminton_cash_balance,admin.badminton.cash.balance,model_badminton_cash_balance,volan_yasamal.group_volan_admin,1,1,1,1
+access_satici_volan_cash_flow,satici.volan.cash.flow,model_volan_cash_flow,volan_yasamal.group_volan_satici,1,1,1,0
+access_satici_volan_cash_balance,satici.volan.cash.balance,model_volan_cash_balance,volan_yasamal.group_volan_satici,1,1,1,0
+access_satici_basketball_cash_balance,satici.basketball.cash.balance,model_basketball_cash_balance,volan_yasamal.group_volan_satici,1,1,1,0
+access_satici_badminton_cash_balance,satici.badminton.cash.balance,model_badminton_cash_balance,volan_yasamal.group_volan_satici,1,1,1,0
 access_admin_badminton_lesson_freeze,admin.badminton.lesson.freeze,model_badminton_lesson_freeze,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_badminton_lesson_freeze_wizard,admin.badminton.lesson.freeze.wizard,model_badminton_lesson_freeze_wizard,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_basketball_lesson_freeze,admin.basketball.lesson.freeze,model_basketball_lesson_freeze,volan_yasamal.group_volan_admin,1,1,1,1
