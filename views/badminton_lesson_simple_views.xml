@@ -36,7 +36,8 @@
                     </div>
                     <group>
                         <group>
-                            <field name="partner_id" options="{'no_create': True}"/>
+                            <field name="partner_id" options="{'no_create': True}" 
+                                   domain="[('is_company', '=', False), ('sport_type', 'in', ['badminton', 'both']), ('branch', '=', 'yasamal')]"/>
                             <field name="group_id" options="{'no_create': True}"/>
                             <field name="lesson_fee"/>
                         </group>
@@ -161,10 +162,19 @@
 
     <!-- Actions -->
     <record id="action_badminton_lesson_simple" model="ir.actions.act_window">
-        <field name="name">Badminton Dərsləri (Sadə)</field>
+        <field name="name">Badminton Abunəlikləri</field>
         <field name="res_model">badminton.lesson.simple</field>
         <field name="view_mode">list,form</field>
-        <field name="context">{}</field>
+        <field name="domain">[]</field>
+        <field name="context">{'default_partner_id': context.get('active_id', False) if context.get('active_model') == 'res.partner' else False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                İlk badminton abunəliyini yaradın!
+            </p>
+            <p>
+                Bu bölmədə badminton müştərilərinin abunəliklərini idarə edə bilərsiniz.
+            </p>
+        </field>
     </record>
 
     <!-- Menu Items -->

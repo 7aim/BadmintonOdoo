@@ -41,7 +41,8 @@
                     </div>
                     <group>
                         <group>
-                            <field name="partner_id"/>
+                            <field name="partner_id" 
+                                   domain="[('is_company', '=', False), ('sport_type', 'in', ['basketball', 'both']), ('branch', '=', 'yasamal')]"/>
                             <field name="partner_phone" readonly="1"/>
                             <field name="partner_email" readonly="1"/>
                             <field name="attended" invisible="[('state', '!=', 'done')]"/>

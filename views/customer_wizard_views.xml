@@ -43,7 +43,8 @@
             <form string="Badminton Satışı">
                 <group>
                     <group string="Müştəri Məlumatları">
-                        <field name="partner_id" options="{'no_create': True}" required="1"/>
+                        <field name="partner_id" options="{'no_create': True}" required="1"
+                               domain="[('is_company', '=', False), ('sport_type', 'in', ['badminton', 'both']), ('branch', '=', 'yasamal')]"/>
                         <field name="customer_type"/>
                         <field name="current_balance" readonly="1" style="font-weight: bold; color: #007bff;"/>
                     </group>

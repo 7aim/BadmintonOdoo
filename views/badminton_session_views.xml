@@ -31,7 +31,8 @@
                     </div>
                     <group>
                         <group>
-                            <field name="partner_id"/>
+                            <field name="partner_id" 
+                                   domain="[('is_company', '=', False), ('sport_type', 'in', ['badminton', 'both'])]"/>
                             <field name="start_time"/>
                             <field name="end_time"/>
                             <field name="completion_time" readonly="1" invisible="[('state', '!=', 'completed')]"/>
@@ -108,7 +109,8 @@
                         <h1>QR Kod Oxuyucu</h1>
                     </div>
                     <group>
-                        <field name="partner_id" string="Müştəri Seçin (Manual)"/>
+                        <field name="partner_id" string="Müştəri Seçin (Manual)"
+                               domain="[('is_company', '=', False), ('sport_type', 'in', ['badminton', 'both']), ('branch', '=', 'yasamal')]"/>
                         <field name="duration_hours"/>
                     </group>
                     <footer>
