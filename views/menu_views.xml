@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <!-- Ana Volan Yasamal Menyusu (Badminton) -->
     <menuitem id="menu_sport_main" name="Volan Yasamal" sequence="100" 
               web_icon="volan_yasamal/static/description/icon.png"
-              groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_nezaretci,base.group_system"/>
+              groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_admin,base.group_system"/>
+
+    <!-- Go Basketbol Ana Menyusu -->
+    <menuitem id="menu_go_basketbol_main" name="Go Basketbol" sequence="101" 
+              web_icon="volan_yasamal/static/description/icon.png"
+              groups="volan_yasamal.group_go_basketbol_mesqci,volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin,base.group_system"/>
 
     <menuitem id="menu_badminton_section" name="🏸 Badminton" parent="menu_sport_main" sequence="10"/>
 
+    <!-- Badminton Sessiyalar - Yalnız Nəzarətçi və Admin -->
     <menuitem id="menu_badminton_sessions" name="Sessiyalar" parent="menu_badminton_section" sequence="15" 
-              groups="volan_yasamal.group_volan_nezaretci"/>
+              groups="volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_admin"/>
     <menuitem id="menu_active_sessions" name="Aktiv Sessiyalar" parent="menu_badminton_sessions" 
               action="action_active_sessions" sequence="1"/>
     <menuitem id="menu_all_sessions" name="Bütün Sessiyalar" parent="menu_badminton_sessions" 
@@ -15,8 +22,9 @@
     <menuitem id="menu_session_filter" name="Tarixə görə sessiyalar" parent="menu_badminton_sessions" 
               action="action_badminton_session_filter" sequence="3"/>
 
+    <!-- Badminton Satış - Yalnız Satıcı və Admin -->
     <menuitem id="menu_badminton_sales" name="Satış" parent="menu_badminton_section" sequence="20" 
-              groups="volan_yasamal.group_volan_satici"/>
+              groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
     <menuitem id="menu_badminton_sale_wizard" name="Badminton Satışı" parent="menu_badminton_sales" 
               action="action_badminton_sale_wizard" sequence="4"/>
     <menuitem id="menu_badminton_sales_history" name="Satış Tarixçəsi" parent="menu_badminton_sales" 
@@ -24,16 +32,17 @@
     <menuitem id="menu_badminton_balance_history" name="Balans Tarixçəsi" parent="menu_badminton_sales" 
               action="action_badminton_balance_history" sequence="5"/>
 
-    <menuitem id="menu_badminton_lessons" name="Badminton Dərsləri" parent="menu_badminton_section" sequence="25"
-              groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci"/>
+    <!-- Badminton Dərsləri -->
+    <menuitem id="menu_badminton_lessons" name="Badminton Dərsləri" parent="menu_badminton_section" sequence="25"/>
     <menuitem id="menu_badminton_lessons_simple" name="Abunəliklər" parent="menu_badminton_lessons" 
-              action="action_badminton_lesson_simple" sequence="1" groups="volan_yasamal.group_volan_satici"/>
+              action="action_badminton_lesson_simple" sequence="1" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
     <menuitem id="menu_badminton_groups" name="Badminton Qrupları" parent="menu_badminton_lessons" 
-              action="action_badminton_group" sequence="2" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci"/>
+              action="action_badminton_group" sequence="2" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin"/>
     <menuitem id="menu_badminton_lesson_freeze" name="Dondurma Tarixçəsi" parent="menu_badminton_lessons" 
-              action="action_badminton_lesson_freeze" sequence="3" groups="volan_yasamal.group_volan_satici"/>
+              action="action_badminton_lesson_freeze" sequence="3" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
+    <!-- Badminton İştirak Yoxlaması - Yalnız Məşqçi və Admin -->
     <menuitem id="menu_badminton_attendance_check_list" name="İştirak Yoxlaması" parent="menu_badminton_lessons" 
-              action="action_badminton_attendance_check" sequence="4" groups="volan_yasamal.group_volan_mesqci"/>
+              action="action_badminton_attendance_check" sequence="4" groups="volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin"/>
 
     <!-- Badminton Müştəriləri -->
     <record id="action_badminton_customers" model="ir.actions.act_window">
@@ -79,20 +88,30 @@
         </field>
     </record>
 
-    <!-- Badminton Kassa -->
+    <!-- Badminton Kassa - Yalnız Satıcı və Admin -->
     <menuitem id="menu_badminton_cash" name="💰 Badminton Kassa" parent="menu_sport_main" sequence="34"/>
     <menuitem id="menu_badminton_cash_balance" name="Kassa Balansı" parent="menu_badminton_cash" 
               action="action_badminton_cash_balance" sequence="1" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
     <menuitem id="menu_badminton_cash_flow_menu" name="Badminton Gəlirləri" parent="menu_badminton_cash" 
               action="action_badminton_cash_flow" sequence="2" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
 
-    <menuitem id="menu_gobasketbol_main" name="Go Basketbol" sequence="100" 
-              web_icon="volan_yasamal/static/description/icon.png"
-              groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_go_basketbol,base.group_system"/>
+    <!-- QR Scan - Yalnız Nəzarətçi və Admin -->
+    <menuitem id="menu_qr_section" name="🔍 QR Scan" parent="menu_sport_main" 
+              action="action_qr_scanner_wizard" sequence="35" groups="volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_admin"/>
 
-    <menuitem id="menu_basketball_section" name="🏀 Basketbol" parent="menu_gobasketbol_main" sequence="20"/>
+    <!-- İşçilər - Yalnız Admin -->
+    <menuitem id="menu_employees" name="🧑‍🔧 İşçilər" parent="menu_sport_main" 
+              action="hr.open_view_employee_list_my" sequence="36" groups="volan_yasamal.group_volan_admin"/>
+    
+    <!-- Tənzimləmələr - Yalnız Admin -->
+    <menuitem id="menu_sport_config" name="⚙️ Tənzimləmələr" parent="menu_sport_main" sequence="40"
+              groups="volan_yasamal.group_volan_admin"/>
+    <menuitem id="menu_customer_lookup" name="Müştəri Axtarışı" parent="menu_sport_config" 
+              action="action_customer_lookup_wizard" sequence="1"/>
+    <menuitem id="menu_sport_branches" name="İdman Növləri" parent="menu_sport_config" 
+              action="action_sport_branch" sequence="2"/>
 
-    <!-- Basketbol Müştəriləri -->
+    <!-- Basketbol Müştəriləri Action -->
     <record id="action_basketball_customers" model="ir.actions.act_window">
         <field name="name">Basketbol Müştəriləri</field>
         <field name="res_model">res.partner</field>
@@ -109,24 +128,29 @@
         </field>
     </record>
 
+    <!-- Go Basketbol Bölməsi -->
+    <menuitem id="menu_basketball_section" name="🏀 Basketbol" parent="menu_go_basketbol_main" sequence="20"
+              groups="volan_yasamal.group_go_basketbol_mesqci,volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
 
-    <menuitem id="menu_basketball_lessons" name="Basketbol Dərsləri" parent="menu_basketball_section" sequence="25"
-              groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci,volan_yasamal.group_go_basketbol"/>
+    <!-- Basketbol Dərsləri -->
+    <menuitem id="menu_basketball_lessons" name="Basketbol Dərsləri" parent="menu_basketball_section" sequence="25" 
+              groups="volan_yasamal.group_go_basketbol_mesqci,volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
     <menuitem id="menu_basketball_demo_lesson" name="Demo Dərs" parent="menu_basketball_lessons"
-              action="action_basketball_demo_lesson" sequence="1" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_go_basketbol"/> 
+              action="action_basketball_demo_lesson" sequence="1" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/> 
     <menuitem id="menu_basketball_lessons_simple" name="Abunəliklər" parent="menu_basketball_lessons" 
-              action="action_basketball_lesson_simple" sequence="2" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_go_basketbol"/>
+              action="action_basketball_lesson_simple" sequence="2" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
     <menuitem id="menu_basketball_groups" name="Basketbol Qrupları" parent="menu_basketball_lessons" 
-              action="action_basketball_group" sequence="3" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci,volan_yasamal.group_go_basketbol"/>
+              action="action_basketball_group" sequence="3" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_mesqci,volan_yasamal.group_go_basketbol_admin"/>
     <menuitem id="menu_basketball_lesson_freeze" name="Dondurma Tarixçəsi" parent="menu_basketball_lessons"
-              action="action_basketball_lesson_freeze" sequence="4" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_go_basketbol"/>
+              action="action_basketball_lesson_freeze" sequence="4" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
+    <!-- Basketbol İştirak Yoxlaması - Yalnız Basketbol Məşqçi və Admin -->
     <menuitem id="menu_basketball_attendance_check_list" name="İştirak Yoxlaması" parent="menu_basketball_lessons" 
-              action="action_basketball_attendance_check" sequence="5" groups="volan_yasamal.group_volan_mesqci,volan_yasamal.group_go_basketbol"/>
+              action="action_basketball_attendance_check" sequence="5" groups="volan_yasamal.group_go_basketbol_mesqci,volan_yasamal.group_go_basketbol_admin"/>
 
-    <menuitem id="menu_basketball_customers" name="🤵‍♂️ Basketbol Müştəriləri" parent="menu_gobasketbol_main" 
-              action="action_basketball_customers" sequence="30" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_admin,volan_yasamal.group_go_basketbol"/>
-        
-    <!-- Basketbol Kassa -->
+    <!-- Basketbol Müştəriləri - Satıcı və Admin -->
+    <menuitem id="menu_basketball_customers" name="🤵‍♂️ Basketbol Müştəriləri" parent="menu_go_basketbol_main" 
+              action="action_basketball_customers" sequence="30" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
+    <!-- Basketbol Kassa Actions -->
     <record id="action_basketball_cash_balance" model="ir.actions.act_window">
         <field name="name">Basketbol Kassa Balansı</field>
         <field name="res_model">basketball.cash.balance</field>
@@ -150,18 +174,16 @@
         </field>
     </record>
 
-    <menuitem id="menu_basketball_cash" name="💰 Basketbol Kassa" parent="menu_gobasketbol_main" sequence="50"/>
+    <!-- Basketbol Kassa - Yalnız Basketbol Satıcı və Admin -->
+    <menuitem id="menu_basketball_cash" name="💰 Basketbol Kassa" parent="menu_go_basketbol_main" sequence="50"/>
     <menuitem id="menu_basketball_cash_balance" name="Kassa Balansı" parent="menu_basketball_cash" 
-              action="action_basketball_cash_balance" sequence="1" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin,volan_yasamal.group_go_basketbol"/>
+              action="action_basketball_cash_balance" sequence="1" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
     <menuitem id="menu_basketball_cash_flow" name="Basketbol Gəlirləri" parent="menu_basketball_cash" 
-              action="action_basketball_cash_flow" sequence="2" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin,volan_yasamal.group_go_basketbol"/>
+              action="action_basketball_cash_flow" sequence="2" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
 
-    <!-- Basketbol İşçiləri -->
-    <menuitem id="menu_basketball_employees" name="🧑‍🔧 İşçilər" parent="menu_gobasketbol_main" 
-              action="hr.open_view_employee_list_my" sequence="60" groups="volan_yasamal.group_volan_admin,volan_yasamal.group_go_basketbol"/>
-
-    <menuitem id="menu_qr_section" name="🔍 QR Scan" parent="menu_sport_main" 
-              action="action_qr_scanner_wizard" sequence="30" groups="volan_yasamal.group_volan_nezaretci"/>
+    <!-- Basketbol İşçiləri - Yalnız Basketbol Admin -->
+    <menuitem id="menu_basketball_employees" name="🧑‍🔧 İşçilər" parent="menu_go_basketbol_main" 
+              action="hr.open_view_employee_list_my" sequence="60" groups="volan_yasamal.group_go_basketbol_admin"/>
 
     <!-- Müştərilər menyusunda domain əlavə et -->
     <record id="action_customers_yasamal" model="ir.actions.act_window">
@@ -179,47 +201,4 @@
             </p>
         </field>
     </record>
-
-    <!--menuitem id="menu_customers" name="🤵‍♂️ Müştərilər" parent="menu_sport_main" 
-            action="action_customers_yasamal" sequence="33" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_admin"/-->
-
-    <!-- Badminton Kassa Actions -->
-    <record id="action_badminton_cash_balance" model="ir.actions.act_window">
-        <field name="name">Badminton Kassa Balansı</field>
-        <field name="res_model">badminton.cash.balance</field>
-        <field name="view_mode">form</field>
-        <field name="target">main</field>
-    </record>
-
-    <record id="action_badminton_cash_flow" model="ir.actions.act_window">
-        <field name="name">Badminton Kassa Əməliyyatları</field>
-        <field name="res_model">volan.cash.flow</field>
-        <field name="view_mode">list,form,pivot,graph</field>
-        <field name="domain">[('sport_type', '=', 'badminton')]</field>
-        <field name="context">{'default_sport_type': 'badminton', 'default_transaction_type': 'income'}</field>
-        <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">
-                İlk badminton kassa əməliyyatınızı yaradın!
-            </p>
-            <p>
-                Yalnız badminton ilə bağlı gəlir və xərclər burada qeyd olunur.
-            </p>
-        </field>
-    </record>
-
-    <!-- Ümumi Kassa (Badminton + Basketbol) -->  
-    <!--<menuitem id="menu_cash" name="💰 Kassa" parent="menu_sport_main" sequence="35"/>
-    <menuitem id="menu_cash_balance" name="Kassa Balansı" parent="menu_cash" 
-              action="action_volan_cash_balance" sequence="1" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
-    <menuitem id="menu_cash_flow" name="Bütün Əməliyyatlar" parent="menu_cash" 
-              action="action_volan_cash_flow" sequence="2" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>-->
-
-    <menuitem id="menu_employees" name="🧑‍🔧 İşçilər" parent="menu_sport_main" 
-              action="hr.open_view_employee_list_my" sequence="33" groups="volan_yasamal.group_volan_admin"/>
-    <menuitem id="menu_sport_config" name="⚙️ Tənzimləmələr" parent="menu_sport_main" sequence="40"
-              groups="volan_yasamal.group_volan_admin"/>
-    <menuitem id="menu_customer_lookup" name="Müştəri Axtarışı" parent="menu_sport_config" 
-              action="action_customer_lookup_wizard" sequence="1"/>
-    <menuitem id="menu_sport_branches" name="İdman Növləri" parent="menu_sport_config" 
-              action="action_sport_branch" sequence="2"/>
 </odoo>

@@ -67,7 +67,7 @@ class BadmintonSaleWizard(models.TransientModel):
     
     hours_quantity = fields.Integer(string="Saat Sayı", required=True, default=1)
     unit_price = fields.Float(string="Saatlıq Qiymət", default=8.0, store=True)
-    total_amount = fields.Float(string="Ümumi Məbləğ", compute='_compute_total_amount', store=True)
+    total_amount = fields.Float(string="Ümumi Məbləğ", store=True)
     
     # Müştərinin cari balansını göstər
     current_balance = fields.Integer(string="Cari Balans", related='partner_id.badminton_balance', readonly=True)
@@ -78,8 +78,9 @@ class BadmintonSaleWizard(models.TransientModel):
         for wizard in self:
             wizard.is_package = wizard.package_type in ['package_8', 'package_12']
     
-    @api.depends('hours_quantity', 'unit_price', 'customer_type', 'package_type')
-    def _compute_total_amount(self):
+    @api.onchange('hours_quantity', 'unit_price', 'customer_type', 'package_type')
+    def _onchange_total_amount(self):
+        """Məbləği avtomatik hesabla, amma əl ilə dəyişdirmək də mümkündür"""
         for wizard in self:
             if wizard.customer_type == 'child':  # Uşaqlar üçün
                 if wizard.package_type == 'single':
