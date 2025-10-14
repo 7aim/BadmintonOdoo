@@ -24,7 +24,7 @@
                 </group>
             </xpath>
             <xpath expr="//page[@name='internal_notes']" position="before">
-                <page string="Badminton Satışları" name="badminton_sales" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin">
+                <page string="Badminton Satışları" name="badminton_sales" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin" invisible="branch == 'genclik'">
                     <field name="badminton_sale_ids" context="{'default_partner_id': id}">
                         <list string="Badminton Satışları" create="false" edit="false">
                             <field name="name"/>
@@ -35,8 +35,31 @@
                         </list>
                     </field>
                 </page>
-                <page string="Balans Tarixçəsi" name="balance_history" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin">
+                <page string="Badminton Satışları" name="badminton_sales_genclik" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin" invisible="branch == 'yasamal'">
+                    <field name="genclik_sale_ids" context="{'default_partner_id': id}">
+                        <list string="Badminton Satışları" create="false" edit="false">
+                            <field name="name"/>
+                            <field name="sale_date"/>
+                            <field name="hours_quantity"/>
+                            <field name="total_amount"/>
+                            <field name="state"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Balans Tarixçəsi" name="balance_history" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin" invisible="branch == 'genclik'">
                     <field name="badminton_balance_history_ids" context="{'default_partner_id': id}">
+                        <list string="Balans Tarixçəsi" create="false" edit="false">
+                            <field name="transaction_date"/>
+                            <field name="transaction_type"/>
+                            <field name="hours_added"/>
+                            <field name="hours_used"/>
+                            <field name="balance_after"/>
+                            <field name="description"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Balans Tarixçəsi" name="balance_history_genclik" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin" invisible="branch == 'yasamal'">
+                    <field name="genclik_balance_history_ids" context="{'default_partner_id': id}">
                         <list string="Balans Tarixçəsi" create="false" edit="false">
                             <field name="transaction_date"/>
                             <field name="transaction_type"/>

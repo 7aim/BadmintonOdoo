@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Badminton Package Form View -->
+    <record id="view_badminton_package_form" model="ir.ui.view">
+        <field name="name">badminton.package.form</field>
+        <field name="model">badminton.package</field>
+        <field name="arch" type="xml">
+            <form string="Badminton Paketi">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="price"/>
+                        </group>
+                        <group>
+                            <field name="student_price"/>
+                            <field name="balance_count"/>
+                            <field name="active"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Badminton Package list View -->
+    <record id="view_badminton_package_list" model="ir.ui.view">
+        <field name="name">badminton.package.list</field>
+        <field name="model">badminton.package</field>
+        <field name="arch" type="xml">
+            <list string="Badminton Paketləri">
+                <field name="name"/>
+                <field name="price"/>
+                <field name="student_price"/>
+                <field name="balance_count"/>
+                <field name="active"/>
+            </list>
+        </field>
+    </record>
+
+
+</odoo>

@@ -51,7 +51,11 @@ class BadmintonSaleWizard(models.TransientModel):
     
     partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
     
-    # Müştəri növü və paket
+    # Paket seçimi
+    package_id = fields.Many2one('badminton.package', string="Paket")
+    is_student = fields.Boolean(string="Tələbədir", default=False)
+    
+    # Köhnə sistemlə uyğunluq üçün
     customer_type = fields.Selection([
         ('child', 'Uşaq'),
         ('adult', 'Böyük')
@@ -78,24 +82,34 @@ class BadmintonSaleWizard(models.TransientModel):
         for wizard in self:
             wizard.is_package = wizard.package_type in ['package_8', 'package_12']
     
+    @api.onchange('package_id', 'is_student')
+    def _onchange_package(self):
+        """Paket seçildikdə qiyməti təyin et"""
+        if self.package_id:
+            if self.is_student:
+                self.total_amount = self.package_id.student_price
+            else:
+                self.total_amount = self.package_id.price
+    
     @api.onchange('hours_quantity', 'unit_price', 'customer_type', 'package_type')
     def _onchange_total_amount(self):
-        """Məbləği avtomatik hesabla, amma əl ilə dəyişdirmək də mümkündür"""
-        for wizard in self:
-            if wizard.customer_type == 'child':  # Uşaqlar üçün
-                if wizard.package_type == 'single':
-                    wizard.total_amount = wizard.hours_quantity * 15.0
-                elif wizard.package_type == 'package_8':
-                    wizard.total_amount = 75.0  # 8 giriş paketi: 75 AZN
-                elif wizard.package_type == 'package_12':
-                    wizard.total_amount = 105.0  # 12 giriş paketi: 105 AZN
-            else:  # Böyüklər üçün
-                if wizard.package_type == 'single':
-                    wizard.total_amount = wizard.hours_quantity * 8.0
-                elif wizard.package_type == 'package_8':
-                    wizard.total_amount = 55.0  # 8 giriş paketi: 55 AZN
-                elif wizard.package_type == 'package_12':
-                    wizard.total_amount = 85.0  # 12 giriş paketi: 85 AZN
+        """Köhnə sistem üçün məbləği avtomatik hesabla"""
+        if not self.package_id:  # Yalnız paket seçilmədikdə
+            for wizard in self:
+                if wizard.customer_type == 'child':  # Uşaqlar üçün
+                    if wizard.package_type == 'single':
+                        wizard.total_amount = wizard.hours_quantity * 15.0
+                    elif wizard.package_type == 'package_8':
+                        wizard.total_amount = 75.0  # 8 giriş paketi: 75 AZN
+                    elif wizard.package_type == 'package_12':
+                        wizard.total_amount = 105.0  # 12 giriş paketi: 105 AZN
+                else:  # Böyüklər üçün
+                    if wizard.package_type == 'single':
+                        wizard.total_amount = wizard.hours_quantity * 8.0
+                    elif wizard.package_type == 'package_8':
+                        wizard.total_amount = 55.0  # 8 giriş paketi: 55 AZN
+                    elif wizard.package_type == 'package_12':
+                        wizard.total_amount = 85.0  # 12 giriş paketi: 85 AZN
     
     @api.onchange('customer_type', 'package_type')
     def _onchange_customer_package_type(self):
@@ -123,27 +137,50 @@ class BadmintonSaleWizard(models.TransientModel):
     
     def action_create_sale(self):
         """Satış yaradır və dərhal balansı artırır"""
-        if not self.partner_id or self.hours_quantity <= 0:
-            raise ValidationError("Zəhmət olmasa bütün sahələri doldurun!")
+        if not self.partner_id:
+            raise ValidationError("Zəhmət olmasa müştəri seçin!")
         
-        # Badminton satışı yaradırıq (dərhal ödənilib statusunda)
-        sale = self.env['badminton.sale'].create({
-            'partner_id': self.partner_id.id,
-            'customer_type': self.customer_type,
-            'package_type': self.package_type,
-            'hours_quantity': self.hours_quantity,
-            'unit_price': self.unit_price,
-            'state': 'paid',  # Dərhal ödənilib
-            'payment_date': fields.Datetime.now(),
-        })
+        if self.package_id:
+            # Yeni paket sistemi
+            balance_to_add = self.package_id.balance_count
+            hours_qty = self.package_id.balance_count
+            sale_data = {
+                'partner_id': self.partner_id.id,
+                'customer_type': 'adult',
+                'package_type': 'single',
+                'hours_quantity': hours_qty,
+                'unit_price': self.total_amount / hours_qty if hours_qty > 0 else self.total_amount,
+                'state': 'paid',
+                'payment_date': fields.Datetime.now(),
+            }
+        else:
+            # Köhnə sistem
+            if self.hours_quantity <= 0:
+                raise ValidationError("Saat sayı 0-dan böyük olmalıdır!")
+            balance_to_add = self.hours_quantity
+            sale_data = {
+                'partner_id': self.partner_id.id,
+                'customer_type': self.customer_type,
+                'package_type': self.package_type,
+                'hours_quantity': self.hours_quantity,
+                'unit_price': self.unit_price,
+                'state': 'paid',
+                'payment_date': fields.Datetime.now(),
+            }
         
-        # Balans create funksiyasında avtomatik artırılacaq
+        # Badminton satışı yaradırıq
+        sale = self.env['badminton.sale'].create(sale_data)
+        
+        # Balansı artırırıq
+        self.partner_id.badminton_balance += balance_to_add
+        
+        package_name = self.package_id.name if self.package_id else f"{self.hours_quantity} saat"
         
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'message': f'{self.partner_id.name} üçün {self.hours_quantity} saat badminton satışı tamamlandı! '
+                'message': f'{self.partner_id.name} üçün {package_name} satışı tamamlandı! '
                           f'Yeni balans: {self.partner_id.badminton_balance} saat',
                 'type': 'success',
                 'sticky': False,

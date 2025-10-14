@@ -1,6 +1,6 @@
 {
     'name': 'Volan Yasamal',
-    'version': '2.6.4',
+    'version': '2.6.8',
     'summary': 'Badminton və Basketbol üçün tam idman idarəetmə sistemi',
 
     'author': 'Aim',
@@ -10,7 +10,7 @@
     'images': [
         'static/description/icon.png',
     ],
-    'depends': ['base', 'contacts', 'mail', 'hr', 'bus'],
+    'depends': ['base', 'contacts', 'mail', 'hr', 'bus', 'volan_genclikk'],
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
@@ -21,6 +21,7 @@
         'views/badminton_session_filter_views.xml',
         'views/badminton_session_views.xml',
         'views/badminton_sale_views.xml',
+        'views/badminton_package_views.xml',
         'views/badminton_lesson_freeze_views.xml',
         'views/badminton_lesson_simple_views.xml',
         'views/badminton_group_views.xml',

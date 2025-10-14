@@ -45,14 +45,22 @@
                     <group string="Müştəri Məlumatları">
                         <field name="partner_id" options="{'no_create': True}" required="1"
                                domain="[('is_company', '=', False), ('sport_type', 'in', ['badminton', 'both']), ('branch', '=', 'yasamal')]"/>
-                        <field name="customer_type"/>
                         <field name="current_balance" readonly="1" style="font-weight: bold; color: #007bff;"/>
                     </group>
-                    <group string="Satış Məlumatları">
-                        <field name="package_type"/>
-                        <field name="hours_quantity" readonly="package_type != 'single'"/>
-                        <!--field name="unit_price" readonly="1"/>-->
+                    <group string="Paket Məlumatları">
+                        <field name="package_id" domain="[('active', '=', True)]"/>
+                        <field name="is_student" invisible="not package_id"/>
                         <field name="total_amount" style="font-weight: bold; color: #28a745;"/>
+                    </group>
+                </group>
+                <group string="Köhnə Sistem (Paket seçilmədikdə)" invisible="package_id">
+                    <group>
+                        <field name="customer_type"/>
+                        <field name="package_type"/>
+                    </group>
+                    <group>
+                        <field name="hours_quantity" readonly="package_type != 'single'"/>
+                        <field name="unit_price" readonly="1"/>
                     </group>
                 </group>
                 <footer>

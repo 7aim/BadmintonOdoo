@@ -1,6 +1,7 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_satici_res_partner,satici.res.partner,base.model_res_partner,volan_yasamal.group_volan_satici,1,1,1,0
 access_satici_badminton_sale,satici.badminton.sale,model_badminton_sale,volan_yasamal.group_volan_satici,1,1,1,0
+access_satici_badminton_package,satici.badminton.package,model_badminton_package,volan_yasamal.group_volan_satici,1,0,0,0
 access_satici_badminton_sale_wizard,satici.badminton.sale.wizard,model_badminton_sale_wizard,volan_yasamal.group_volan_satici,1,1,1,0
 access_satici_badminton_balance_history,satici.badminton.balance.history,model_badminton_balance_history,volan_yasamal.group_volan_satici,1,1,1,0
 access_satici_badminton_lesson_simple,satici.badminton.lesson.simple,model_badminton_lesson_simple,volan_yasamal.group_volan_satici,1,1,1,0
@@ -51,6 +52,7 @@ access_admin_sport_membership,admin.sport.membership,model_sport_membership,vola
 access_admin_sport_attendance,admin.sport.attendance,model_sport_attendance,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_basketball_demo_lesson,admin.basketball.demo.lesson,model_basketball_demo_lesson,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_badminton_sale,admin.badminton.sale,model_badminton_sale,volan_yasamal.group_volan_admin,1,1,1,1
+access_admin_badminton_package,admin.badminton.package,model_badminton_package,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_badminton_sale_wizard,admin.badminton.sale.wizard,model_badminton_sale_wizard,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_badminton_attendance_check,admin.badminton.attendance.check,model_badminton_attendance_check,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_badminton_attendance_check_line,admin.badminton.attendance.check.line,model_badminton_attendance_check_line,volan_yasamal.group_volan_admin,1,1,1,1

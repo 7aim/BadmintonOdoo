@@ -121,6 +121,23 @@
     <menuitem id="menu_sport_branches" name="İdman Növləri" parent="menu_sport_config" 
               action="action_sport_branch" sequence="2"/>
 
+    <!-- Badminton Package Action -->
+    <record id="action_badminton_package" model="ir.actions.act_window">
+        <field name="name">Paketlər</field>
+        <field name="res_model">badminton.package</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Yeni paket yaradın
+            </p>
+            <p>
+                Badminton paketlərini burada idarə edin.
+            </p>
+        </field>
+    </record>
+    <menuitem id="menu_badminton_package" name="Paketlər" parent="menu_sport_config"
+              action="action_badminton_package" sequence="15"/>
+
     <!-- Basketbol Müştəriləri Action -->
     <record id="action_basketball_customers" model="ir.actions.act_window">
         <field name="name">Basketbol Müştəriləri</field>
