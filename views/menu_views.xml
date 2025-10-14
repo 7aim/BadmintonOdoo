@@ -96,8 +96,18 @@
               action="action_badminton_cash_flow" sequence="2" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
 
     <!-- QR Scan - Yalnız Nəzarətçi və Admin -->
+    <!-- Badminton QR Scan Action -->
+    <record id="action_badminton_qr_scanner_wizard" model="ir.actions.act_window">
+        <field name="name">Badminton QR Kod Scanner</field>
+        <field name="res_model">qr.scanner.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_qr_scanner_wizard"/>
+        <field name="target">new</field>
+        <field name="context">{'default_service_type': 'badminton'}</field>
+    </record>
+
     <menuitem id="menu_qr_section" name="🔍 QR Scan" parent="menu_sport_main" 
-              action="action_qr_scanner_wizard" sequence="35" groups="volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_admin"/>
+              action="action_badminton_qr_scanner_wizard" sequence="35" groups="volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_admin"/>
 
     <!-- İşçilər - Yalnız Admin -->
     <menuitem id="menu_employees" name="🧑‍🔧 İşçilər" parent="menu_sport_main" 
@@ -180,6 +190,20 @@
               action="action_basketball_cash_balance" sequence="1" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
     <menuitem id="menu_basketball_cash_flow" name="Basketbol Gəlirləri" parent="menu_basketball_cash" 
               action="action_basketball_cash_flow" sequence="2" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
+
+    <!-- Basketbol QR Scan Action -->
+    <record id="action_basketball_qr_scanner_wizard" model="ir.actions.act_window">
+        <field name="name">Basketbol QR Kod Scanner</field>
+        <field name="res_model">qr.scanner.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_qr_scanner_wizard"/>
+        <field name="target">new</field>
+        <field name="context">{'default_service_type': 'basketball'}</field>
+    </record>
+
+    <!-- Basketbol QR Scan - Yalnız Basketbol Satıcı və Admin -->
+    <menuitem id="menu_basketball_qr_section" name="🔍 Basketbol QR Scan" parent="menu_go_basketbol_main" 
+              action="action_basketball_qr_scanner_wizard" sequence="55" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
 
     <!-- Basketbol İşçiləri - Yalnız Basketbol Admin -->
     <menuitem id="menu_basketball_employees" name="🧑‍🔧 İşçilər" parent="menu_go_basketbol_main" 

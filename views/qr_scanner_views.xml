@@ -9,7 +9,7 @@
                 <sheet>
                     
                     <group>
-                        <field name="service_type" widget="radio" options="{'horizontal': true}"/>
+                        <!--field name="service_type" widget="radio" options="{'horizontal': true}"/-->
                     </group>
                     
                     <group>
