@@ -11,25 +11,25 @@
         
         <!-- Volan Yasamal Qrupları -->
         <record id="group_volan_satici" model="res.groups">
-            <field name="name">Satıcı</field>
+            <field name="name">Yasamal Satıcı</field>
             <field name="category_id" ref="module_category_volan_yasamal"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
         </record>
 
         <record id="group_volan_mesqci" model="res.groups">
-            <field name="name">Məşqçi</field>
+            <field name="name">Yasamal Məşqçi</field>
             <field name="category_id" ref="module_category_volan_yasamal"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
         </record>
 
         <record id="group_volan_nezaretci" model="res.groups">
-            <field name="name">Nəzarətçi</field>
+            <field name="name">Yasamal Nəzarətçi</field>
             <field name="category_id" ref="module_category_volan_yasamal"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
         </record>
 
         <record id="group_volan_admin" model="res.groups">
-            <field name="name">Admin</field>
+            <field name="name">Yasamal Admin</field>
             <field name="category_id" ref="module_category_volan_yasamal"/>
             <field name="implied_ids" eval="[(4, ref('group_volan_satici')), (4, ref('group_volan_mesqci')), (4, ref('group_volan_nezaretci'))]"/>
             <field name="users" eval="[(4, ref('base.user_admin'))]"/>
@@ -44,19 +44,19 @@
 
         <!-- Go Basketbol Qrupları -->
         <record id="group_go_basketbol_mesqci" model="res.groups">
-            <field name="name">Basketbol Məşqçi</field>
+            <field name="name">Go Basketbol Məşqçi</field>
             <field name="category_id" ref="module_category_go_basketbol"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
         </record>
 
         <record id="group_go_basketbol_satici" model="res.groups">
-            <field name="name">Basketbol Satıcı</field>
+            <field name="name">Go Basketbol Satıcı</field>
             <field name="category_id" ref="module_category_go_basketbol"/>
             <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
         </record>
 
         <record id="group_go_basketbol_admin" model="res.groups">
-            <field name="name">Basketbol Admin</field>
+            <field name="name">Go Basketbol Admin</field>
             <field name="category_id" ref="module_category_go_basketbol"/>
             <field name="implied_ids" eval="[(4, ref('group_go_basketbol_satici')), (4, ref('group_go_basketbol_mesqci'))]"/>
             <field name="users" eval="[(4, ref('base.user_admin'))]"/>
@@ -78,13 +78,20 @@
         </record>
         
         <record id="rule_partner_trainer_yasamal" model="ir.rule">
-            <field name="name">Partners: Məşqçi yalnız Yasamal badminton müştərilərini görür</field>
+            <field name="name">Partners: Məşqçi yalnız özünü görür</field>
             <field name="model_id" ref="base.model_res_partner"/>
-            <field name="domain_force">[('branch', '=', 'yasamal'), ('sport_type', 'in', ['badminton', 'both'])]</field>
+            <field name="domain_force">[('user_ids', 'in', [user.id])]</field>
             <field name="groups" eval="[(4, ref('group_volan_mesqci'))]"/>
         </record>
 
         <!-- Go Basketbol Partner Rules -->
+        <record id="rule_partner_go_basketbol_mesqci" model="ir.rule">
+            <field name="name">Partners: Basketbol Məşqçi yalnız özünü görür</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="domain_force">[('user_ids', 'in', [user.id])]</field>
+            <field name="groups" eval="[(4, ref('group_go_basketbol_mesqci'))]"/>
+        </record>
+
         <record id="rule_partner_go_basketbol_satici" model="ir.rule">
             <field name="name">Partners: Basketbol Satıcı basketbol müştərilərini görür</field>
             <field name="model_id" ref="base.model_res_partner"/>
