@@ -55,115 +55,81 @@ class BadmintonSaleWizard(models.TransientModel):
     package_id = fields.Many2one('badminton.package', string="Paket")
     is_student = fields.Boolean(string="Tələbədir", default=False)
     
-    # Köhnə sistemlə uyğunluq üçün
+    # Sadə satış
     customer_type = fields.Selection([
         ('child', 'Uşaq'),
         ('adult', 'Böyük')
-    ], string="Müştəri Növü", required=True, default='adult')
-    
-    package_type = fields.Selection([
-        ('single', 'Tək Saat'),
-        ('package_8', '8 Giriş (Aylıq)'),
-        ('package_12', '12 Giriş (Aylıq)')
-    ], string="Paket Növü", required=True, default='single')
-    
-    is_package = fields.Boolean(string="Paketdir", compute='_compute_is_package', store=True)
-    
-    hours_quantity = fields.Integer(string="Saat Sayı", required=True, default=1)
-    unit_price = fields.Float(string="Saatlıq Qiymət", default=8.0, store=True)
+    ], string="Müştəri Növü", default='adult')
+    hours_quantity = fields.Integer(string="Saat Sayı", default=1)
+    unit_price = fields.Float(string="Saat Başı Qiymət", default=8.0)
     total_amount = fields.Float(string="Ümumi Məbləğ", store=True)
     
     # Müştərinin cari balansını göstər
     current_balance = fields.Integer(string="Cari Balans", related='partner_id.badminton_balance', readonly=True)
     
-    @api.depends('package_type')
-    def _compute_is_package(self):
-        """Seçilən paket növündən asılı olaraq is_package sahəsini təyin et"""
-        for wizard in self:
-            wizard.is_package = wizard.package_type in ['package_8', 'package_12']
-    
-    @api.onchange('package_id', 'is_student')
+    @api.onchange('package_id', 'customer_type', 'is_student')
     def _onchange_package(self):
-        """Paket seçildikdə qiyməti təyin et"""
+        """Paket və müştəri növünə görə qiyməti təyin et"""
         if self.package_id:
             if self.is_student:
                 self.total_amount = self.package_id.student_price
+            elif self.customer_type == 'child':
+                self.total_amount = self.package_id.child_price
             else:
-                self.total_amount = self.package_id.price
+                self.total_amount = self.package_id.adult_price
     
-    @api.onchange('hours_quantity', 'unit_price', 'customer_type', 'package_type')
-    def _onchange_total_amount(self):
-        """Köhnə sistem üçün məbləği avtomatik hesabla"""
-        if not self.package_id:  # Yalnız paket seçilmədikdə
-            for wizard in self:
-                if wizard.customer_type == 'child':  # Uşaqlar üçün
-                    if wizard.package_type == 'single':
-                        wizard.total_amount = wizard.hours_quantity * 15.0
-                    elif wizard.package_type == 'package_8':
-                        wizard.total_amount = 75.0  # 8 giriş paketi: 75 AZN
-                    elif wizard.package_type == 'package_12':
-                        wizard.total_amount = 105.0  # 12 giriş paketi: 105 AZN
-                else:  # Böyüklər üçün
-                    if wizard.package_type == 'single':
-                        wizard.total_amount = wizard.hours_quantity * 8.0
-                    elif wizard.package_type == 'package_8':
-                        wizard.total_amount = 55.0  # 8 giriş paketi: 55 AZN
-                    elif wizard.package_type == 'package_12':
-                        wizard.total_amount = 85.0  # 12 giriş paketi: 85 AZN
-    
-    @api.onchange('customer_type', 'package_type')
-    def _onchange_customer_package_type(self):
-        """Müştəri növü və ya paket növü dəyişəndə qiymətləri yenilə"""
-        if self.customer_type == 'child':  # Uşaqlar üçün
-            if self.package_type == 'single':
+    @api.onchange('customer_type')
+    def _onchange_customer_type(self):
+        """Müştəri növünə görə qiyməti təyin et"""
+        if not self.package_id:
+            if self.customer_type == 'child':
                 self.unit_price = 15.0
-                self.hours_quantity = 1
-            elif self.package_type == 'package_8':
-                self.unit_price = 9.375
-                self.hours_quantity = 8
-            elif self.package_type == 'package_12':
-                self.unit_price = 8.75
-                self.hours_quantity = 12
-        else:  # Böyüklər üçün
-            if self.package_type == 'single':
+            else:
                 self.unit_price = 8.0
-                self.hours_quantity = 1
-            elif self.package_type == 'package_8':
-                self.unit_price = 6.875
-                self.hours_quantity = 8
-            elif self.package_type == 'package_12':
-                self.unit_price = 7.083
-                self.hours_quantity = 12
+            self._calculate_total()
+    
+    @api.onchange('hours_quantity', 'unit_price')
+    def _onchange_price_fields(self):
+        """Saat sayı və ya qiymət dəyişəndə ümumi məbləği hesabla"""
+        if not self.package_id:
+            self._calculate_total()
+    
+    def _calculate_total(self):
+        """Ümumi məbləği hesabla"""
+        if self.hours_quantity and self.unit_price:
+            self.total_amount = self.hours_quantity * self.unit_price
     
     def action_create_sale(self):
         """Satış yaradır və dərhal balansı artırır"""
         if not self.partner_id:
             raise ValidationError("Zəhmət olmasa müştəri seçin!")
         
+        if not self.total_amount or self.total_amount <= 0:
+            raise ValidationError("Ümumi məbləğ 0-dan böyük olmalıdır!")
+        
         if self.package_id:
-            # Yeni paket sistemi
+            # Paket sistemi
             balance_to_add = self.package_id.balance_count
-            hours_qty = self.package_id.balance_count
             sale_data = {
                 'partner_id': self.partner_id.id,
-                'customer_type': 'adult',
+                'customer_type': self.customer_type,
                 'package_type': 'single',
-                'hours_quantity': hours_qty,
-                'unit_price': self.total_amount / hours_qty if hours_qty > 0 else self.total_amount,
+                'hours_quantity': balance_to_add,
+                'unit_price': self.total_amount,
+                'total_amount': self.total_amount,
                 'state': 'paid',
                 'payment_date': fields.Datetime.now(),
             }
         else:
-            # Köhnə sistem
-            if self.hours_quantity <= 0:
-                raise ValidationError("Saat sayı 0-dan böyük olmalıdır!")
+            # Sadə sistem - saat sayı ilə
             balance_to_add = self.hours_quantity
             sale_data = {
                 'partner_id': self.partner_id.id,
                 'customer_type': self.customer_type,
-                'package_type': self.package_type,
+                'package_type': 'single',
                 'hours_quantity': self.hours_quantity,
                 'unit_price': self.unit_price,
+                'total_amount': self.total_amount,
                 'state': 'paid',
                 'payment_date': fields.Datetime.now(),
             }
@@ -174,7 +140,7 @@ class BadmintonSaleWizard(models.TransientModel):
         # Balansı artırırıq
         self.partner_id.badminton_balance += balance_to_add
         
-        package_name = self.package_id.name if self.package_id else f"{self.hours_quantity} saat"
+        package_name = self.package_id.name if self.package_id else f"{self.total_amount} AZN"
         
         return {
             'type': 'ir.actions.client',

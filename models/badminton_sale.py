@@ -28,7 +28,7 @@ class BadmintonSale(models.Model):
     # Satış məlumatları
     hours_quantity = fields.Integer(string="Saat Sayı", required=True, default=1)
     unit_price = fields.Float(string="Saatlıq Qiymət", default=8, store=True)
-    total_amount = fields.Float(string="Ümumi Məbləğ", compute='_compute_total_amount', store=True)
+    total_amount = fields.Float(string="Ümumi Məbləğ", store=True)
     
     payment_date = fields.Datetime(string="Ödəniş Tarixi")
     
@@ -49,24 +49,6 @@ class BadmintonSale(models.Model):
     
     # Qeydlər
     notes = fields.Text(string="Qeydlər")
-    
-    @api.depends('hours_quantity', 'unit_price')
-    def _compute_total_amount(self):
-        for sale in self:
-            if sale.customer_type == 'child':  # Uşaqlar üçün
-                if sale.package_type == 'single':
-                    sale.total_amount = sale.hours_quantity * sale.unit_price
-                elif sale.package_type == 'package_8':
-                    sale.total_amount = 75.0  # 8 giriş paketi: 75 AZN
-                elif sale.package_type == 'package_12':
-                    sale.total_amount = 105.0  # 12 giriş paketi: 105 AZN
-            else:  # Böyüklər üçün
-                if sale.package_type == 'single':
-                    sale.total_amount = sale.hours_quantity * sale.unit_price
-                elif sale.package_type == 'package_8':
-                    sale.total_amount = 55.0  # 8 giriş paketi: 55 AZN
-                elif sale.package_type == 'package_12':
-                    sale.total_amount = 85.0  # 12 giriş paketi: 85 AZN
     
     @api.depends('sale_date', 'package_type')
     def _compute_expiry_date(self):

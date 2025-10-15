@@ -47,21 +47,24 @@
                                domain="[('is_company', '=', False), ('sport_type', 'in', ['badminton', 'both']), ('branch', '=', 'yasamal')]"/>
                         <field name="current_balance" readonly="1" style="font-weight: bold; color: #007bff;"/>
                     </group>
-                    <group string="Paket Məlumatları">
+                    <group string="Paket Satışı">
                         <field name="package_id" domain="[('active', '=', True)]"/>
+                        <field name="customer_type" invisible="not package_id"/>
                         <field name="is_student" invisible="not package_id"/>
+                    </group>
+                </group>
+                <group string="Sadə Satış (Paket seçilmədikdə)" invisible="package_id">
+                    <group>
+                        <field name="customer_type"/>
+                        <field name="hours_quantity"/>
+                    </group>
+                    <group>
+                        <field name="unit_price"/>
                         <field name="total_amount" style="font-weight: bold; color: #28a745;"/>
                     </group>
                 </group>
-                <group string="Köhnə Sistem (Paket seçilmədikdə)" invisible="package_id">
-                    <group>
-                        <field name="customer_type"/>
-                        <field name="package_type"/>
-                    </group>
-                    <group>
-                        <field name="hours_quantity" readonly="package_type != 'single'"/>
-                        <field name="unit_price" readonly="1"/>
-                    </group>
+                <group string="Ümumi Məbləğ" invisible="not package_id">
+                    <field name="total_amount" style="font-weight: bold; font-size: 18px; color: #28a745;"/>
                 </group>
                 <footer>
                     <button name="action_create_sale" type="object" string="Satışı Tamamla" class="btn-primary"/>

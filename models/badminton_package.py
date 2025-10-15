@@ -8,7 +8,8 @@ class BadmintonPackage(models.Model):
     _order = 'name'
 
     name = fields.Char(string="Paket Adı", required=True)
-    price = fields.Float(string="Qiymət", required=True)
+    adult_price = fields.Float(string="Böyük Qiyməti", required=True)
+    child_price = fields.Float(string="Kiçik Qiyməti", required=True)
     student_price = fields.Float(string="Tələbə Qiyməti", required=True)
     balance_count = fields.Integer(string="Badminton Balans Sayı", required=True, default=1)
     
