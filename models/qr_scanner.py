@@ -206,6 +206,73 @@ class QRScannerWizard(models.TransientModel):
                 current_year = today.year
                 current_weekday = str(today.weekday())
                 
+                # Əvvəlcə yeni basketbol lesson sistemini yoxla
+                basketball_lesson = self.env['basketball.lesson.simple'].search([
+                    ('partner_id', '=', partner_id),
+                    ('state', '=', 'active'),
+                    ('start_date', '<=', today),
+                    ('end_date', '>=', today)
+                ], limit=1)
+                
+                if basketball_lesson:
+                    # Basketball lesson sistemində QR yoxlaması
+                    valid_schedule = None
+                    for schedule in basketball_lesson.schedule_ids:
+                        if schedule.day_of_week == current_weekday and schedule.is_active:
+                            # Vaxt aralığını yoxla (isteğe bağlı)
+                            current_time = fields.Datetime.now().time()
+                            schedule_start = int(schedule.start_time)
+                            schedule_end = int(schedule.end_time)
+                            current_hour = current_time.hour
+                            
+                            # 2 saat əvvəl və 1 saat sonra QR kodu aktiv et
+                            if schedule_start - 2 <= current_hour <= schedule_end + 1:
+                                valid_schedule = schedule
+                                break
+                    
+                    if not valid_schedule:
+                        self.result_message = f"❌ Xəta: Bu gün {partner.name} üçün aktiv basketbol dərsi yoxdur!\nBugün: {today.strftime('%d.%m.%Y')} - {['B.ertəsi', 'Ç.axşamı', 'Çərşənbə', 'C.axşamı', 'Cümə', 'Şənbə', 'Bazar'][today.weekday()]}"
+                        return self._return_wizard()
+                    
+                    # Bu gün artıq iştirak var mı yoxla (basketball lesson simple üçün)
+                    existing_attendance = self.env['basketball.lesson.attendance.simple'].search([
+                        ('lesson_id', '=', basketball_lesson.id),
+                        ('schedule_id', '=', valid_schedule.id),
+                        ('attendance_date', '=', today)
+                    ], limit=1)
+                    
+                    if existing_attendance:
+                        self.result_message = f"⚠️ Diqqət: {partner.name} bu gün artıq bu dərsə iştirak edib!\nİştirak vaxtı: {existing_attendance.attendance_time}"
+                        return self._return_wizard()
+                    
+                    # Yeni iştirak qeydi yarat (basketball lesson simple)
+                    attendance = self.env['basketball.lesson.attendance.simple'].create({
+                        'lesson_id': basketball_lesson.id,
+                        'schedule_id': valid_schedule.id,
+                        'attendance_date': today,
+                        'attendance_time': fields.Datetime.now(),
+                        'qr_scanned': True,
+                        'scan_result': qr_data
+                    })
+                    
+                    # Schedule adını vaxt məlumatlarından yaradırıq
+                    day_names = {
+                        '0': 'Bazar ertəsi',
+                        '1': 'Çərşənbə axşamı', 
+                        '2': 'Çərşənbə',
+                        '3': 'Cümə axşamı',
+                        '4': 'Cümə',
+                        '5': 'Şənbə',
+                        '6': 'Bazar'
+                    }
+                    schedule_name = f"{day_names.get(valid_schedule.day_of_week, 'N/A')} {int(valid_schedule.start_time):02d}:{int((valid_schedule.start_time % 1) * 60):02d}-{int(valid_schedule.end_time):02d}:{int((valid_schedule.end_time % 1) * 60):02d}"
+                    
+                    self.result_message = f"✅ BASKETBOL UĞURLU!\n👤 Müştəri: {partner.name}\n🏀 Dərs: {schedule_name}\n📅 Tarix: {today.strftime('%d.%m.%Y')}\n⏰ Vaxt: {attendance.attendance_time.strftime('%H:%M')}\n📚 Abunəlik: {basketball_lesson.name}"
+                    # attendance_id-ni təyin etmirik çünki yeni sistem fərqli modeldir
+                    
+                    return self._return_wizard()
+                
+                # Əgər basketball lesson tapılmadısa, köhnə sport.membership sistemini yoxla
                 membership = self.env['sport.membership'].search([
                     ('partner_id', '=', partner_id),
                     ('month', '=', current_month),

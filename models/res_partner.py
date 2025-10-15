@@ -49,8 +49,18 @@ class VolanPartner(models.Model):
     badminton_balance_history_ids = fields.One2many('badminton.balance.history', 'partner_id', string="Balans Tarixçəsi")
     
     # 5.1. Gənclik Filialı Satış Tarixçəsi
-    genclik_sale_ids = fields.One2many('badminton.sale.genclik', 'partner_id', string="Gənclik Badminton Satışları")
-    genclik_balance_history_ids = fields.One2many('badminton.balance.history.genclik', 'partner_id', string="Gənclik Balans Tarixçəsi")
+    genclik_sale_ids = fields.One2many(
+        'badminton.sale.genclik',
+        'partner_id',
+        string="Gənclik Badminton Satışları",
+        groups="volan_genclikk.group_genclik_admin,volan_genclikk.group_genclik_satici"
+    )
+    genclik_balance_history_ids = fields.One2many(
+        'badminton.balance.history.genclik',
+        'partner_id',
+        string="Gənclik Balans Tarixçəsi",
+        groups="volan_genclikk.group_genclik_admin,volan_genclikk.group_genclik_satici"
+    )
     
     # 6. Basketbol Üzvlüklər
     basketball_membership_ids = fields.One2many('sport.membership', 'partner_id', string="Basketbol Üzvlüklər")
