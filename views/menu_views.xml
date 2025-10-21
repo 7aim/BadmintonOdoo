@@ -17,7 +17,7 @@
               groups="volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_admin"/>
     <menuitem id="menu_active_sessions" name="Aktiv Sessiyalar" parent="menu_badminton_sessions" 
               action="action_active_sessions" sequence="1"/>
-    <menuitem id="menu_all_sessions" name="Bütün Sessiyalar" parent="menu_badminton_sessions" 
+    <menuitem id="menu_all_sessions" name="Sessiyalar" parent="menu_badminton_sessions" 
               action="action_badminton_session" sequence="2"/>
     <menuitem id="menu_session_filter" name="Tarixə görə sessiyalar" parent="menu_badminton_sessions" 
               action="action_badminton_session_filter" sequence="3"/>
