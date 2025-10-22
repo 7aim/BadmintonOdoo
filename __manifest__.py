@@ -22,6 +22,7 @@
         'views/badminton_session_views.xml',
         'views/badminton_sale_views.xml',
         'views/badminton_package_views.xml',
+        'views/basketball_package_views.xml',
         'views/badminton_lesson_freeze_views.xml',
         'views/badminton_lesson_simple_views.xml',
         'views/badminton_group_views.xml',

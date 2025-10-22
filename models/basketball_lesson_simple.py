@@ -11,6 +11,10 @@ class BasketballLessonSimple(models.Model):
     name = fields.Char(string="Dərs Nömrəsi", readonly=True, default="Yeni")
     partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
     group_id = fields.Many2one('basketball.group', string="Qrup")
+    
+    # Paket seçimi - basketbol paketləri
+    package_id = fields.Many2one('basketball.package', string="Abunəlik Paketi",
+                                  domain="[('active', '=', True)]")
 
     # Dərs Qrafiki (həftənin günləri)
     schedule_ids = fields.One2many('basketball.lesson.schedule.simple', 'lesson_id', string="Həftəlik Qrafik")
@@ -21,6 +25,7 @@ class BasketballLessonSimple(models.Model):
     
     # Ödəniş məlumatları
     lesson_fee = fields.Float(string="Aylıq Dərs Haqqı", default=100.0, store=True)
+    original_price = fields.Float(string="Endirimsiz Qiymət", readonly=True)
     
     # Tarix məlumatları
     start_date = fields.Date(string="Cari Dövr Başlama", required=True, default=fields.Date.today)
@@ -111,6 +116,23 @@ class BasketballLessonSimple(models.Model):
             
             if schedule_vals:
                 self.schedule_ids = schedule_vals
+    
+    @api.onchange('package_id')
+    def _onchange_package_id(self):
+        """Paket seçildikdə avtomatik qiyməti və endirimli qiyməti təyin et"""
+        if self.package_id:
+            # Varsayılan olaraq böyük qiymətini göstəririk
+            base_price = self.package_id.adult_price
+            self.original_price = base_price
+            discount = self.package_id.discount_percent or 0.0
+            
+            # Endirimli qiyməti hesablayırıq
+            if discount > 0:
+                self.lesson_fee = base_price * (1 - discount / 100)
+            else:
+                self.lesson_fee = base_price
+        else:
+            self.original_price = 0.0
     
     @api.model
     def create(self, vals):

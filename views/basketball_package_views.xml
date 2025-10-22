@@ -1,20 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- Badminton Package Form View -->
-    <record id="view_badminton_package_form" model="ir.ui.view">
-        <field name="name">badminton.package.form</field>
-        <field name="model">badminton.package</field>
+    <!-- Basketball Package Form View -->
+    <record id="view_basketball_package_form" model="ir.ui.view">
+        <field name="name">basketball.package.form</field>
+        <field name="model">basketball.package</field>
         <field name="arch" type="xml">
-            <form string="Badminton Paketi">
+            <form string="Basketbol Paketi">
                 <sheet>
                     <group>
                         <group>
                             <field name="name"/>
-                            <field name="package_type"/>
-                            <field name="balance_count" invisible="package_type != 'subscription'"/>
+                            <field name="discount_percent"/>
                         </group>
                         <group>
-                            <field name="discount_percent"/>
                             <field name="active"/>
                         </group>
                     </group>
@@ -32,21 +30,34 @@
         </field>
     </record>
 
-    <!-- Badminton Package list View -->
-    <record id="view_badminton_package_list" model="ir.ui.view">
-        <field name="name">badminton.package.list</field>
-        <field name="model">badminton.package</field>
+    <!-- Basketball Package List View -->
+    <record id="view_basketball_package_list" model="ir.ui.view">
+        <field name="name">basketball.package.list</field>
+        <field name="model">basketball.package</field>
         <field name="arch" type="xml">
-            <list string="Badminton Paketləri">
+            <list string="Basketbol Paketləri">
                 <field name="name"/>
-                <field name="package_type"/>
                 <field name="discount_percent"/>
                 <field name="adult_price"/>
                 <field name="child_price"/>
                 <field name="student_price"/>
-                <field name="balance_count" invisible="package_type != 'subscription'"/>
                 <field name="active"/>
             </list>
+        </field>
+    </record>
+
+    <!-- Basketball Package Action -->
+    <record id="action_basketball_package" model="ir.actions.act_window">
+        <field name="name">Basketbol Paketləri</field>
+        <field name="res_model">basketball.package</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Yeni basketbol paketi yaradın
+            </p>
+            <p>
+                Basketbol paketlərini burada idarə edin.
+            </p>
         </field>
     </record>
 </odoo>

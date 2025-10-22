@@ -109,3 +109,6 @@ access_go_basketbol_admin_sport_schedule,go.basketbol.admin.sport.schedule,model
 access_go_basketbol_admin_sport_attendance,go.basketbol.admin.sport.attendance,model_sport_attendance,volan_yasamal.group_go_basketbol_admin,1,1,1,1
 access_go_basketbol_admin_qr_scanner_wizard,go.basketbol.admin.qr.scanner.wizard,model_qr_scanner_wizard,volan_yasamal.group_go_basketbol_admin,1,1,1,1
 access_go_basketbol_satici_qr_scanner_wizard,go.basketbol.satici.qr.scanner.wizard,model_qr_scanner_wizard,volan_yasamal.group_go_basketbol_satici,1,1,1,1
+access_admin_basketball_package,admin.basketball.package,model_basketball_package,volan_yasamal.group_volan_admin,1,1,1,1
+access_go_basketbol_admin_basketball_package,go.basketbol.admin.basketball.package,model_basketball_package,volan_yasamal.group_go_basketbol_admin,1,1,1,1
+access_go_basketbol_satici_basketball_package,go.basketbol.satici.basketball.package,model_basketball_package,volan_yasamal.group_go_basketbol_satici,1,0,0,0

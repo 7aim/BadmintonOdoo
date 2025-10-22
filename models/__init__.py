@@ -3,6 +3,7 @@ from . import badminton_session
 from . import badminton_sale
 from . import badminton_group
 from . import badminton_package
+from . import basketball_package
 from . import basketball_attendance_check
 from . import basketball_group
 from . import badminton_lesson_freeze
