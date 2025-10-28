@@ -156,8 +156,8 @@ class BadmintonSaleWizard(models.TransientModel):
         # Badminton satışı yaradırıq
         sale = self.env['badminton.sale'].create(sale_data)
         
-        # Balansı artırırıq
-        self.partner_id.badminton_balance += balance_to_add
+        # QEYD: Balans avtomatik artırılır badminton.sale modelinin create() metodunda
+        # çünki state='paid' olaraq yaradılır
         
         package_name = self.package_id.name if self.package_id else f"{self.total_amount} AZN"
         
