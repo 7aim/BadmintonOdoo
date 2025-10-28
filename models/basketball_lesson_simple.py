@@ -31,9 +31,13 @@ class BasketballLessonSimple(models.Model):
     start_date = fields.Date(string="Cari Dövr Başlama", required=True, default=fields.Date.today)
     end_date = fields.Date(string="Cari Dövr Bitmə", compute='_compute_end_date', store=True, readonly=False)
     
-    # Abunəlik məlumatları
-    total_months = fields.Integer(string="Ümumi Abunəlik (ay)", default=1)
-    total_payments = fields.Float(string="Ümumi Ödəniş", compute='_compute_total_payments')
+    # Ödənişlər (One2Many)
+    payment_ids = fields.One2many('basketball.lesson.payment', 'lesson_id', string="Ödənişlər")
+    last_payment_date = fields.Date(string="Ən Son Ödəniş", compute='_compute_last_payment_date', store=True)
+    
+    # Abunəlik məlumatları (ödənişlərə əsasən hesablanır)
+    total_months = fields.Integer(string="Ümumi Abunəlik (ay)", compute='_compute_total_months', store=True)
+    total_payments = fields.Float(string="Ümumi Ödəniş", compute='_compute_total_payments', store=True)
     
     # Dondurma məlumatları
     freeze_ids = fields.One2many('basketball.lesson.freeze', 'lesson_id', string="Dondurma Tarixçəsi")
@@ -49,8 +53,9 @@ class BasketballLessonSimple(models.Model):
         ('cancelled', 'Ləğv Edilib')
     ], default='draft', string="Vəziyyət")
     
-    # Ödəniş tarixi
-    payment_date = fields.Datetime(string="Ödəniş Tarixi")
+    # Ödəniş tarixi (sabit - kassaya təsir edən gün)
+    payment_date = fields.Date(string="Başlama Tarixi", required=True, default=fields.Date.today,
+                                help="Bu tarixdəki GÜN hər ay kassaya ödəniş yazılarkən istifadə olunacaq")
     
     # Qeydlər
     notes = fields.Text(string="Qeydlər")
@@ -64,11 +69,27 @@ class BasketballLessonSimple(models.Model):
             else:
                 lesson.end_date = False
     
-    
-    @api.depends('total_months', 'lesson_fee')
-    def _compute_total_payments(self):
+    @api.depends('payment_ids')
+    def _compute_last_payment_date(self):
+        """Ən son ödənişin tarixini hesabla"""
         for lesson in self:
-            lesson.total_payments = lesson.total_months * lesson.lesson_fee
+            if lesson.payment_ids:
+                latest_payment = lesson.payment_ids.sorted('payment_date', reverse=True)
+                lesson.last_payment_date = latest_payment[0].payment_date if latest_payment else False
+            else:
+                lesson.last_payment_date = False
+    
+    @api.depends('payment_ids')
+    def _compute_total_months(self):
+        """Ümumi abunəlik ayını ödənişlərə əsasən hesabla (hər sətir 1 ay)"""
+        for lesson in self:
+            lesson.total_months = len(lesson.payment_ids)
+    
+    @api.depends('payment_ids.amount')
+    def _compute_total_payments(self):
+        """Ümumi ödənişi hesabla"""
+        for lesson in self:
+            lesson.total_payments = sum(lesson.payment_ids.mapped('amount'))
     
     @api.depends('attendance_ids')
     def _compute_total_attendances(self):
@@ -146,19 +167,21 @@ class BasketballLessonSimple(models.Model):
         for lesson in self:
             if lesson.state == 'draft':
                 lesson.state = 'active'
-                lesson.payment_date = fields.Datetime.now()
                 
-                # Kassaya əməliyyatı əlavə et
-                self.env['volan.cash.flow'].create({
-                    'name': f"Basketbol dərs abunəliyi: {lesson.name}",
-                    'date': fields.Date.today(),
+                # İlk ödəniş sətirini yarat
+                current_month = datetime.now().month
+                month_mapping = {
+                    1: 'january', 2: 'february', 3: 'march', 4: 'april',
+                    5: 'may', 6: 'june', 7: 'july', 8: 'august',
+                    9: 'september', 10: 'october', 11: 'november', 12: 'december'
+                }
+                
+                self.env['basketball.lesson.payment'].create({
+                    'lesson_id': lesson.id,
+                    'payment_date': fields.Date.today(),
+                    'payment_month': month_mapping.get(current_month, 'january'),
                     'amount': lesson.lesson_fee,
-                    'transaction_type': 'income',
-                    'category': 'basketball_lesson',
-                    'partner_id': lesson.partner_id.id,
-                    'related_model': 'basketball.lesson.simple',
-                    'related_id': lesson.id,
-                    'notes': f"Abunəlik dövrü: {lesson.start_date} - {lesson.end_date}"
+                    'notes': 'İlk abunəlik ödənişi'
                 })
     
     def action_renew(self):
@@ -166,25 +189,36 @@ class BasketballLessonSimple(models.Model):
         for lesson in self:
             if lesson.state == 'active':
                 # Başlama tarixi sabit qalır, yalnız end_date uzanır
-                old_end_date = lesson.end_date
                 lesson.end_date = lesson.end_date + timedelta(days=30)
-                lesson.total_months += 1
-                lesson.payment_date = fields.Datetime.now()
                 
-                # Yeni sequence nömrəsi ver (isteğe bağlı)
-                lesson.name = f"{lesson.name.split('-')[0]}-R{lesson.total_months}"
+                # Növbəti ayı hesabla
+                if lesson.payment_ids:
+                    last_payment = lesson.payment_ids.sorted('payment_date', reverse=True)[0]
+                    # Növbəti ay
+                    month_mapping = {
+                        'january': 'february', 'february': 'march', 'march': 'april',
+                        'april': 'may', 'may': 'june', 'june': 'july',
+                        'july': 'august', 'august': 'september', 'september': 'october',
+                        'october': 'november', 'november': 'december', 'december': 'january'
+                    }
+                    next_month = month_mapping.get(last_payment.payment_month, 'january')
+                else:
+                    # Əgər heç ödəniş yoxdursa, cari aydan başla
+                    current_month = datetime.now().month
+                    month_reverse_mapping = {
+                        1: 'january', 2: 'february', 3: 'march', 4: 'april',
+                        5: 'may', 6: 'june', 7: 'july', 8: 'august',
+                        9: 'september', 10: 'october', 11: 'november', 12: 'december'
+                    }
+                    next_month = month_reverse_mapping.get(current_month, 'january')
                 
-                # Kassaya əməliyyatı əlavə et
-                self.env['volan.cash.flow'].create({
-                    'name': f"Basketbol dərs yeniləməsi: {lesson.name}",
-                    'date': fields.Date.today(),
+                # Yeni ödəniş sətirini yarat
+                self.env['basketball.lesson.payment'].create({
+                    'lesson_id': lesson.id,
+                    'payment_date': fields.Date.today(),
+                    'payment_month': next_month,
                     'amount': lesson.lesson_fee,
-                    'transaction_type': 'income',
-                    'category': 'basketball_lesson',
-                    'partner_id': lesson.partner_id.id,
-                    'related_model': 'basketball.lesson.simple',
-                    'related_id': lesson.id,
-                    'notes': f"Abunəlik yeniləməsi: {old_end_date} - {lesson.end_date}"
+                    'notes': 'Abunəlik yeniləməsi'
                 })
     
     def action_complete(self):
@@ -259,7 +293,21 @@ class BasketballLessonScheduleSimple(models.Model):
     
     # Qeydlər
     notes = fields.Text(string="Qeydlər")
-    
+
+    def name_get(self):
+        """Dərs vaxtını daha anlaşıqlı formada göstər"""
+        result = []
+        day_names = dict(self._fields['day_of_week'].selection)
+        for schedule in self:
+            start_hours = int(schedule.start_time)
+            start_minutes = int((schedule.start_time - start_hours) * 60)
+            end_hours = int(schedule.end_time)
+            end_minutes = int((schedule.end_time - end_hours) * 60)
+            
+            formatted_time = f"{day_names[schedule.day_of_week]} {start_hours:02d}:{start_minutes:02d}-{end_hours:02d}:{end_minutes:02d}"
+            result.append((schedule.id, formatted_time))
+        return result 
+
     @api.constrains('start_time', 'end_time')
     def _check_time_range(self):
         for schedule in self:
