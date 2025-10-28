@@ -157,8 +157,12 @@ class BasketballLessonSimple(models.Model):
     
     @api.model
     def create(self, vals):
-        if vals.get('name', 'Yeni') == 'Yeni':
-            vals['name'] = self.env['ir.sequence'].next_by_code('basketball.lesson.simple') or 'BLS001'
+        # Abunəlik adı: A-MUSTERIID formatında
+        if vals.get('partner_id'):
+            partner_id = vals['partner_id']
+            vals['name'] = f"A-{partner_id}"
+        else:
+            vals['name'] = 'A-0'  # Müştəri yoxdursa
 
         return super(BasketballLessonSimple, self).create(vals)
 

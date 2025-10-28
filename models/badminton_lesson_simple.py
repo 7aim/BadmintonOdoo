@@ -54,7 +54,7 @@ class BadmintonLessonSimple(models.Model):
     ], default='draft', string="Vəziyyət")
     
     # Ödəniş tarixi (sabit - kassaya təsir edən gün)
-    payment_date = fields.Date(string="Balama Tarixi", required=True, default=fields.Date.today,
+    payment_date = fields.Date(string="Başlama Tarixi", required=True, default=fields.Date.today,
                                 help="Bu tarixdəki GÜN hər ay kassaya ödəniş yazılarkən istifadə olunacaq")
     
     # Qeydlər
@@ -156,8 +156,12 @@ class BadmintonLessonSimple(models.Model):
     
     @api.model
     def create(self, vals):
-        if vals.get('name', 'Yeni') == 'Yeni':
-            vals['name'] = self.env['ir.sequence'].next_by_code('badminton.lesson.simple') or 'BLS001'
+        # Abunəlik adı: A-MUSTERIID formatında
+        if vals.get('partner_id'):
+            partner_id = vals['partner_id']
+            vals['name'] = f"A-{partner_id}"
+        else:
+            vals['name'] = 'A-0'  # Müştəri yoxdursa
             
         return super(BadmintonLessonSimple, self).create(vals)
     
