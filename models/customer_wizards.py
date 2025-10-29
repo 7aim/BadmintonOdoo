@@ -69,6 +69,13 @@ class BadmintonSaleWizard(models.TransientModel):
     discount_percent = fields.Float(string="Endirim (%)", readonly=True)
     total_amount = fields.Float(string="Ümumi Məbləğ", store=True)
     
+    # Ödəniş məlumatları
+    payment_method = fields.Selection([
+        ('cash', 'Nağd'),
+        ('card', 'Kartdan karta'),
+        ('abonent', 'Abunəçi'),
+    ], default='cash', string="Ödəniş Metodu")
+
     # Müştərinin cari balansını göstər
     current_balance = fields.Integer(string="Cari Balans", related='partner_id.badminton_balance', readonly=True)
     
@@ -141,6 +148,7 @@ class BadmintonSaleWizard(models.TransientModel):
                 'total_amount': self.total_amount,
                 'state': 'paid',
                 'payment_date': fields.Datetime.now(),
+                'payment_method': self.payment_method,
             }
         else:
             # Sadə sistem - saat sayı ilə
@@ -154,6 +162,7 @@ class BadmintonSaleWizard(models.TransientModel):
                 'total_amount': self.total_amount,
                 'state': 'paid',
                 'payment_date': fields.Datetime.now(),
+                'payment_method': self.payment_method,
             }
         
         # Badminton satışı yaradırıq

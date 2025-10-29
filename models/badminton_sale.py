@@ -31,7 +31,12 @@ class BadmintonSale(models.Model):
     total_amount = fields.Float(string="Ümumi Məbləğ", store=True)
     
     payment_date = fields.Datetime(string="Ödəniş Tarixi")
-    
+    payment_method = fields.Selection([
+        ('cash', 'Nağd'),
+        ('card', 'Kartdan karta'),
+        ('abonent', 'Abunəçi'),
+    ], string="Ödəniş Metodu")
+
     # Vəziyyət
     state = fields.Selection([
         ('draft', 'Layihə'),

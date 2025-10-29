@@ -7,6 +7,12 @@
         <field name="arch" type="xml">
             <form string="Badminton Sessiyası">
                 <header>
+                    <!-- Badminton Satışı düyməsi -->
+                    <button name="%(action_badminton_sale_wizard)d"
+                            string="Balans Yüklə"
+                            type="action"
+                            class="btn-info"/>
+                    
                     <!-- Düymə: sessiya draft vəziyyətindədirsə "Başlat" göstər -->
                     <button name="start_session_manual"
                             string="Sessiyanı Başlat"
@@ -44,6 +50,7 @@
                                    domain="[('is_company', '=', False), ('sport_type', 'in', ['badminton', 'both']), ('branch', '=', 'yasamal')]"
                                    required="1"/>
                             <field name="promo_type"/>
+                            <field name="payment_type"/>
                             <field name="duration_hours"/>
                             <field name="start_time" readonly="1"/>
                             <field name="end_time" readonly="1"/>
@@ -80,6 +87,7 @@
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="promo_type"/>
+                <field name="payment_type"/>
                 <field name="start_time"/>
                 <field name="end_time"/>
                 <field name="completion_time"/>
@@ -106,6 +114,7 @@
                 <field name="queue_number" string="Növbə" invisible="state != 'draft'"/>
                 <field name="partner_id"/>
                 <field name="promo_type"/>
+                <field name="payment_type"/>
                 <field name="start_time"/>
                 <field name="end_time"/>
                 <field name="state"/>
