@@ -195,6 +195,24 @@
                         <field name="basketball_expenses" widget="monetary" style="color: red;"/>
                         <field name="basketball_balance" widget="monetary" class="oe_subtotal_footer_separator" style="font-weight: bold;"/>
                     </group>
+                    <!-- 📊 Dashboard - Ödəniş Hesabatları -->
+                    <group string="📊 Ödəniş Hesabatları">
+                        <group>
+                            <field name="cash_payments" widget="monetary" style="font-size: 18px; font-weight: bold; color: #28a745;"/>
+                            <field name="card_payments" widget="monetary" style="font-size: 18px; font-weight: bold; color: #007bff;"/>
+                            <field name="total_payments" widget="monetary" style="font-size: 20px; font-weight: bold; color: #17a2b8;"/>
+                        </group>
+                    </group>
+                    
+                    <!-- 📊 Dashboard - Uşaq Statistikası -->
+                    <group string="📊 Uşaq Statistikası">
+                        <group>
+                            <field name="total_children" style="font-size: 18px; font-weight: bold; color: #6c757d;"/>
+                        </group>
+                        <group>
+                            <field name="new_children" style="font-size: 18px; font-weight: bold; color: #ffc107;"/>
+                        </group>
+                    </group>
                 </sheet>
             </form>
         </field>

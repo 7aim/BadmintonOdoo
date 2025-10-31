@@ -338,7 +338,16 @@ class BasketballCashBalance(models.TransientModel):
     date_from = fields.Date('📅 Başlanğıc Tarix')
     date_to = fields.Date('📅 Bitmə Tarix')
 
-    # Basketbol gəlirləri
+    # 📊 DASHBOARD - Ödəniş Hesabatları
+    cash_payments = fields.Float('💵 Nağd Ödənişlər', readonly=True, help='Abunəliklərdə nağd ödənişlərin cəmi')
+    card_payments = fields.Float('💳 Kart Ödənişlər', readonly=True, help='Abunəliklərdə kart ödənişlərinin cəmi')
+    total_payments = fields.Float('💰 Ümumi Ödəniş', readonly=True, help='Nağd + Kart')
+    
+    # 📊 DASHBOARD - Uşaq Statistikası
+    total_children = fields.Integer('👥 Ümumi Uşaq Sayı', readonly=True, help='Bütün basketbol abunəlikləri')
+    new_children = fields.Integer('🆕 Yeni Uşaq Sayı', readonly=True, help='Seçilmiş tarix aralığında yaradılmış abunəliklər')
+    
+    # Basketbol gəlirləri (köhnə)
     basketball_lessons_income = fields.Float('🏀 Basketbol Dərs Abunəlikləri', readonly=True)
     basketball_other_income = fields.Float('💰 Digər Basketbol Gəlirləri', readonly=True)
     
@@ -357,12 +366,13 @@ class BasketballCashBalance(models.TransientModel):
         return res
 
     def _get_date_domain(self):
-        """Tarix filtrinə əsasən domain qaytarır"""
+        """Tarix filtrinə əsasən domain qaytarır (həmişə 2 elementli)"""
         today = fields.Date.today()
         domain = []
         
         if self.date_filter == 'today':
-            domain = [('date', '=', today)]
+            # Bu gün: başlanğıc və son eyni tarixdir
+            domain = [('date', '>=', today), ('date', '<=', today)]
         elif self.date_filter == 'week':
             week_start = today - timedelta(days=today.weekday())
             domain = [('date', '>=', week_start), ('date', '<=', today)]
@@ -378,18 +388,77 @@ class BasketballCashBalance(models.TransientModel):
         return domain
 
     def _calculate_basketball_balance(self, values):
-        """Basketbol balansını hesablayır"""
+        """Basketbol balansını hesablayır + Dashboard məlumatları"""
         cash_flow_obj = self.env['volan.cash.flow']
+        payment_obj = self.env['basketball.lesson.payment']
+        lesson_obj = self.env['basketball.lesson.simple']
+        
         domain = self._get_date_domain()
         
-        # Basketbol dərs gəlirləri - ümumi kassadakı kimi
-        basketball_lessons_domain = domain + [
-            ('transaction_type', '=', 'income'),
-            ('category', '=', 'basketball_lesson')
-        ]
-        basketball_lessons_income = sum(cash_flow_obj.search(basketball_lessons_domain).mapped('amount'))
+        # 📊 DASHBOARD - Ödəniş Hesabatları (tarix filtrinə əsasən)
+        # Domain-dan payment_date üçün date_from və date_to çıxar
+        payment_date_domain = []
+        if domain and len(domain) >= 2:
+            # domain formatı: [('date', '>=', date_from), ('date', '<=', date_to)]
+            payment_date_domain = [
+                ('payment_date', '>=', domain[0][2]),
+                ('payment_date', '<=', domain[1][2])
+            ]
         
-        # Digər basketbol gəlirləri - yalnız sport_type=basketball olanlar
+        # Nağd ödənişlər
+        cash_payments_domain = [('payment_method_lesson', '=', 'cash')] + payment_date_domain
+        cash_payments = sum(payment_obj.search(cash_payments_domain).mapped('amount'))
+        
+        # Kart ödənişlər
+        card_payments_domain = [('payment_method_lesson', '=', 'card')] + payment_date_domain
+        card_payments = sum(payment_obj.search(card_payments_domain).mapped('amount'))
+        
+        # Ümumi ödəniş
+        total_payments = cash_payments + card_payments
+        
+        # 📊 DASHBOARD - Uşaq Statistikası
+        # Ümumi uşaq sayı - UNİKAL müştəri sayı (1 uşaq çox abunəlik ala bilər)
+        all_lessons = lesson_obj.search([])
+        unique_partners = all_lessons.mapped('partner_id')
+        total_children = len(unique_partners)
+        
+        # Yeni uşaq sayı - seçilmiş tarix aralığında İLK DƏFƏ abunəlik BAŞLAYAN unikal müştərilər
+        new_children = 0
+        if domain and len(domain) >= 2:
+            date_from = domain[0][2]  # date object
+            date_to = domain[1][2]    # date object
+            
+            # Seçilmiş tarixdə başlayan abunəliklər (start_date əsasında - daha məntiqli!)
+            start_date_domain = [
+                ('start_date', '>=', date_from),
+                ('start_date', '<=', date_to)
+            ]
+            new_lessons = lesson_obj.search(start_date_domain)
+            
+            # Bu abunəliklərin müştəriləri
+            new_partners = new_lessons.mapped('partner_id')
+            
+            # Bu müştərilərin seçilmiş tarixdən ƏVVƏL abunəliyi var mı yoxla
+            truly_new_partners = []
+            for partner in new_partners:
+                # Bu müştərinin bu tarixdən əvvəl başlayan abunəliyi var mı?
+                older_lessons = lesson_obj.search([
+                    ('partner_id', '=', partner.id),
+                    ('start_date', '<', date_from)
+                ], limit=1)
+                
+                if not older_lessons:
+                    # Əvvəl abunəliyi yoxdur, yeni müştəridir
+                    if partner.id not in [p.id for p in truly_new_partners]:
+                        truly_new_partners.append(partner)
+            
+            new_children = len(truly_new_partners)
+        
+        # Köhnə hesablamalar - İNDİ payment_obj-dan hesablayırıq (daha düzgün!)
+        # Basketbol dərs gəlirləri - birbaşa ödənişlərdən (total_payments ilə eyni mənbə)
+        basketball_lessons_income = total_payments  # Dashboard ilə eyni!
+        
+        # Digər basketbol gəlirləri - yalnız sport_type=basketball olanlar (cash_flow-dan)
         basketball_other_domain = domain + [
             ('transaction_type', '=', 'income'),
             ('sport_type', '=', 'basketball'),
@@ -397,7 +466,7 @@ class BasketballCashBalance(models.TransientModel):
         ]
         basketball_other_income = sum(cash_flow_obj.search(basketball_other_domain).mapped('amount'))
         
-        # Basketbol xərcləri - yalnız sport_type=basketball olanlar
+        # Basketbol xərcləri - yalnız sport_type=basketball olanlar (cash_flow-dan)
         basketball_expenses_domain = domain + [
             ('transaction_type', '=', 'expense'),
             ('sport_type', '=', 'basketball')
@@ -409,6 +478,13 @@ class BasketballCashBalance(models.TransientModel):
         basketball_balance = total_basketball_income - basketball_expenses
         
         values.update({
+            # Dashboard
+            'cash_payments': cash_payments,
+            'card_payments': card_payments,
+            'total_payments': total_payments,
+            'total_children': total_children,
+            'new_children': new_children,
+            # Köhnə
             'basketball_lessons_income': basketball_lessons_income,
             'basketball_other_income': basketball_other_income,
             'basketball_expenses': basketball_expenses,

@@ -116,10 +116,10 @@
     <!-- Tənzimləmələr - Yalnız Admin -->
     <menuitem id="menu_sport_config" name="⚙️ Tənzimləmələr" parent="menu_sport_main" sequence="40"
               groups="volan_yasamal.group_volan_admin"/>
-    <menuitem id="menu_customer_lookup" name="Müştəri Axtarışı" parent="menu_sport_config" 
-              action="action_customer_lookup_wizard" sequence="1"/>
-    <menuitem id="menu_sport_branches" name="İdman Növləri" parent="menu_sport_config" 
-              action="action_sport_branch" sequence="2"/>
+    <!--menuitem id="menu_customer_lookup" name="Müştəri Axtarışı" parent="menu_sport_config" 
+              action="action_customer_lookup_wizard" sequence="1"/-->
+    <!--menuitem id="menu_sport_branches" name="İdman Növləri" parent="menu_sport_config" 
+              action="action_sport_branch" sequence="2"/-->
 
     <!-- Badminton Package Action -->
     <record id="action_badminton_package" model="ir.actions.act_window">
@@ -170,8 +170,8 @@
               action="action_basketball_group" sequence="3" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_mesqci,volan_yasamal.group_go_basketbol_admin"/>
     <menuitem id="menu_basketball_lesson_freeze" name="Dondurma Tarixçəsi" parent="menu_basketball_lessons"
               action="action_basketball_lesson_freeze" sequence="4" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
-    <menuitem id="menu_basketball_package" name="Basketbol Paketləri" parent="menu_basketball_lessons"
-              action="action_basketball_package" sequence="5" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
+    <!--menuitem id="menu_basketball_package" name="Basketbol Paketləri" parent="menu_basketball_lessons"
+              action="action_basketball_package" sequence="5" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/-->
     <!-- Basketbol İştirak Yoxlaması - Yalnız Basketbol Məşqçi və Admin -->
     <menuitem id="menu_basketball_attendance_check_list" name="İştirak Yoxlaması" parent="menu_basketball_lessons" 
               action="action_basketball_attendance_check" sequence="6" groups="volan_yasamal.group_go_basketbol_mesqci,volan_yasamal.group_go_basketbol_admin"/>
