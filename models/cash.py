@@ -549,6 +549,13 @@ class BasketballCashBalance(models.TransientModel):
             setattr(self, field, value)
 
 
+from odoo import models, fields, api
+from odoo.exceptions import ValidationError
+from datetime import datetime, timedelta, time # 'time' importunu əlavə edin
+
+# ... (CashFlow, CashBalance, BasketballCashBalance kodları yuxarıda qalır) ...
+
+
 class BadmintonCashBalance(models.TransientModel):
     _name = 'badminton.cash.balance'
     _description = 'Badminton Kassa Balansı'
@@ -565,6 +572,18 @@ class BadmintonCashBalance(models.TransientModel):
     
     date_from = fields.Date('📅 Başlanğıc Tarix')
     date_to = fields.Date('📅 Bitmə Tarix')
+
+    cash_entries = fields.Integer('💵 Nağd Girişlər', readonly=True)
+    card_entries = fields.Integer('💳 Card to Card Girişlər', readonly=True)
+    onefit_entries = fields.Integer('🏃 1FIT Girişlər', readonly=True)
+    push30_entries = fields.Integer('⚡ PUSH30 Girişlər', readonly=True)
+    abonent_entries = fields.Integer('🎫 Abunəçi Girişlər', readonly=True)
+    total_entries = fields.Integer('📊 Ümumi Giriş Sayı', readonly=True)
+
+    # Ödəniş hesabatları
+    cash_payments = fields.Float('💵 Nağd Ödənişlər', readonly=True)
+    card_payments = fields.Float('💳 Card to Card Ödənişlər', readonly=True)
+    total_payments = fields.Float('💰 Ümumi Ödənişlər', readonly=True)
 
     # Badminton gəlirləri
     badminton_sales_income = fields.Float('🏸 Badminton Satışları', readonly=True)
@@ -585,65 +604,128 @@ class BadmintonCashBalance(models.TransientModel):
         self._calculate_badminton_balance(res)
         return res
 
-    def _get_date_domain(self):
-        """Tarix filtrinə əsasən domain qaytarır"""
+    def _get_date_range(self):
+        """Tarix filtrinə əsasən başlanğıc və son tarix qaytarır"""
         today = fields.Date.today()
-        domain = []
-        
+        date_from = None
+        date_to = today
+
         if self.date_filter == 'today':
-            domain = [('date', '=', today)]
+            date_from = today
         elif self.date_filter == 'week':
-            week_start = today - timedelta(days=today.weekday())
-            domain = [('date', '>=', week_start), ('date', '<=', today)]
+            date_from = today - timedelta(days=today.weekday())
         elif self.date_filter == 'month':
-            month_start = today.replace(day=1)
-            domain = [('date', '>=', month_start), ('date', '<=', today)]
+            date_from = today.replace(day=1)
         elif self.date_filter == 'year':
-            year_start = today.replace(month=1, day=1)
-            domain = [('date', '>=', year_start), ('date', '<=', today)]
+            date_from = today.replace(month=1, day=1)
         elif self.date_filter == 'custom' and self.date_from and self.date_to:
-            domain = [('date', '>=', self.date_from), ('date', '<=', self.date_to)]
-        
-        return domain
+            date_from = self.date_from
+            date_to = self.date_to
+        elif self.date_filter == 'all':
+            # 'all' seçiləndə tarix aralığı olmur
+            return None, None
+            
+        return date_from, date_to
 
     def _calculate_badminton_balance(self, values):
-        """Badminton balansını hesablayır"""
+        """Badminton balansını hesablayır (Basketbol məntiqi ilə)"""
         cash_flow_obj = self.env['volan.cash.flow']
-        domain = self._get_date_domain()
+        session_obj = self.env['badminton.session']
+        sale_obj = self.env['badminton.sale']
         
-        # Badminton satış gəlirləri - ümumi kassadakı kimi
-        badminton_sales_domain = domain + [
-            ('transaction_type', '=', 'income'),
-            ('category', '=', 'badminton_sale')
-        ]
-        badminton_sales_income = sum(cash_flow_obj.search(badminton_sales_domain).mapped('amount'))
+        # 1. Tarix aralığını al
+        date_from, date_to = self._get_date_range()
         
-        # Badminton dərs gəlirləri - ümumi kassadakı kimi
-        badminton_lessons_domain = domain + [
-            ('transaction_type', '=', 'income'),
-            ('category', '=', 'badminton_lesson')
-        ]
-        badminton_lessons_income = sum(cash_flow_obj.search(badminton_lessons_domain).mapped('amount'))
+        # 2. Fərqli modellər və fərqli tarix sahələri üçün xüsusi domainlər yarat
+        cash_flow_domain = []
+        session_domain = [('state', '=', 'completed')]
+        sale_domain = [('state', '=', 'paid')]
+
+        if date_from and date_to:
+            # cash_flow (date field)
+            cash_flow_domain = [('date', '>=', date_from), ('date', '<=', date_to)]
+            
+            # badminton.session (start_time field - Datetime)
+            session_domain += [
+                ('start_time', '>=', datetime.combine(date_from, time.min)),
+                ('start_time', '<=', datetime.combine(date_to, time.max))
+            ]
+            
+            # badminton.sale (payment_date field - Datetime)
+            sale_domain += [
+                ('payment_date', '>=', datetime.combine(date_from, time.min)),
+                ('payment_date', '<=', datetime.combine(date_to, time.max))
+            ]
+
+        # 3. Kassa Gəlir/Xərc hesablamaları (volan.cash.flow-dan)
+        # Bu hesablamalar 'date' sahəsinə əsaslanır
         
-        # Digər badminton gəlirləri - yalnız sport_type=badminton olanlar
-        badminton_other_domain = domain + [
-            ('transaction_type', '=', 'income'),
-            ('sport_type', '=', 'badminton'),
-            ('category', 'not in', ['badminton_sale', 'badminton_lesson'])
-        ]
-        badminton_other_income = sum(cash_flow_obj.search(badminton_other_domain).mapped('amount'))
+        # Badminton satış gəlirləri
+        badminton_sales_income = sum(cash_flow_obj.search(
+            cash_flow_domain + [
+                ('transaction_type', '=', 'income'),
+                ('category', '=', 'badminton_sale')
+            ]
+        ).mapped('amount'))
         
-        # Badminton xərcləri - yalnız sport_type=badminton olanlar
-        badminton_expenses_domain = domain + [
+        # Badminton dərs gəlirləri
+        badminton_lessons_income = sum(cash_flow_obj.search(
+            cash_flow_domain + [
+                ('transaction_type', '=', 'income'),
+                ('category', '=', 'badminton_lesson')
+            ]
+        ).mapped('amount'))
+        
+        # Digər badminton gəlirləri
+        badminton_other_income = sum(cash_flow_obj.search(
+            cash_flow_domain + [
+                ('transaction_type', '=', 'income'),
+                ('sport_type', '=', 'badminton'),
+                ('category', 'not in', ['badminton_sale', 'badminton_lesson'])
+            ]
+        ).mapped('amount'))
+        
+        # Badminton xərcləri
+        badminton_expenses_domain = cash_flow_domain + [
             ('transaction_type', '=', 'expense'),
             ('sport_type', '=', 'badminton')
         ]
         badminton_expenses = sum(cash_flow_obj.search(badminton_expenses_domain).mapped('amount'))
         
-        # Ümumi hesablamalar
+        # Ümumi balans hesablamaları
         total_badminton_income = badminton_sales_income + badminton_lessons_income + badminton_other_income
         badminton_balance = total_badminton_income - badminton_expenses
+
+        # 4. Dashboard - Giriş Sayları (badminton.session-dan)
+        # Bu hesablamalar 'start_time' sahəsinə əsaslanır
+        all_sessions = session_obj.search(session_domain)
         
+        cash_entries = len([s for s in all_sessions if s.payment_type == 'cash'])
+        card_entries = len([s for s in all_sessions if s.payment_type == 'card'])
+        abonent_entries = len([s for s in all_sessions if s.payment_type == 'abonent'])
+        onefit_entries = len([s for s in all_sessions if s.promo_type == '1fit'])
+        push30_entries = len([s for s in all_sessions if s.promo_type == 'push30'])
+        total_entries = len(all_sessions)
+
+        # 5. Dashboard - Ödəniş Məbləğləri (badminton.sale-dən və cash_flow-dan)
+        # Bu hesablamalar 'payment_date' sahəsinə əsaslanır
+        
+        # Satışlardan nağd və kart ödənişləri
+        yasamal_sales = sale_obj.search(sale_domain)
+        
+        yasamal_cash_sales = sum(yasamal_sales.filtered(lambda s: s.payment_method == 'cash').mapped('total_amount'))
+        yasamal_card_sales = sum(yasamal_sales.filtered(lambda s: s.payment_method == 'card').mapped('total_amount'))
+        
+        # Abunəliklərdən ödənişlər (sizin köhnə məntiqinizə əsasən: bütün abunəlik gəlirləri nağd sayılır)
+        # Bu gəlir artıq 'cash_flow_domain' ilə filtrələnib
+        lesson_payments = badminton_lessons_income
+        
+        # Ümumi məbləğlər
+        cash_payments = yasamal_cash_sales + lesson_payments
+        card_payments = yasamal_card_sales
+        total_payments = cash_payments + card_payments
+
+        # 6. Dəyərləri 'values' lüğətinə əlavə et
         values.update({
             'badminton_sales_income': badminton_sales_income,
             'badminton_lessons_income': badminton_lessons_income,
@@ -651,6 +733,15 @@ class BadmintonCashBalance(models.TransientModel):
             'badminton_expenses': badminton_expenses,
             'total_badminton_income': total_badminton_income,
             'badminton_balance': badminton_balance,
+            'cash_entries': cash_entries,
+            'card_entries': card_entries,
+            'onefit_entries': onefit_entries,
+            'push30_entries': push30_entries,
+            'abonent_entries': abonent_entries,
+            'total_entries': total_entries,
+            'cash_payments': cash_payments,
+            'card_payments': card_payments,
+            'total_payments': total_payments,
         })
 
     def action_refresh(self):
@@ -662,12 +753,18 @@ class BadmintonCashBalance(models.TransientModel):
 
     def _open_badminton_cash_view(self, name, domain):
         """Badminton kassa əməliyyatları view-nı açır"""
+        # Bu funksiya _get_date_domain DEYİL, _get_date_range istifadə etməlidir
+        date_from, date_to = self._get_date_range()
+        date_domain = []
+        if date_from and date_to:
+            date_domain = [('date', '>=', date_from), ('date', '<=', date_to)]
+            
         return {
             'type': 'ir.actions.act_window',
             'name': name,
             'res_model': 'volan.cash.flow',
             'view_mode': 'list,form',
-            'domain': domain,
+            'domain': date_domain + domain, # domainləri birləşdir
             'context': {'default_sport_type': 'badminton'},
             'target': 'current'
         }
@@ -675,7 +772,7 @@ class BadmintonCashBalance(models.TransientModel):
     def show_badminton_sales(self):
         """Badminton satış gəlirlərini göstərir"""
         self.ensure_one()
-        domain = self._get_date_domain() + [
+        domain = [
             ('sport_type', '=', 'badminton'),
             ('category', '=', 'badminton_sale'),
             ('transaction_type', '=', 'income')
@@ -685,7 +782,7 @@ class BadmintonCashBalance(models.TransientModel):
     def show_badminton_lessons(self):
         """Badminton dərs gəlirlərini göstərir"""
         self.ensure_one()
-        domain = self._get_date_domain() + [
+        domain = [
             ('sport_type', '=', 'badminton'),
             ('category', '=', 'badminton_lesson'),
             ('transaction_type', '=', 'income')
@@ -695,7 +792,7 @@ class BadmintonCashBalance(models.TransientModel):
     def show_badminton_other_income(self):
         """Digər badminton gəlirlərini göstərir"""
         self.ensure_one()
-        domain = self._get_date_domain() + [
+        domain = [
             ('sport_type', '=', 'badminton'),
             ('category', 'not in', ['badminton_sale', 'badminton_lesson']),
             ('transaction_type', '=', 'income')
@@ -705,7 +802,7 @@ class BadmintonCashBalance(models.TransientModel):
     def show_badminton_expenses(self):
         """Badminton xərclərini göstərir"""
         self.ensure_one()
-        domain = self._get_date_domain() + [
+        domain = [
             ('sport_type', '=', 'badminton'),
             ('transaction_type', '=', 'expense')
         ]
@@ -715,6 +812,12 @@ class BadmintonCashBalance(models.TransientModel):
     def _onchange_date_filter(self):
         """Tarix filtri dəyişəndə badminton balansını yenilə"""
         values = {}
-        self._calculate_badminton_balance(values)
-        for field, value in values.items():
-            setattr(self, field, value)
+        # 'self.date_filter' və s. dəyərlərinin onsuz da 'self'-də
+        # mövcud olduğunu bildiyimiz üçün birbaşa 'self'-i istifadə edirik
+        if (self.date_filter == 'custom' and (not self.date_from or not self.date_to)):
+             # Custom seçilibsə amma tarixlər boşdursa hesablama, çünki aralıq yoxdur
+             pass
+        else:
+             self._calculate_badminton_balance(values)
+             for field, value in values.items():
+                 setattr(self, field, value)
