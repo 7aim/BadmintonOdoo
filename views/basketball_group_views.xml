@@ -8,7 +8,6 @@
             <form string="Basketbol Qrupu">
                 <sheet>
                     <div class="oe_title">
-                            <field name="code" placeholder="Qrup kodu..." readonly="1"/>
                         <h1>
                             <field name="name" placeholder="Qrup adı..."/>
                         </h1>
@@ -23,6 +22,7 @@
                     </group>
                     
                     <group string="Təsvir">
+                        <field name="sequence"/>
                         <field name="description" nolabel="1"/>
                     </group>
                     
@@ -74,7 +74,7 @@
         <field name="arch" type="xml">
             <list string="Basketbol Qrupları" decoration-success="is_active==True" 
                   decoration-muted="is_active==False">
-                <field name="code"/>
+                <!--field name="sequence"/-->
                 <field name="name"/>
                 <field name="member_count" sum="True"/>
                 <field name="is_active"/>

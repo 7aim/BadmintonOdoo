@@ -58,7 +58,7 @@
                 <field name="coach_id"/>
                 <field name="group_id"/>
                 <field name="check_date"/>
-                <field name="schedule_id"/>
+                <field name="day_of_week"/>
                 <field name="attendee_count"/>
                 <field name="present_count"/>
                 <field name="state"/>

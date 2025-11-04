@@ -8,13 +8,14 @@
             <list string="Demo Dərslər" decoration-success="state == 'done' and converted == True" decoration-info="state == 'confirmed'" decoration-muted="state == 'cancelled'">
                 <field name="name"/>
                 <field name="partner_id"/>
+                <field name="group_id"/>
                 <field name="partner_phone"/>
                 <field name="date"/>
                 <field name="time" widget="float_time"/>
                 <field name="coach_id"/>
                 <field name="attended"/>
                 <field name="converted"/>
-                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'confirmed'" decoration-warning="state == 'draft'" decoration-danger="state == 'cancelled'"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'confirmed'" decoration-warning="state == 'draft'" decoration-danger="state == 'cancelled'" options="{'clickable': True}"/>
             </list>
         </field>
     </record>
@@ -31,7 +32,7 @@
                     <button name="action_cancel" string="Ləğv et" type="object" invisible="[('state', 'in', ['cancelled', 'done'])]"/>
                     <button name="action_reset_to_draft" string="Qaralama et" type="object" invisible="[('state', '=', 'draft')]"/>
                     <button name="action_mark_converted" string="Abunə oldu" type="object" class="oe_highlight" invisible="['|', ('state', '!=', 'done'), ('converted', '=', True)]"/>
-                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,done" options="{'clickable': True}"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -43,6 +44,7 @@
                         <group>
                             <field name="partner_id" 
                                    domain="[('is_company', '=', False), ('sport_type', 'in', ['basketball', 'both']), ('branch', '=', 'yasamal')]"/>
+                            <field name="group_id"/>
                             <field name="partner_phone" readonly="1"/>
                             <field name="partner_email" readonly="1"/>
                             <field name="attended" invisible="[('state', '!=', 'done')]"/>

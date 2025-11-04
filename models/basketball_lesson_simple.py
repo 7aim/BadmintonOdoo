@@ -200,7 +200,6 @@ class BasketballLessonSimple(models.Model):
             'payment_date': fields.Date.today(),
             'payment_month': month_mapping.get(current_month, 'january'),
             'amount': self.lesson_fee,
-            'payment_method_lesson': 'cash',  # Default olaraq nağd
             'notes': 'İlk abunəlik ödənişi (avtomatik)'
         })
 
@@ -212,25 +211,21 @@ class BasketballLessonSimple(models.Model):
                 # write() metodu avtomatik _create_initial_payment() çağıracaq
     
     def action_renew(self):
-        """Abunəliyi 1 ay uzat və yenidən ödəniş qəbul et"""
         for lesson in self:
             if lesson.state == 'active':
-                # Başlama tarixi sabit qalır, yalnız end_date uzanır
                 lesson.end_date = lesson.end_date + timedelta(days=30)
-                
-                # Növbəti ayı hesabla
+
                 if lesson.payment_ids:
-                    last_payment = lesson.payment_ids.sorted('payment_date', reverse=True)[0]
-                    # Növbəti ay
-                    month_mapping = {
-                        'january': 'february', 'february': 'march', 'march': 'april',
-                        'april': 'may', 'may': 'june', 'june': 'july',
-                        'july': 'august', 'august': 'september', 'september': 'october',
-                        'october': 'november', 'november': 'december', 'december': 'january'
-                    }
-                    next_month = month_mapping.get(last_payment.payment_month, 'january')
+                    last_payment = lesson.payment_ids.sorted('id')[-1]  # YENI (payment_date yerinə id)
+                    months = ['january','february','march','april','may','june',  # YENI
+                              'july','august','september','october','november','december']  # YENI
+                    try:  # YENI
+                        idx = months.index(last_payment.payment_month)  # YENI
+                        next_month = months[(idx + 1) % 12]  # YENI
+                    except ValueError:  # YENI
+                        current_month = datetime.now().month  # YENI
+                        next_month = months[current_month % 12]  # YENI
                 else:
-                    # Əgər heç ödəniş yoxdursa, cari aydan başla
                     current_month = datetime.now().month
                     month_reverse_mapping = {
                         1: 'january', 2: 'february', 3: 'march', 4: 'april',
@@ -238,12 +233,11 @@ class BasketballLessonSimple(models.Model):
                         9: 'september', 10: 'october', 11: 'november', 12: 'december'
                     }
                     next_month = month_reverse_mapping.get(current_month, 'january')
-                
-                # Yeni ödəniş sətirini yarat
+
                 self.env['basketball.lesson.payment'].create({
                     'lesson_id': lesson.id,
-                    'payment_date': fields.Date.today(),
-                    'payment_month': next_month,
+                    'payment_date': fields.Date.today(),     # eyni qala bilər
+                    'payment_month': next_month,             # YENI (hər dəfə 1 ay irəli)
                     'amount': lesson.lesson_fee,
                     'notes': 'Abunəlik yeniləməsi'
                 })

@@ -6,7 +6,7 @@ from odoo.exceptions import ValidationError
 class BasketballAttendanceCheck(models.Model):
     _name = 'basketball.attendance.check'
     _description = 'Basketbol Dərs İştirakı Yoxlaması'
-    _order = 'check_date desc'
+    _order = 'create_date desc'
     
     name = fields.Char(string="Yoxlama Adı", readonly=True, default="Yeni")
     coach_id = fields.Many2one('res.partner', string="Məşqçi", required=True, domain=[('is_coach', '=', True)])

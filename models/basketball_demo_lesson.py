@@ -10,7 +10,9 @@ class BasketballDemoLesson(models.Model):
     
     name = fields.Char(string="Demo Dərs №", readonly=True, default="Yeni")
     partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
-    
+
+    group_id = fields.Many2one('basketball.group', string="Qrup", domain=[('is_active', '=', True)])
+
     # Demoqrafik məlumatlar (müştəri ilə əlaqəli)
     partner_phone = fields.Char(related='partner_id.phone', string="Telefon")
     partner_email = fields.Char(related='partner_id.email', string="E-mail")

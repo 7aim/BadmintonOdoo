@@ -6,10 +6,9 @@ from odoo.exceptions import ValidationError
 class BasketballGroup(models.Model):
     _name = 'basketball.group'
     _description = 'Basketbol Qrupu'
-    _order = 'code_number, name'
+    _order = 'sequence, name DESC'
     
-    code = fields.Char(string="Qrup Kodu", readonly=True, default="Yeni")
-    code_number = fields.Integer(string="Kod Nömrəsi", compute="_compute_code_number", store=True, help="Q-1 → 1, Q-10 → 10")
+    sequence = fields.Integer(string="Sıra", default=10)
     name = fields.Char(string="Qrup Adı", required=True)
     description = fields.Text(string="Təsvir")
     
@@ -31,27 +30,8 @@ class BasketballGroup(models.Model):
         for group in self:
             group.member_count = len(group.member_ids.filtered(lambda l: l.state in ['active', 'frozen']))
     
-    @api.depends('code')
-    def _compute_code_number(self):
-        """Qrup kodundan rəqəmi çıxarır (Q-1 → 1, Q-10 → 10)"""
-        for group in self:
-            if group.code and group.code.startswith('Q-'):
-                try:
-                    group.code_number = int(group.code.split('-')[1])
-                except (ValueError, IndexError):
-                    group.code_number = 0
-            else:
-                group.code_number = 0
-    
     @api.model
     def create(self, vals):
-        # Qrup kodu: Q-1, Q-2, Q-3... formatında (sıralama ilə)
-        # Mövcud qrupların sayını tap və 1 əlavə et
-        group_count = self.search_count([])
-        next_number = group_count + 1
-        
-        vals['code'] = f"Q-{next_number}"
-        
         return super(BasketballGroup, self).create(vals)
 
 

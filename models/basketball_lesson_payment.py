@@ -16,7 +16,7 @@ class BasketballLessonPayment(models.Model):
     payment_method_lesson = fields.Selection([
         ('cash', 'Nağd'),
         ('card', 'Kartdan karta'),
-    ], string="Ödəniş Metodu", required=True)
+    ], string="Ödəniş Metodu", default='cash', required=True)
 
     payment_date = fields.Date(string="Ödəniş Tarixi", required=True, default=fields.Date.today)
     
