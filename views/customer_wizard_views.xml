@@ -44,14 +44,14 @@
                 <group>
                     <group string="Müştəri Məlumatları">
                         <field name="partner_id" options="{'no_create': True}" required="1"
-                               domain="[('is_company', '=', False), ('sport_type', 'in', ['badminton', 'both']), ('branch', '=', 'yasamal')]"/>
+                               domain="[('is_company', '=', False), ('sport_type', 'in', ['badminton', 'both']), ('branch', '=', 'yasamal')]"
+                               context="{'default_branch': 'yasamal', 'default_sport_type': 'badminton'}"/>
                         <field name="current_balance" readonly="1" style="font-weight: bold; color: #007bff;"/>
                     </group>
                     <group string="Paket Satışı">
                         <field name="package_id" domain="[('active', '=', True), ('package_type', '=', 'sale')]"/>
                         <field name="payment_method"/>
                         <field name="customer_type" invisible="not package_id"/>
-                        <field name="is_student" invisible="not package_id"/>
                     </group>
                 </group>
                 <group string="Sadə Satış (Paket seçilmədikdə)" invisible="package_id">

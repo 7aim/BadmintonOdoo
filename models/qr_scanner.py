@@ -81,8 +81,8 @@ class QRScannerWizard(models.TransientModel):
                     'qr_scanned': True,
                     'duration_hours': 1.0,
                 })
-                
-                self.result_message = f"✅ SESSİYA YARADILDI (Gözləmədə)!\n👤 Müştəri: {partner.name}\n🎮 Sessiya: {session.name}\n⚠️ Zəhmət olmasa 'Başlat' düyməsinə basın!\n💰 Balans: {current_balance} saat"
+
+                self.result_message = f"✅ SESSİYA YARADILDI (Gözləmədə)!\n👤 Müştəri: {partner.name}\n🎮 Sessiya: {session.name}\n⚠️ Zəhmət olmasa 'Başlat' düyməsinə basın!\n💰 Balans: {current_balance} saat\n 🔢 Növbə: {session.queue_number}"
                 self.session_id = session.id
                 
                 return self._return_wizard()
@@ -273,7 +273,7 @@ class QRScannerWizard(models.TransientModel):
                     }
                     schedule_name = f"{day_names.get(valid_schedule.day_of_week, 'N/A')} {int(valid_schedule.start_time):02d}:{int((valid_schedule.start_time % 1) * 60):02d}-{int(valid_schedule.end_time):02d}:{int((valid_schedule.end_time % 1) * 60):02d}"
                     
-                    self.result_message = f"✅ BASKETBOL UĞURLU!\n👤 Müştəri: {partner.name}\n🏀 Dərs: {schedule_name}\n📅 Tarix: {today.strftime('%d.%m.%Y')}\n⏰ Vaxt: {attendance.attendance_time.strftime('%H:%M')}\n📚 Abunəlik: {basketball_lesson.name}"
+                    self.result_message = f"✅ UĞURLU GİRİŞ!\n👤 Müştəri: {partner.name}\n🏀 Dərs: {schedule_name}\n📅 Tarix: {today.strftime('%d.%m.%Y')}\n⏰ Vaxt: {attendance.attendance_time.strftime('%H:%M')+4}\n📚 Abunəlik: {basketball_lesson.name}"
                     # attendance_id-ni təyin etmirik çünki yeni sistem fərqli modeldir
                     
                     return self._return_wizard()
@@ -338,8 +338,8 @@ class QRScannerWizard(models.TransientModel):
                 
                 # Üzvlükdə iştirak sayını artır
                 membership.attended_lessons += 1
-                
-                self.result_message = f"✅ BASKETBOL UĞURLU!\n👤 Müştəri: {partner.name}\n🏀 Dərs: {valid_schedule.name}\n📅 Tarix: {today.strftime('%d.%m.%Y')}\n⏰ Vaxt: {attendance.attendance_time.strftime('%H:%M')}\n📊 Qalan dərs: {membership.remaining_lessons}"
+
+                self.result_message = f"✅ UĞURLU GİRİŞ!\n👤 Müştəri: {partner.name}\n🏀 Dərs: {valid_schedule.name}\n📅 Tarix: {today.strftime('%d.%m.%Y')}\n⏰ Vaxt: {attendance.attendance_time.strftime('%H:%M')}\n📊 Qalan dərs: {membership.remaining_lessons}"
                 self.attendance_id = attendance.id
                 
                 return self._return_wizard()

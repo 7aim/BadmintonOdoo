@@ -15,6 +15,7 @@ from . import basketball_lesson_payment
 from . import badminton_lesson_simple
 from . import basketball_lesson_simple
 from . import basketball_demo_lesson
+from . import basketball_lesson_substitute
 from . import customer_wizards
 from . import qr_scanner
 from . import sport_system

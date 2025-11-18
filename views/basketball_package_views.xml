@@ -21,9 +21,6 @@
                             <field name="adult_price"/>
                             <field name="child_price"/>
                         </group>
-                        <group>
-                            <field name="student_price"/>
-                        </group>
                     </group>
                 </sheet>
             </form>
@@ -40,7 +37,6 @@
                 <field name="discount_percent"/>
                 <field name="adult_price"/>
                 <field name="child_price"/>
-                <field name="student_price"/>
                 <field name="active"/>
             </list>
         </field>

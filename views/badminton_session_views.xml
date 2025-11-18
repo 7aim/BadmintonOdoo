@@ -11,7 +11,8 @@
                     <button name="%(action_badminton_sale_wizard)d"
                             string="Balans Yüklə"
                             type="action"
-                            class="btn-info"/>
+                            class="btn-info"
+                            context="{'default_partner_id': partner_id}"/>
                     
                     <!-- Düymə: sessiya draft vəziyyətindədirsə "Başlat" göstər -->
                     <button name="start_session_manual"
@@ -48,6 +49,7 @@
                         <group>
                             <field name="partner_id" 
                                    domain="[('is_company', '=', False), ('sport_type', 'in', ['badminton', 'both']), ('branch', '=', 'yasamal')]"
+                                   context="{'default_branch': 'yasamal', 'default_sport_type': 'badminton'}"
                                    required="1"/>
                             <field name="promo_type"/>
                             <field name="payment_type"/>

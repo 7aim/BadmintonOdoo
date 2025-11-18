@@ -36,8 +36,8 @@
     <menuitem id="menu_badminton_lesson_freeze" name="Dondurma Tarixçəsi" parent="menu_badminton_lessons" 
               action="action_badminton_lesson_freeze" sequence="3" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
     <!-- Badminton İştirak Yoxlaması - Yalnız Məşqçi və Admin -->
-    <menuitem id="menu_badminton_attendance_check_list" name="İştirak Yoxlaması" parent="menu_badminton_lessons" 
-              action="action_badminton_attendance_check" sequence="4" groups="volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin"/>
+    <!--menuitem id="menu_badminton_attendance_check_list" name="İştirak Yoxlaması" parent="menu_badminton_lessons" 
+              action="action_badminton_attendance_check" sequence="4" groups="volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin"/-->
 
     <!-- Badminton Müştəriləri -->
     <record id="action_badminton_customers" model="ir.actions.act_window">
@@ -163,11 +163,11 @@
     <menuitem id="menu_basketball_lessons_simple" name="💳 Abunəliklər" parent="menu_basketball_lessons" 
               action="action_basketball_lesson_simple" sequence="1" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
     <menuitem id="menu_basketball_demo_lesson" name="🎯 Demo Dərs" parent="menu_basketball_lessons"
-              action="action_basketball_demo_lesson" sequence="2" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/> 
+              action="action_basketball_demo_lesson" sequence="3" groups="volan_yasamal.group_go_basketbol_mesqci,volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/> 
     <menuitem id="menu_basketball_groups" name="⛹️‍♂️ Basketbol Qrupları" parent="menu_basketball_lessons" 
-              action="action_basketball_group" sequence="3" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_mesqci,volan_yasamal.group_go_basketbol_admin"/>
-    <menuitem id="menu_basketball_lesson_freeze" name="❄️ Dondurma Tarixçəsi" parent="menu_basketball_lessons"
-              action="action_basketball_lesson_freeze" sequence="4" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
+              action="action_basketball_group" sequence="2" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_mesqci,volan_yasamal.group_go_basketbol_admin"/>
+    <!--menuitem id="menu_basketball_lesson_freeze" name="❄️ Dondurma Tarixçəsi" parent="menu_basketball_lessons"
+              action="action_basketball_lesson_freeze" sequence="4" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/-->
     <menuitem id="menu_basketball_attendance_check_list" name="📋 İştirak Yoxlaması" parent="menu_basketball_lessons" 
               action="action_basketball_attendance_check" sequence="6" groups="volan_yasamal.group_go_basketbol_mesqci,volan_yasamal.group_go_basketbol_admin"/>
     <!--menuitem id="menu_basketball_package" name="Basketbol Paketləri" parent="menu_basketball_lessons"
