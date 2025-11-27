@@ -53,7 +53,8 @@ class BadmintonSaleWizard(models.TransientModel):
     
     # Paket seçimi - yalnız satış paketləri
     package_id = fields.Many2one('badminton.package', string="Paket", 
-                                  domain="[('package_type', '=', 'sale'), ('active', '=', True)]")
+                                  domain="[('package_type', 'in', ['sale', 'monthly']), ('active', '=', True)]")
+    is_gedis_package = fields.Boolean(string="Gediş Paketi", related='package_id.is_gedis_package', readonly=True)
         
     # Sadə satış
     customer_type = fields.Selection([
@@ -77,6 +78,7 @@ class BadmintonSaleWizard(models.TransientModel):
 
     # Müştərinin cari balansını göstər
     current_balance = fields.Integer(string="Cari Balans", related='partner_id.badminton_balance', readonly=True)
+    monthly_balance_hours = fields.Float(string="Aylıq Balans (saat)", related='partner_id.monthly_balance_hours', readonly=True)
     
     @api.onchange('package_id', 'customer_type')
     def _onchange_package(self):
@@ -123,13 +125,12 @@ class BadmintonSaleWizard(models.TransientModel):
     def _calculate_total(self):
         """Ümumi məbləği hesabla"""
         if self.hours_quantity and self.unit_price:
-            if self.hours_quantity == 2: # New Feature 
-                total_amount = 14.0
-            else:
-                self.total_amount = self.hours_quantity * self.unit_price
+            self.total_amount = self.hours_quantity * self.unit_price
     
     def action_create_sale(self):
         """Satış yaradır və dərhal balansı artırır"""
+        if self.total_amount <= 0:
+            raise ValidationError("Ümumi məbləğ 0-dan böyük olmalıdır!")
         if not self.partner_id:
             raise ValidationError("Zəhmət olmasa müştəri seçin!")
         
@@ -143,6 +144,7 @@ class BadmintonSaleWizard(models.TransientModel):
                 'partner_id': self.partner_id.id,
                 'customer_type': self.customer_type,
                 'package_type': 'single',
+                'package_id': self.package_id.id,
                 'hours_quantity': balance_to_add,
                 'unit_price': self.total_amount,
                 'total_amount': self.total_amount,
@@ -163,6 +165,7 @@ class BadmintonSaleWizard(models.TransientModel):
                 'state': 'paid',
                 'payment_date': fields.Datetime.now(),
                 'payment_method': self.payment_method,
+                'package_id': False,
             }
         
         # Badminton satışı yaradırıq
@@ -173,12 +176,15 @@ class BadmintonSaleWizard(models.TransientModel):
         
         package_name = self.package_id.name if self.package_id else f"{self.total_amount} AZN"
         
+        normal_balance = self.partner_id.badminton_balance
+        monthly_balance = self.partner_id.monthly_balance_hours
+
         return {
             'type': 'ir.actions.client',
             'tag': 'display_notification',
             'params': {
-                'message': f'{self.partner_id.name} üçün {package_name} satışı tamamlandı! '
-                          f'Yeni balans: {self.partner_id.badminton_balance} saat',
+                'message': (f'{self.partner_id.name} üçün {package_name} satışı tamamlandı! '
+                            f'Normal: {normal_balance} saat | Aylıq: {monthly_balance} saat'),
                 'type': 'success',
                 'sticky': False,
                 'next': {'type': 'ir.actions.act_window_close'}

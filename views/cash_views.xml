@@ -107,7 +107,7 @@
         <field name="name">volan.cash.balance.form</field>
         <field name="model">volan.cash.balance</field>
         <field name="arch" type="xml">
-            <form string="Kassa Balansı">
+            <form string="Kassa Balansı" create="false" edit="false">
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_refresh" type="object" string="Yenilə" 
@@ -161,6 +161,7 @@
         <field name="res_model">volan.cash.balance</field>
         <field name="view_mode">form</field>
         <field name="target">main</field>
+        <field name="context">{'create': False}</field>
     </record>
 
     <!-- Basketbol Cash Balance Form View -->
@@ -168,7 +169,7 @@
         <field name="name">basketball.cash.balance.form</field>
         <field name="model">basketball.cash.balance</field>
         <field name="arch" type="xml">
-            <form string="Basketbol Kassa Balansı">
+            <form string="Basketbol Kassa Balansı" create="false" edit="false">
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_refresh" type="object" string="Yenilə" 
@@ -179,38 +180,55 @@
                     </div>
                     <group>
                         <group>
-                            <field name="date_filter" widget="selection"/>
+                            <!--field name="date_filter" widget="selection"/-->
                             <field name="date_from" invisible="date_filter != 'custom'" 
                                 required="date_filter == 'custom'" colspan="2"/>
                             <field name="date_to" invisible="date_filter != 'custom'" 
                                 required="date_filter == 'custom'" colspan="2"/>                 
                         </group>
                     </group>
-                    <group string="Basketbol Gəlir Məlumatları">
-                        <field name="basketball_lessons_income" widget="monetary"/>
-                        <field name="basketball_other_income" widget="monetary"/>
-                    </group>
-                    <group string="Ümumi Məlumatlar">
-                        <field name="total_basketball_income" widget="monetary" style="color: green;"/>
-                        <field name="basketball_expenses" widget="monetary" style="color: red;"/>
-                        <field name="basketball_balance" widget="monetary" class="oe_subtotal_footer_separator" style="font-weight: bold;"/>
-                    </group>
-                    <!-- 📊 Dashboard - Ödəniş Hesabatları -->
-                    <group string="📊 Ödəniş Hesabatları">
-                        <group>
-                            <field name="cash_payments" widget="monetary" style="font-size: 18px; font-weight: bold; color: #28a745;"/>
-                            <field name="card_payments" widget="monetary" style="font-size: 18px; font-weight: bold; color: #007bff;"/>
-                            <field name="total_payments" widget="monetary" style="font-size: 20px; font-weight: bold; color: #17a2b8;"/>
+                    <group>
+                        <group string="🏀 Abunəlik Gəliri">
+                            <group>
+                                <field name="subscription_cash_amount" widget="monetary" style="font-size: 18px; font-weight: bold; color: #28a745;"/>
+                                <field name="subscription_card_amount" widget="monetary" style="font-size: 18px; font-weight: bold; color: #2874a7ff;"/>
+                                <field name="subscription_total_amount" widget="monetary" style="font-size: 18px; font-weight: bold; color: #28a745;"/>
+                                <field name="delayed_payments_amount" widget="monetary" style="font-size: 18px; font-weight: bold; color: #ff6b6b;"/>
+                            </group>
+                        </group>
+                        <group string="🎽 Forma Gəliri">
+                            <group>
+                                <field name="uniform_cash_amount" widget="monetary" style="font-size: 18px; font-weight: bold; color: #28a745;"/>
+                                <field name="uniform_card_amount" widget="monetary" style="font-size: 18px; font-weight: bold; color: #2874a7ff;"/>
+                                <field name="uniform_total_amount" widget="monetary" style="font-size: 18px; font-weight: bold; color: #28a745;"/>
+                                <field name="uniform_total_quantity" style="font-size: 18px; font-weight: bold; color: #6c757d;"/>
+                            </group>
                         </group>
                     </group>
-                    
-                    <!-- 📊 Dashboard - Uşaq Statistikası -->
-                    <group string="📊 Uşaq Statistikası">
-                        <group>
-                            <field name="total_children" style="font-size: 18px; font-weight: bold; color: #6c757d;"/>
+                    <group>
+                        <group string="🏷️ Digər Mədaxil/Məxaric">
+                            <group>
+                                <field name="other_income_amount" widget="monetary" style="font-size: 18px; font-weight: bold; color: #28a745;"/>
+                                <field name="other_expense_amount" widget="monetary" style="font-size: 18px; font-weight: bold; color: #a72828ff;"/>
+                                <field name="other_net_amount" widget="monetary" style="font-size: 18px; font-weight: bold; color: #28a745;"/>
+                            </group>
                         </group>
-                        <group>
-                            <field name="new_children" style="font-size: 18px; font-weight: bold; color: #ffc107;"/>
+                        <group string="🧾 Ümumi Nəticə">
+                            <group>
+                                <field name="overall_cash_income" widget="monetary" style="font-size: 18px; font-weight: bold; color: #28a745;"/>
+                                <field name="overall_card_income" widget="monetary" style="font-size: 18px; font-weight: bold; color: #2874a7ff;"/>
+                                <field name="overall_total_income" widget="monetary" style="font-size: 18px; font-weight: bold; color: #28a745;"/>
+                            </group>
+                        </group>
+                        <group string="⛹️‍♂️ Uşaq Sayı">
+                            <group>
+                                <field name="total_children_count" style="font-size: 18px; font-weight: bold; color: #28a745;"/>
+                            </group>
+                        </group>
+                        <group string="⛹️‍♀️ Yeni Uşaqlar">
+                            <group>
+                                <field name="new_children_count" style="font-size: 18px; font-weight: bold; color: #2874a7ff;"/>
+                            </group>
                         </group>
                     </group>
                 </sheet>
@@ -223,7 +241,7 @@
         <field name="name">badminton.cash.balance.form</field>
         <field name="model">badminton.cash.balance</field>
         <field name="arch" type="xml">
-            <form string="Badminton Kassa Balansı">
+            <form string="Badminton Kassa Balansı" create="false" edit="false">
                 <sheet>
                     <div class="oe_button_box" name="button_box">
                         <button name="action_refresh" type="object" string="Yenilə" 
@@ -269,6 +287,7 @@
                         <group>
                             <field name="onefit_entries" string="🏃 1fit" style="font-size: 18px; font-weight: bold; color: #ffc107;"/>
                             <field name="push30_entries" string="⚡ Push30" style="font-size: 18px; font-weight: bold; color: #ffc107;"/>
+                            <field name="tripsome_entries" string="🚗 Tripsome" style="font-size: 18px; font-weight: bold; color: #ffc107;"/>
                             <field name="total_entries" string="📈 Ümumi giriş sayı" style="font-size: 20px; font-weight: bold; color: #17a2b8;"/>
                         </group>
                     </group>

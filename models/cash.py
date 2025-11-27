@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo.osv.expression import OR
 from odoo.exceptions import ValidationError
 from datetime import datetime, timedelta
 
@@ -11,8 +12,8 @@ class CashFlow(models.Model):
     date = fields.Date('Tarix', required=True, default=fields.Date.today)
     amount = fields.Float('Məbləğ', required=True)
     transaction_type = fields.Selection([
-        ('income', 'Gəlir'),
-        ('expense', 'Xərc'),
+        ('income', 'Mədaxil'),
+        ('expense', 'Məxaric'),
     ], string='Əməliyyat Növü', required=True)
     category = fields.Selection([
         ('badminton_sale', 'Badminton Satışı'),
@@ -64,16 +65,16 @@ class CashBalance(models.TransientModel):
 
     # Tarix filtr sahələri
     date_filter = fields.Selection([
-        ('all', 'Bütün Tarixlər'),
-        ('today', 'Bu Gün'),
-        ('week', 'Bu Həftə'),
-        ('month', 'Bu Ay'),
-        ('year', 'Bu İl'),
+        #('all', 'Bütün Tarixlər'),
+        #('today', 'Bu Gün'),
+        #('week', 'Bu Həftə'),
+        #('month', 'Bu Ay'),
+        #('year', 'Bu İl'),
         ('custom', 'Özel Tarix')
-    ], string='📅 Tarix Filtri', default='month', required=True)
+    ], string='📅 Tarix Filtri', default='custom', required=True)
     
-    date_from = fields.Date('📅 Başlanğıc Tarix')
-    date_to = fields.Date('📅 Bitmə Tarix')
+    date_from = fields.Date('📅 Başlanğıc Tarix' , default=fields.Date.today)
+    date_to = fields.Date('📅 Bitmə Tarix', default=fields.Date.today)
 
     # Gəlir növləri
     badminton_sales_income = fields.Float('🏸 Badminton Satışları', readonly=True)
@@ -325,228 +326,331 @@ class BasketballCashBalance(models.TransientModel):
     _name = 'basketball.cash.balance'
     _description = 'Basketbol Kassa Balansı'
 
-    # Tarix filtr sahələri
     date_filter = fields.Selection([
-        ('all', 'Bütün Tarixlər'),
-        ('today', 'Bu Gün'),
-        ('week', 'Bu Həftə'),
-        ('month', 'Bu Ay'),
-        ('year', 'Bu İl'),
+        #('all', 'Bütün Tarixlər'),
+        #('today', 'Bu Gün'),
+        #('week', 'Bu Həftə'),
+        #('month', 'Bu Ay'),
+        #('year', 'Bu İl'),
         ('custom', 'Özel Tarix')
-    ], string='📅 Tarix Filtri', default='month', required=True)
-    
-    date_from = fields.Date('📅 Başlanğıc Tarix')
-    date_to = fields.Date('📅 Bitmə Tarix')
+    ], string='📅 Tarix Filtri', default='custom', required=True)
 
-    # 📊 DASHBOARD - Ödəniş Hesabatları
-    cash_payments = fields.Float('💵 Nağd Ödənişlər', readonly=True, help='Abunəliklərdə nağd ödənişlərin cəmi')
-    card_payments = fields.Float('💳 Kart Ödənişlər', readonly=True, help='Abunəliklərdə kart ödənişlərinin cəmi')
-    total_payments = fields.Float('💰 Ümumi Ödəniş', readonly=True, help='Nağd + Kart')
+    date_from = fields.Date('📅 Başlanğıc Tarix', default=fields.Date.today)
+    date_to = fields.Date('📅 Bitmə Tarix', default=fields.Date.today)
+
+    subscription_cash_amount = fields.Float('💵 Abunəlik Nağd', readonly=True)
+    subscription_card_amount = fields.Float('💳 Abunəlik Kart', readonly=True)
+    subscription_total_amount = fields.Float('💰 Abunəlik Ümumi', readonly=True)
+
+    uniform_cash_amount = fields.Float('💵 Forma Nağd', readonly=True)
+    uniform_card_amount = fields.Float('💳 Forma Kart', readonly=True)
+    uniform_total_amount = fields.Float('💰 Forma Ümumi', readonly=True)
+    uniform_total_quantity = fields.Integer('🎽 Satılan Forma Sayı', readonly=True)
+
+    other_income_amount = fields.Float('💼 Mədaxil', readonly=True)
+    other_expense_amount = fields.Float('📉 Məxaric', readonly=True)
+    other_net_amount = fields.Float('🧾 Net Nəticə', readonly=True)
+
+    overall_cash_income = fields.Float('💵 Nağd Qalıq', readonly=True)
+    overall_card_income = fields.Float('💳 Kart Qalıq', readonly=True)
+    overall_total_income = fields.Float('💰 Ümumi Qalıq', readonly=True)
+
+    total_children_count = fields.Integer('👥 Ümumi Uşaq', readonly=True)
+    new_children_count = fields.Integer('🆕 Yeni Uşaq', readonly=True)
     
-    # 📊 DASHBOARD - Uşaq Statistikası
-    total_children = fields.Integer('👥 Ümumi Uşaq Sayı', readonly=True, help='Bütün basketbol abunəlikləri')
-    new_children = fields.Integer('🆕 Yeni Uşaq Sayı', readonly=True, help='Seçilmiş tarix aralığında yaradılmış abunəliklər')
-    
-    # Basketbol gəlirləri (köhnə)
-    basketball_lessons_income = fields.Float('🏀 Basketbol Dərs Abunəlikləri', readonly=True)
-    basketball_other_income = fields.Float('💰 Digər Basketbol Gəlirləri', readonly=True)
-    
-    # Basketbol xərcləri
-    basketball_expenses = fields.Float('📉 Basketbol Xərcləri', readonly=True)
-    
-    # Ümumi məlumatlar
-    total_basketball_income = fields.Float('📈 Ümumi Basketbol Gəliri', readonly=True)
-    basketball_balance = fields.Float('🏀 Basketbol Balansı', readonly=True)
+    # Gecikmiş ödənişlər
+    delayed_payments_amount = fields.Float('⏰ Gecikmiş Ödənişlər', readonly=True, 
+                                          help="Real_date bu tarix aralığında olmayan ama payment_date bu tarix aralığında olan ödənişlərin cəmi")
 
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
-        # İlkin yükləmədə cari ay filtri ilə hesabla
-        self._calculate_basketball_balance(res)
+        metrics = self._gather_metrics(override=res)
+        res.update(metrics)
         return res
 
-    def _get_date_domain(self):
-        """Tarix filtrinə əsasən domain qaytarır (həmişə 2 elementli)"""
-        today = fields.Date.today()
-        domain = []
-        
-        if self.date_filter == 'today':
-            # Bu gün: başlanğıc və son eyni tarixdir
-            domain = [('date', '>=', today), ('date', '<=', today)]
-        elif self.date_filter == 'week':
-            week_start = today - timedelta(days=today.weekday())
-            domain = [('date', '>=', week_start), ('date', '<=', today)]
-        elif self.date_filter == 'month':
-            month_start = today.replace(day=1)
-            domain = [('date', '>=', month_start), ('date', '<=', today)]
-        elif self.date_filter == 'year':
-            year_start = today.replace(month=1, day=1)
-            domain = [('date', '>=', year_start), ('date', '<=', today)]
-        elif self.date_filter == 'custom' and self.date_from and self.date_to:
-            domain = [('date', '>=', self.date_from), ('date', '<=', self.date_to)]
-        
-        return domain
-
-    def _calculate_basketball_balance(self, values):
-        """Basketbol balansını hesablayır + Dashboard məlumatları"""
-        cash_flow_obj = self.env['volan.cash.flow']
-        payment_obj = self.env['basketball.lesson.payment']
-        lesson_obj = self.env['basketball.lesson.simple']
-        
-        domain = self._get_date_domain()
-        
-        # 📊 DASHBOARD - Ödəniş Hesabatları (tarix filtrinə əsasən)
-        # Domain-dan payment_date üçün date_from və date_to çıxar
-        payment_date_domain = []
-        if domain and len(domain) >= 2:
-            # domain formatı: [('date', '>=', date_from), ('date', '<=', date_to)]
-            payment_date_domain = [
-                ('payment_date', '>=', domain[0][2]),
-                ('payment_date', '<=', domain[1][2])
-            ]
-        
-        # Nağd ödənişlər
-        cash_payments_domain = [('payment_method_lesson', '=', 'cash')] + payment_date_domain
-        cash_payments = sum(payment_obj.search(cash_payments_domain).mapped('amount'))
-        
-        # Kart ödənişlər
-        card_payments_domain = [('payment_method_lesson', '=', 'card')] + payment_date_domain
-        card_payments = sum(payment_obj.search(card_payments_domain).mapped('amount'))
-        
-        # Ümumi ödəniş
-        total_payments = cash_payments + card_payments
-        
-        # 📊 DASHBOARD - Uşaq Statistikası
-        # Ümumi uşaq sayı - UNİKAL müştəri sayı (1 uşaq çox abunəlik ala bilər)
-        all_lessons = lesson_obj.search([])
-        unique_partners = all_lessons.mapped('partner_id')
-        total_children = len(unique_partners)
-        
-        # Yeni uşaq sayı - seçilmiş tarix aralığında İLK DƏFƏ abunəlik BAŞLAYAN unikal müştərilər
-        new_children = 0
-        if domain and len(domain) >= 2:
-            date_from = domain[0][2]  # date object
-            date_to = domain[1][2]    # date object
-            
-            # Seçilmiş tarixdə başlayan abunəliklər (start_date əsasında - daha məntiqli!)
-            start_date_domain = [
-                ('start_date', '>=', date_from),
-                ('start_date', '<=', date_to)
-            ]
-            new_lessons = lesson_obj.search(start_date_domain)
-            
-            # Bu abunəliklərin müştəriləri
-            new_partners = new_lessons.mapped('partner_id')
-            
-            # Bu müştərilərin seçilmiş tarixdən ƏVVƏL abunəliyi var mı yoxla
-            truly_new_partners = []
-            for partner in new_partners:
-                # Bu müştərinin bu tarixdən əvvəl başlayan abunəliyi var mı?
-                older_lessons = lesson_obj.search([
-                    ('partner_id', '=', partner.id),
-                    ('start_date', '<', date_from)
-                ], limit=1)
-                
-                if not older_lessons:
-                    # Əvvəl abunəliyi yoxdur, yeni müştəridir
-                    if partner.id not in [p.id for p in truly_new_partners]:
-                        truly_new_partners.append(partner)
-            
-            new_children = len(truly_new_partners)
-        
-        # Köhnə hesablamalar - İNDİ payment_obj-dan hesablayırıq (daha düzgün!)
-        # Basketbol dərs gəlirləri - birbaşa ödənişlərdən (total_payments ilə eyni mənbə)
-        basketball_lessons_income = total_payments  # Dashboard ilə eyni!
-        
-        # Digər basketbol gəlirləri - yalnız sport_type=basketball olanlar (cash_flow-dan)
-        basketball_other_domain = domain + [
-            ('transaction_type', '=', 'income'),
-            ('sport_type', '=', 'basketball'),
-            ('category', '!=', 'basketball_lesson')
-        ]
-        basketball_other_income = sum(cash_flow_obj.search(basketball_other_domain).mapped('amount'))
-        
-        # Basketbol xərcləri - yalnız sport_type=basketball olanlar (cash_flow-dan)
-        basketball_expenses_domain = domain + [
-            ('transaction_type', '=', 'expense'),
-            ('sport_type', '=', 'basketball')
-        ]
-        basketball_expenses = sum(cash_flow_obj.search(basketball_expenses_domain).mapped('amount'))
-        
-        # Ümumi hesablamalar
-        total_basketball_income = basketball_lessons_income + basketball_other_income
-        basketball_balance = total_basketball_income - basketball_expenses
-        
-        values.update({
-            # Dashboard
-            'cash_payments': cash_payments,
-            'card_payments': card_payments,
-            'total_payments': total_payments,
-            'total_children': total_children,
-            'new_children': new_children,
-            # Köhnə
-            'basketball_lessons_income': basketball_lessons_income,
-            'basketball_other_income': basketball_other_income,
-            'basketball_expenses': basketball_expenses,
-            'total_basketball_income': total_basketball_income,
-            'basketball_balance': basketball_balance,
-        })
-
-    def action_refresh(self):
-        """Basketbol balansını yenilə"""
-        values = {}
-        self._calculate_basketball_balance(values)
-        self.write(values)
-        return {'type': 'ir.actions.client', 'tag': 'reload'}
-
-    def _open_basketball_cash_view(self, name, domain):
-        """Basketbol kassa əməliyyatları view-nı açır"""
+    def _resolve_filter_state(self, override=None):
+        if override:
+            date_filter = override.get('date_filter') or 'month'
+            date_from = override.get('date_from')
+            date_to = override.get('date_to')
+        else:
+            date_filter = self.date_filter or 'month'
+            date_from = self.date_from
+            date_to = self.date_to
         return {
-            'type': 'ir.actions.act_window',
-            'name': name,
-            'res_model': 'volan.cash.flow',
-            'view_mode': 'list,form',
-            'domain': domain,
-            'context': {'default_sport_type': 'basketball'},
-            'target': 'current'
+            'date_filter': date_filter,
+            'date_from': date_from,
+            'date_to': date_to,
         }
 
-    def show_basketball_lessons(self):
-        """Basketbol dərs gəlirlərini göstərir"""
-        self.ensure_one()
-        domain = self._get_date_domain() + [
-            ('sport_type', '=', 'basketball'),
-            ('category', '=', 'basketball_lesson'),
-            ('transaction_type', '=', 'income')
-        ]
-        return self._open_basketball_cash_view('Basketbol Dərs Gəlirləri', domain)
+    def _get_date_range(self, state):
+        today = fields.Date.today()
+        date_filter = state['date_filter']
 
-    def show_basketball_other_income(self):
-        """Digər basketbol gəlirlərini göstərir"""
-        self.ensure_one()
-        domain = self._get_date_domain() + [
-            ('sport_type', '=', 'basketball'),
-            ('category', '!=', 'basketball_lesson'),
-            ('transaction_type', '=', 'income')
+        if date_filter == 'all':
+            return (False, False)
+        if date_filter == 'today':
+            return (today, today)
+        if date_filter == 'week':
+            start = today - timedelta(days=today.weekday())
+            return (start, today)
+        if date_filter == 'month':
+            start = today.replace(day=1)
+            return (start, today)
+        if date_filter == 'year':
+            start = today.replace(month=1, day=1)
+            return (start, today)
+        if date_filter == 'custom':
+            if state['date_from'] and state['date_to']:
+                return (state['date_from'], state['date_to'])
+            return (False, False)
+        start = today.replace(day=1)
+        return (start, today)
+
+    def _build_payment_domain(self, date_from, date_to):
+        if not date_from or not date_to:
+            return []
+        real_domain = [
+            ('real_date', '!=', False),
+            ('real_date', '>=', date_from),
+            ('real_date', '<=', date_to),
         ]
-        return self._open_basketball_cash_view('Digər Basketbol Gəlirləri', domain)
+        legacy_domain = [
+            ('real_date', '=', False),
+            ('payment_date', '>=', date_from),
+            ('payment_date', '<=', date_to),
+        ]
+        return OR([real_domain, legacy_domain])
+
+    def _empty_subscription_metrics(self):
+        return {
+            'subscription_cash_amount': 0.0,
+            'subscription_card_amount': 0.0,
+            'subscription_total_amount': 0.0,
+        }
+
+    def _empty_uniform_metrics(self):
+        return {
+            'uniform_cash_amount': 0.0,
+            'uniform_card_amount': 0.0,
+            'uniform_total_amount': 0.0,
+            'uniform_total_quantity': 0,
+        }
+
+    def _empty_other_metrics(self):
+        return {
+            'other_income_amount': 0.0,
+            'other_expense_amount': 0.0,
+            'other_net_amount': 0.0,
+        }
+
+    def _empty_overall_metrics(self):
+        return {
+            'overall_cash_income': 0.0,
+            'overall_card_income': 0.0,
+            'overall_total_income': 0.0,
+        }
+
+    def _empty_child_metrics(self):
+        return {
+            'total_children_count': 0,
+            'new_children_count': 0,
+        }
         
-    def show_basketball_expenses(self):
-        """Basketbol xərclərini göstərir"""
-        self.ensure_one()
-        domain = self._get_date_domain() + [
-            ('sport_type', '=', 'basketball'),
-            ('transaction_type', '=', 'expense')
+    def _compute_delayed_payments(self, override=None):
+        """Gecikmiş ödənişləri hesabla: real_date bu tarix aralığında olan ama payment_date başqa ayda olan"""
+        state = self._resolve_filter_state(override)
+        if state['date_filter'] == 'custom' and (not state['date_from'] or not state['date_to']):
+            return {'delayed_payments_amount': 0.0}
+
+        date_from, date_to = self._get_date_range(state)
+        if not date_from or not date_to:
+            return {'delayed_payments_amount': 0.0}
+        
+        payment_obj = self.env['basketball.lesson.payment']
+        
+        # real_date bu tarix aralığında olan ödənişlər
+        payments_current_real_date = payment_obj.search([
+            ('real_date', '>=', date_from),
+            ('real_date', '<=', date_to),
+            ('real_date', '!=', False)
+        ])
+        
+        # payment_date bu tarix aralığında olmayan gecikmiş ödənişləri filtrələ
+        delayed_payments = payments_current_real_date.filtered(lambda p: 
+            not p.payment_date or 
+            p.payment_date < date_from or 
+            p.payment_date > date_to
+        )
+        
+        delayed_amount = sum(delayed_payments.mapped('amount'))
+        return {'delayed_payments_amount': delayed_amount}
+
+    def _compute_subscription_metrics(self, override=None):
+        state = self._resolve_filter_state(override)
+        if state['date_filter'] == 'custom' and (not state['date_from'] or not state['date_to']):
+            return self._empty_subscription_metrics()
+
+        date_from, date_to = self._get_date_range(state)
+        payment_obj = self.env['basketball.lesson.payment']
+        
+        # 1. payment_date bu ayda olan ödənişlər
+        payment_date_payments = payment_obj.search([
+            ('payment_date', '>=', date_from),
+            ('payment_date', '<=', date_to)
+        ])
+        
+        # 2. real_date bu ayda olan ödənişlər
+        real_date_payments = payment_obj.search([
+            ('real_date', '>=', date_from),
+            ('real_date', '<=', date_to),
+            ('real_date', '!=', False)
+        ])
+        
+        # Bütün ödənişləri birləşdir (duplikasiyalar avtomatik aradan qalxar)
+        all_payments = payment_date_payments | real_date_payments
+
+        cash_amount = sum(all_payments.filtered(lambda p: p.payment_method_lesson == 'cash').mapped('amount'))
+        card_amount = sum(all_payments.filtered(lambda p: p.payment_method_lesson == 'card').mapped('amount'))
+        total_amount = cash_amount + card_amount
+
+        return {
+            'subscription_cash_amount': cash_amount,
+            'subscription_card_amount': card_amount,
+            'subscription_total_amount': total_amount,
+        }
+
+    def _build_sale_domain(self, date_from, date_to):
+        domain = [('state', '=', 'confirmed')]
+        if date_from and date_to:
+            start_dt = datetime.combine(date_from, datetime.min.time())
+            end_dt = datetime.combine(date_to, datetime.max.time())
+            domain += [
+                ('sale_date', '>=', start_dt),
+                ('sale_date', '<=', end_dt),
+            ]
+        return domain
+
+    def _compute_uniform_metrics(self, override=None):
+        state = self._resolve_filter_state(override)
+        if state['date_filter'] == 'custom' and (not state['date_from'] or not state['date_to']):
+            return self._empty_uniform_metrics()
+
+        date_from, date_to = self._get_date_range(state)
+        sale_domain = self._build_sale_domain(date_from, date_to)
+        sale_obj = self.env['basketball.product.sale']
+        sales = sale_obj.search(sale_domain)
+
+        cash_amount = sum(sales.filtered(lambda s: s.payment_method == 'cash').mapped('total_amount'))
+        card_amount = sum(sales.filtered(lambda s: s.payment_method == 'card').mapped('total_amount'))
+        total_amount = cash_amount + card_amount
+        total_quantity = sum(sales.mapped('sale_line_ids.quantity'))
+
+        return {
+            'uniform_cash_amount': cash_amount,
+            'uniform_card_amount': card_amount,
+            'uniform_total_amount': total_amount,
+            'uniform_total_quantity': int(total_quantity),
+        }
+
+    def _build_cash_flow_domain(self, date_from, date_to):
+        domain = [('sport_type', '=', 'basketball')]
+        if date_from and date_to:
+            domain += [
+                ('date', '>=', date_from),
+                ('date', '<=', date_to),
+            ]
+        return domain
+
+    def _compute_other_metrics(self, override=None):
+        state = self._resolve_filter_state(override)
+        if state['date_filter'] == 'custom' and (not state['date_from'] or not state['date_to']):
+            return self._empty_other_metrics()
+
+        date_from, date_to = self._get_date_range(state)
+        base_domain = self._build_cash_flow_domain(date_from, date_to)
+        cash_flow_obj = self.env['volan.cash.flow']
+
+        income_domain = base_domain + [
+            ('transaction_type', '=', 'income'),
+            ('category', '=', 'other'),
         ]
-        return self._open_basketball_cash_view('Basketbol Xərcləri', domain)
+        expense_domain = base_domain + [
+            ('transaction_type', '=', 'expense'),
+            ('category', '=', 'other'),
+        ]
+
+        income_amount = sum(cash_flow_obj.search(income_domain).mapped('amount'))
+        expense_amount = sum(cash_flow_obj.search(expense_domain).mapped('amount'))
+        net_amount = income_amount - expense_amount
+
+        return {
+            'other_income_amount': income_amount,
+            'other_expense_amount': expense_amount,
+            'other_net_amount': net_amount,
+        }
+
+    def _compute_child_metrics(self, override=None):
+        lesson_obj = self.env['basketball.lesson.simple']
+        all_lessons = lesson_obj.search([])
+        total_children = len(set(all_lessons.mapped('partner_id').ids))
+
+        state = self._resolve_filter_state(override)
+        date_from, date_to = self._get_date_range(state)
+
+        new_children = 0
+        if date_from and date_to:
+            lessons_in_range = lesson_obj.search([
+                ('start_date', '>=', date_from),
+                ('start_date', '<=', date_to),
+            ])
+            range_partners = set(lessons_in_range.mapped('partner_id').ids)
+            if date_from:
+                earlier_lessons = lesson_obj.search([('start_date', '<', date_from)])
+                earlier_partners = set(earlier_lessons.mapped('partner_id').ids)
+            else:
+                earlier_partners = set()
+            new_children = len(range_partners - earlier_partners)
+
+        return {
+            'total_children_count': total_children,
+            'new_children_count': new_children,
+        }
+
+    def _compute_overall_metrics(self, metrics):
+        cash_income = metrics.get('subscription_cash_amount', 0.0) + metrics.get('uniform_cash_amount', 0.0)
+        card_income = metrics.get('subscription_card_amount', 0.0) + metrics.get('uniform_card_amount', 0.0)
+        total_income = cash_income + card_income + metrics.get('other_income_amount', 0.0) #- metrics.get('other_expense_amount', 0.0)
+
+        return {
+            'overall_cash_income': cash_income,
+            'overall_card_income': card_income,
+            'overall_total_income': total_income,
+        }
+
+    def _gather_metrics(self, override=None):
+        metrics = {}
+        metrics.update(self._compute_subscription_metrics(override=override))
+        metrics.update(self._compute_uniform_metrics(override=override))
+        metrics.update(self._compute_other_metrics(override=override))
+        metrics.update(self._compute_child_metrics(override=override))
+        metrics.update(self._compute_delayed_payments(override=override))
+        metrics.update(self._compute_overall_metrics(metrics))
+        return metrics
+
+    def action_refresh(self):
+        metrics = self._gather_metrics()
+        self.write(metrics)
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
 
     @api.onchange('date_filter', 'date_from', 'date_to')
     def _onchange_date_filter(self):
-        """Tarix filtri dəyişəndə basketbol balansını yenilə"""
-        values = {}
-        self._calculate_basketball_balance(values)
-        for field, value in values.items():
-            setattr(self, field, value)
+        if self.date_filter == 'custom' and (not self.date_from or not self.date_to):
+            return
+        metrics = self._gather_metrics()
+        for field_name, value in metrics.items():
+            setattr(self, field_name, value)
 
 
 from odoo import models, fields, api
@@ -562,21 +666,22 @@ class BadmintonCashBalance(models.TransientModel):
 
     # Tarix filtr sahələri
     date_filter = fields.Selection([
-        ('all', 'Bütün Tarixlər'),
-        ('today', 'Bu Gün'),
-        ('week', 'Bu Həftə'),
-        ('month', 'Bu Ay'),
-        ('year', 'Bu İl'),
+        #('all', 'Bütün Tarixlər'),
+        #('today', 'Bu Gün'),
+        #('week', 'Bu Həftə'),
+        #('month', 'Bu Ay'),
+        #('year', 'Bu İl'),
         ('custom', 'Özel Tarix')
-    ], string='📅 Tarix Filtri', default='month', required=True)
+    ], string='📅 Tarix Filtri', default='custom', required=True)
     
-    date_from = fields.Date('📅 Başlanğıc Tarix')
-    date_to = fields.Date('📅 Bitmə Tarix')
+    date_from = fields.Date('📅 Başlanğıc Tarix', default=fields.Date.today)
+    date_to = fields.Date('📅 Bitmə Tarix', default=fields.Date.today)
 
     cash_entries = fields.Integer('💵 Nağd Girişlər', readonly=True)
     card_entries = fields.Integer('💳 Card to Card Girişlər', readonly=True)
     onefit_entries = fields.Integer('🏃 1FIT Girişlər', readonly=True)
     push30_entries = fields.Integer('⚡ PUSH30 Girişlər', readonly=True)
+    tripsome_entries = fields.Integer('🚗 Tripsome Girişlər', readonly=True)
     abonent_entries = fields.Integer('🎫 Abunəçi Girişlər', readonly=True)
     total_entries = fields.Integer('📊 Ümumi Giriş Sayı', readonly=True)
 
@@ -705,6 +810,7 @@ class BadmintonCashBalance(models.TransientModel):
         abonent_entries = len([s for s in all_sessions if s.payment_type == 'abonent'])
         onefit_entries = len([s for s in all_sessions if s.promo_type == '1fit'])
         push30_entries = len([s for s in all_sessions if s.promo_type == 'push30'])
+        tripsome_entries = len([s for s in all_sessions if s.promo_type == 'tripsome'])
         total_entries = len(all_sessions)
 
         # 5. Dashboard - Ödəniş Məbləğləri (badminton.sale-dən və cash_flow-dan)
@@ -737,6 +843,7 @@ class BadmintonCashBalance(models.TransientModel):
             'card_entries': card_entries,
             'onefit_entries': onefit_entries,
             'push30_entries': push30_entries,
+            'tripsome_entries': tripsome_entries,
             'abonent_entries': abonent_entries,
             'total_entries': total_entries,
             'cash_payments': cash_payments,

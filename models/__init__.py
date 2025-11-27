@@ -1,6 +1,7 @@
 from . import res_partner
 from . import badminton_session
 from . import badminton_sale
+from . import badminton_monthly_balance
 from . import badminton_group
 from . import badminton_package
 from . import basketball_package
@@ -13,6 +14,7 @@ from . import basketball_lesson_freeze
 from . import basketball_lesson_freeze_wizard
 from . import basketball_lesson_payment
 from . import badminton_lesson_simple
+from . import badminton_lesson_substitute
 from . import basketball_lesson_simple
 from . import basketball_demo_lesson
 from . import basketball_lesson_substitute

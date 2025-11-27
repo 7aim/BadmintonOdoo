@@ -16,6 +16,7 @@
                             <field name="phone"/>
                             <field name="mobile"/>
                             <field name="badminton_balance" string="Badminton Balansı"/>
+                            <field name="monthly_balance_hours" string="Aylıq Balans (saat)"/>
                         </list>
                     </field>
                 </group>
@@ -47,11 +48,14 @@
                                domain="[('is_company', '=', False), ('sport_type', 'in', ['badminton', 'both']), ('branch', '=', 'yasamal')]"
                                context="{'default_branch': 'yasamal', 'default_sport_type': 'badminton'}"/>
                         <field name="current_balance" readonly="1" style="font-weight: bold; color: #007bff;"/>
+                        <field name="monthly_balance_hours" readonly="1" string="Aylıq Balans (saat)"
+                               invisible="[(monthly_balance_hours == 0)]"/>
                     </group>
                     <group string="Paket Satışı">
-                        <field name="package_id" domain="[('active', '=', True), ('package_type', '=', 'sale')]"/>
+                        <field name="package_id" domain="[('active', '=', True), ('package_type', 'in', ['sale', 'monthly'])]"/>
                         <field name="payment_method"/>
                         <field name="customer_type" invisible="not package_id"/>
+                        <field name="is_gedis_package" readonly="1" invisible="[(package_id == False)]"/>
                     </group>
                 </group>
                 <group string="Sadə Satış (Paket seçilmədikdə)" invisible="package_id">

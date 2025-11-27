@@ -51,6 +51,7 @@
                                    domain="[('is_company', '=', False), ('sport_type', 'in', ['badminton', 'both']), ('branch', '=', 'yasamal')]"
                                    context="{'default_branch': 'yasamal', 'default_sport_type': 'badminton'}"
                                    required="1"/>
+                            <field name="session_package_id" invisible="partner_id == False"/>
                             <field name="promo_type"/>
                             <field name="payment_type"/>
                             <field name="duration_hours"/>
@@ -88,6 +89,7 @@
 
                 <field name="name"/>
                 <field name="partner_id"/>
+                <field name="session_package_id"/>
                 <field name="promo_type"/>
                 <field name="payment_type"/>
                 <field name="start_time"/>
@@ -107,14 +109,16 @@
         <field name="model">badminton.session</field>
         <field name="arch" type="xml">
             <list string="Aktiv Sessiyalar"
+                  class="yasamal-active-sessions-list"
                   decoration-muted="state=='draft'"
-                  decoration-warning="state=='active' and not time_expired and not warn10_sent"
+                  decoration-success="state=='active' and not time_expired and not warn10_sent"
                   decoration-info="state=='extended' and not time_expired and not warn10_sent"
                   decoration-danger="warn10_sent or time_expired"
                   create="false"
                   default_order="created_at asc">
                 <field name="queue_number" string="Növbə" invisible="state != 'draft'"/>
                 <field name="partner_id"/>
+                <field name="session_package_id"/>
                 <field name="promo_type"/>
                 <field name="payment_type"/>
                 <field name="start_time"/>

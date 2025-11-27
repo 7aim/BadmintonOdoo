@@ -57,11 +57,20 @@ class QRScannerWizard(models.TransientModel):
                     return self._return_wizard()
                 
                 # Müştərinin badminton balansını yoxla
-                current_balance = partner.badminton_balance or 0
                 required_hours = 1.0  # Standart 1 saat
+                monthly_hours = partner.get_monthly_hours_available()
+                normal_balance = partner.badminton_balance or 0
+                total_balance = monthly_hours + normal_balance
                 
-                if current_balance < required_hours:
-                    self.result_message = f"❌ Balans kifayət deyil!\n👤 Müştəri: {partner.name}\n💰 Mövcud balans: {current_balance} saat\n⚠️ Tələb olunan: {required_hours} saat\n\nZəhmət olmasa balansı artırın!"
+                if total_balance < required_hours:
+                    self.result_message = (
+                        "❌ Balans kifayət deyil!\n"
+                        f"👤 Müştəri: {partner.name}\n"
+                        f"💡 Aylıq paket balansı: {monthly_hours} saat\n"
+                        f"💰 Normal balans: {normal_balance} saat\n"
+                        f"⚠️ Tələb olunan: {required_hours} saat\n\n"
+                        "Zəhmət olmasa balansı artırın!"
+                    )
                     return self._return_wizard()
                 
                 # Aktiv badminton sessiya var mı yoxla
@@ -82,7 +91,15 @@ class QRScannerWizard(models.TransientModel):
                     'duration_hours': 1.0,
                 })
 
-                self.result_message = f"✅ SESSİYA YARADILDI (Gözləmədə)!\n👤 Müştəri: {partner.name}\n🎮 Sessiya: {session.name}\n⚠️ Zəhmət olmasa 'Başlat' düyməsinə basın!\n💰 Balans: {current_balance} saat\n 🔢 Növbə: {session.queue_number}"
+                self.result_message = (
+                    "✅ SESSİYA YARADILDI (Gözləmədə)!\n"
+                    f"👤 Müştəri: {partner.name}\n"
+                    f"🎮 Sessiya: {session.name}\n"
+                    "⚠️ Zəhmət olmasa 'Başlat' düyməsinə basın!\n"
+                    f"💡 Aylıq balans: {monthly_hours} saat\n"
+                    f"💰 Normal balans: {normal_balance} saat\n"
+                    f"🔢 Növbə: {session.queue_number}"
+                )
                 self.session_id = session.id
                 
                 return self._return_wizard()
@@ -130,13 +147,22 @@ class QRScannerWizard(models.TransientModel):
             if not matching_schedule:
                 return {'has_lesson': False, 'message': ''}
             
+            # Müştərinin qrupunu yoxla - əgər böyüklər qrupundadırsa vaxt məhdudiyyəti yoxdur
+            group = active_lesson.group_id
+            is_adult_group = group and group.for_adults
+            
             # Dərs vaxtında mı?
             for schedule in matching_schedule:
-                # Dərsdən 1 saat əvvəl və dərsin sonuna qədər QR aktiv
-                start_with_buffer = schedule.start_time - 1.0  # 1 saat əvvəl
-                end_with_buffer = schedule.end_time            # Dərsin sonu
+                # Böyüklər qrupu üçün vaxt məhdudiyyəti yoxdur
+                if is_adult_group:
+                    time_check_passed = True
+                else:
+                    # Dərsdən 1 saat əvvəl və dərsin sonuna qədər QR aktiv
+                    start_with_buffer = schedule.start_time - 1.0  # 1 saat əvvəl
+                    end_with_buffer = schedule.end_time            # Dərsin sonu
+                    time_check_passed = start_with_buffer <= current_time_float <= end_with_buffer
                 
-                if start_with_buffer <= current_time_float <= end_with_buffer:
+                if time_check_passed:
                     # Həftənin günü adlarını əlavə edək
                     day_names = {
                         '0': 'Bazar ertəsi',
@@ -171,9 +197,12 @@ class QRScannerWizard(models.TransientModel):
                         'scan_result': f"QR: {partner.name} (ID: {partner.id})"
                     })
                     
+                    time_info = "İstənilən vaxt" if is_adult_group else f"{int(schedule.start_time):02d}:{int((schedule.start_time % 1) * 60):02d} - {int(schedule.end_time):02d}:{int((schedule.end_time % 1) * 60):02d}"
+                    group_info = "👥 Böyüklər qrupu (istənilən vaxt)" if is_adult_group else f"👥 Qrup: {group.name if group else 'N/A'}"
+                    
                     return {
                         'has_lesson': True,
-                        'message': f"✅ DƏRSƏ GİRİŞ UĞURLU!\n👤 Müştəri: {partner.name}\n📚 Abunəlik: {active_lesson.name}\n📅 Dərs günü: {day_names.get(schedule.day_of_week, 'N/A')}\n⏰ Dərs saatı: {int(schedule.start_time):02d}:{int((schedule.start_time % 1) * 60):02d} - {int(schedule.end_time):02d}:{int((schedule.end_time % 1) * 60):02d}\n💡 Balans dəyişmədi (Dərs abunəliyi aktiv)\n📊 Bu aya iştirak: {active_lesson.total_attendances + 1}"
+                        'message': f"✅ DƏRSƏ GİRİŞ UĞURLU!\n👤 Müştəri: {partner.name}\n📚 Abunəlik: {active_lesson.name}\n📅 Dərs günü: {day_names.get(schedule.day_of_week, 'N/A')}\n⏰ Dərs saatı: {time_info}\n{group_info}\n💡 Balans dəyişmədi (Dərs abunəliyi aktiv)\n📊 Bu aya iştirak: {active_lesson.total_attendances + 1}"
                     }
             
             return {'has_lesson': False, 'message': ''}

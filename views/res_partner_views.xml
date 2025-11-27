@@ -21,6 +21,7 @@
                 <group string="Badminton Balansı" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin" invisible="sport_type == 'basketball'">
                     <field name="badminton_balance" style="font-size: 18px; font-weight: bold; color: #007bff;" 
                            />
+                    <field name="monthly_balance_hours" readonly="1" string="Aylıq Balans (saat)"/>
                 </group>
             </xpath>
             <xpath expr="//page[@name='internal_notes']" position="before">
@@ -54,7 +55,20 @@
                             <field name="hours_added"/>
                             <field name="hours_used"/>
                             <field name="balance_after"/>
+                            <field name="balance_channel"/>
                             <field name="description"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Aylıq Paket Balansları" name="monthly_balances" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin" invisible="branch == 'genclik' or sport_type == 'basketball'">
+                    <field name="monthly_balance_ids" context="{'default_partner_id': id}">
+                        <list string="Aylıq Paketlər" create="false" edit="false">
+                            <field name="package_id"/>
+                            <field name="initial_units"/>
+                            <field name="remaining_units"/>
+                            <field name="deduction_factor"/>
+                            <field name="expiry_date"/>
+                            <field name="state"/>
                         </list>
                     </field>
                 </page>

@@ -30,6 +30,7 @@
                             <field name="partner_id" options="{'no_create': True}" 
                                    domain="[('is_company', '=', False), ('sport_type', 'in', ['badminton', 'both']), ('branch', '=', 'yasamal')]"/>
                             <field name="customer_type"/>
+                            <field name="package_id"/>
                             <field name="package_type"/>
                             <field name="sale_date"/>
                             <field name="expiry_date" readonly="1"/>
@@ -68,6 +69,7 @@
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="customer_type"/>
+                <field name="package_id"/>
                 <field name="package_type"/>
                 <field name="payment_method"/>
                 <field name="hours_quantity"/>
@@ -97,6 +99,7 @@
                 <filter string="Tək Saat" name="single" domain="[('package_type','=','single')]"/>
                 <filter string="8 Giriş Paketi" name="package_8" domain="[('package_type','=','package_8')]"/>
                 <filter string="12 Giriş Paketi" name="package_12" domain="[('package_type','=','package_12')]"/>
+                <filter string="Aylıq Paket Satışı" name="monthly_package" domain="[('package_id.package_type', '=', 'monthly')]"/>
                 <group expand="0" string="Qrupla">
                     <filter name="group_by_partner" string="Müştəri" context="{'group_by': 'partner_id'}"/>
                     <filter name="group_by_customer_type" string="Müştəri Növü" context="{'group_by': 'customer_type'}"/>
@@ -136,6 +139,7 @@
                 <field name="hours_added"/>
                 <field name="hours_used"/>
                 <field name="balance_after"/>
+                <field name="balance_channel"/>
                 <field name="description"/>
             </list>
         </field>

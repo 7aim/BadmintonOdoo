@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
+from odoo.exceptions import ValidationError
 import qrcode
 import base64
 import io
@@ -47,6 +48,10 @@ class VolanPartner(models.Model):
     # 5. Badminton Satış Tarixçəsi
     badminton_sale_ids = fields.One2many('badminton.sale', 'partner_id', string="Badminton Satışları")
     badminton_balance_history_ids = fields.One2many('badminton.balance.history', 'partner_id', string="Balans Tarixçəsi")
+
+    monthly_balance_ids = fields.One2many('badminton.monthly.balance', 'partner_id', string="Aylıq Paket Balansları")
+    monthly_balance_units = fields.Float(string="Aylıq Balans (vahid)", compute='_compute_monthly_balances', store=False)
+    monthly_balance_hours = fields.Float(string="Aylıq Balans (saat)", compute='_compute_monthly_balances', store=False)
     
     # 5.1. Gənclik Filialı Satış Tarixçəsi
     genclik_sale_ids = fields.One2many(
@@ -97,6 +102,105 @@ class VolanPartner(models.Model):
                     partner.qr_code_image = False
             else:
                 partner.qr_code_image = False
+
+    @api.depends('monthly_balance_ids.remaining_units', 'monthly_balance_ids.state', 'monthly_balance_ids.expiry_date', 'monthly_balance_ids.deduction_factor')
+    def _compute_monthly_balances(self):
+        today = fields.Date.today()
+        for partner in self:
+            active_lines = partner._get_active_monthly_lines(today)
+            partner.monthly_balance_units = sum(active_lines.mapped('remaining_units'))
+            partner.monthly_balance_hours = sum(line.get_hours_available() for line in active_lines)
+
+    def _get_active_monthly_lines(self, date_ref=None):
+        self.ensure_one()
+        date_ref = date_ref or fields.Date.today()
+        return self.monthly_balance_ids.filtered(
+            lambda l: l.remaining_units > 0 and l.state == 'active' and (not l.expiry_date or l.expiry_date >= date_ref)
+        )
+
+    def get_monthly_hours_available(self):
+        self.ensure_one()
+        return sum(line.get_hours_available() for line in self._get_active_monthly_lines())
+
+    def get_total_badminton_hours_available(self):
+        self.ensure_one()
+        return (self.badminton_balance or 0.0) + self.get_monthly_hours_available()
+
+    def consume_badminton_hours(self, required_hours, transaction_type='usage', description='', session=None):
+        self.ensure_one()
+        if required_hours <= 0:
+            return True
+
+        remaining_hours = required_hours
+        remaining_hours -= self._consume_from_monthly(remaining_hours, transaction_type, description, session)
+
+        if remaining_hours <= 0:
+            return True
+
+        return self._consume_normal_hours(remaining_hours, transaction_type, description, session)
+
+    def _consume_from_monthly(self, required_hours, transaction_type, description, session):
+        lines = self._get_active_monthly_lines()
+        if not lines:
+            return 0.0
+
+        history_model = self.env['badminton.balance.history']
+        remaining_hours = required_hours
+        hours_covered = 0.0
+
+        for line in lines:
+            hours_available = line.get_hours_available()
+            if hours_available <= 0:
+                continue
+
+            hours_to_take = min(remaining_hours, hours_available)
+            if hours_to_take <= 0:
+                break
+
+            units_used, before, after = line.consume_hours(hours_to_take)
+            history_model.create({
+                'partner_id': self.id,
+                'session_id': session.id if session else False,
+                'hours_used': units_used,
+                'balance_before': before,
+                'balance_after': after,
+                'transaction_type': transaction_type,
+                'description': description or 'Aylıq paket istifadə olundu',
+                'balance_channel': 'monthly',
+                'monthly_line_id': line.id,
+            })
+
+            hours_covered += hours_to_take
+            remaining_hours -= hours_to_take
+            if remaining_hours <= 0:
+                break
+
+        return hours_covered
+
+    def _consume_normal_hours(self, required_hours, transaction_type, description, session):
+        current_balance = self.badminton_balance or 0.0
+        if current_balance < required_hours:
+            total_available = self.get_total_badminton_hours_available()
+            raise ValidationError(
+                f'{self.name} müştərisinin kifayət qədər balansı yoxdur! '
+                f'Normal balans: {current_balance} saat, ümumi (aylıq+normal): {total_available} saat, '
+                f'tələb olunan: {required_hours} saat'
+            )
+
+        new_balance = current_balance - required_hours
+        self.badminton_balance = new_balance
+
+        self.env['badminton.balance.history'].create({
+            'partner_id': self.id,
+            'session_id': session.id if session else False,
+            'hours_used': required_hours,
+            'balance_before': current_balance,
+            'balance_after': new_balance,
+            'transaction_type': transaction_type,
+            'description': description or 'Badminton balansından istifadə olundu',
+            'balance_channel': 'normal',
+        })
+        return True
 
 
 

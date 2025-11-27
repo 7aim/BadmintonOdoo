@@ -58,6 +58,20 @@
                                 </list>
                             </field>
                         </page>
+                        <page string="Demo Dərslər">
+                            <field name="demo_lesson_ids">
+                                <list string="Demo Üzvləri" create="false" decoration-warning="state == 'draft'" 
+                                      decoration-success="state == 'done'" decoration-muted="state == 'cancelled'">
+                                    <field name="name"/>
+                                    <field name="partner_id"/>
+                                    <field name="date"/>
+                                    <field name="time" widget="float_time"/>
+                                    <field name="state" widget="badge"/>
+                                    <field name="attended"/>
+                                    <field name="converted"/>
+                                </list>
+                            </field>
+                        </page>
                         <page string="Qeydlər">
                             <field name="notes" nolabel="1"/>
                         </page>

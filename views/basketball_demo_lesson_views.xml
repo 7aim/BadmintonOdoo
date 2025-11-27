@@ -13,9 +13,9 @@
                 <field name="date"/>
                 <field name="time" widget="float_time"/>
                 <field name="coach_id"/>
-                <field name="attended"/>
+                <field name="attended" options="{'clickable': True}"/>
                 <field name="converted"/>
-                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'confirmed'" decoration-warning="state == 'draft'" decoration-danger="state == 'cancelled'" options="{'clickable': True}"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'confirmed'" decoration-danger="state == 'cancelled'" options="{'clickable': True}"/>
             </list>
         </field>
     </record>

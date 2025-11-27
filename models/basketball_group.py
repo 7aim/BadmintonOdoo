@@ -16,8 +16,10 @@ class BasketballGroup(models.Model):
     schedule_ids = fields.One2many('basketball.group.schedule', 'group_id', string="Qrup Qrafiki")
     
     # Qrup üzvləri
-    member_ids = fields.One2many('basketball.lesson.simple', 'group_id', string="Qrup Üzvləri")
+    member_ids = fields.Many2many('basketball.lesson.simple', 'basketball_lesson_group_rel', 'group_id', 'lesson_id', string="Qrup Üzvləri", compute='_compute_member_ids')
+    demo_lesson_ids = fields.One2many('basketball.demo.lesson', 'group_id', string="Demo Dərslər")
     member_count = fields.Integer(string="Üzv Sayı", compute='_compute_member_count')
+    demo_count = fields.Integer(string="Demo Sayı", compute='_compute_demo_count')
     
     # Aktivlik
     is_active = fields.Boolean(string="Aktiv", default=True)
@@ -25,10 +27,24 @@ class BasketballGroup(models.Model):
     # Qeydlər
     notes = fields.Text(string="Qeydlər")
     
+    def _compute_member_ids(self):
+        """Bu qrupa aid olan aktiv abunəlikləri tap"""
+        for group in self:
+            lessons = self.env['basketball.lesson.simple'].search([
+                ('group_ids', 'in', group.id),
+                ('state', '!=', 'cancelled')
+            ])
+            group.member_ids = [(6, 0, lessons.ids)]
+    
     @api.depends('member_ids')
     def _compute_member_count(self):
         for group in self:
             group.member_count = len(group.member_ids.filtered(lambda l: l.state in ['active', 'frozen']))
+    
+    @api.depends('demo_lesson_ids')
+    def _compute_demo_count(self):
+        for group in self:
+            group.demo_count = len(group.demo_lesson_ids.filtered(lambda d: d.state != 'cancelled'))
     
     @api.model
     def create(self, vals):
@@ -96,9 +112,9 @@ class BasketballGroupSchedule(models.Model):
         """Qrup üzvlərinin qrafikini sinxronlaşdır"""
         self.ensure_one()
         
-        # Bu qrupun bütün aktiv üzvlərini tap
+        # Bu qrupun bütün aktiv üzvlərini tap (Many2many əlaqə)
         members = self.env['basketball.lesson.simple'].search([
-            ('group_id', '=', self.group_id.id),
+            ('group_ids', 'in', self.group_id.id),
             ('state', 'in', ['active', 'frozen'])
         ])
         

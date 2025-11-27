@@ -37,7 +37,15 @@
                     </group>
                     <notebook>
                         <page string="İştirakçılar">
-                            <field name="attendee_ids"/>
+                            <field name="attendee_ids">
+                                <list editable="bottom" decoration-success="qr_scanned==True" create="0" delete="0">
+                                    <field name="partner_id" readonly="1"/>
+                                    <field name="lesson_id" column_invisible="1"/>
+                                    <field name="is_present"/>
+                                    <field name="qr_scanned" string="🔘 QR" readonly="1"/>
+                                    <field name="notes"/>
+                                </list>
+                            </field>
                         </page>
                     </notebook>
                     <group>

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
-from datetime import datetime, timedelta
+from datetime import timedelta
+from dateutil.relativedelta import relativedelta
 
 class BasketballLessonSimple(models.Model):
     _name = 'basketball.lesson.simple'
@@ -10,7 +11,7 @@ class BasketballLessonSimple(models.Model):
     
     name = fields.Char(string="Dərs Nömrəsi", readonly=True, default="Yeni")
     partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
-    group_id = fields.Many2one('basketball.group', string="Qrup")
+    group_ids = fields.Many2many('basketball.group', string="Qruplar")
     
     # Paket seçimi - basketbol paketləri
     package_id = fields.Many2one('basketball.package', string="Abunəlik Paketi",
@@ -21,7 +22,9 @@ class BasketballLessonSimple(models.Model):
 
     # İştiraklar
     attendance_ids = fields.One2many('basketball.lesson.attendance.simple', 'lesson_id', string="Dərsə İştiraklar")
-    total_attendances = fields.Integer(string="Ümumi İştirak", compute='_compute_total_attendances')
+    total_attendances = fields.Integer(string="Ümumi İşti2rak", compute='_compute_total_attendances')
+    substitute_ids = fields.One2many('basketball.lesson.substitute', 'lesson_id', string="Əvəzedici Dərslər")
+    substitute_count = fields.Integer(string="Əvəzedici Dərs Sayı", compute='_compute_substitute_count', store=True)
     
     # Ödəniş məlumatları
     lesson_fee = fields.Float(string="Aylıq Dərs Haqqı", default=100.0, store=True)
@@ -46,19 +49,45 @@ class BasketballLessonSimple(models.Model):
     
     # Vəziyyət
     state = fields.Selection([
-        ('draft', 'Layihə'),
+        ('draft', 'Təsdiqlənməyib'),
         ('active', 'Aktiv'),
         ('frozen', 'Dondurulmuş'),
         ('completed', 'Tamamlanıb'),
+        ('cancel_requested', 'Ləğv Edilməsi Tələb Olunub'),
         ('cancelled', 'Ləğv Edilib')
     ], default='draft', string="Vəziyyət")
     
     # Ödəniş tarixi (sabit - kassaya təsir edən gün)
     payment_date = fields.Date(string="Başlama Tarixi", required=True, default=fields.Date.today,
-                                help="Bu tarixdəki GÜN hər ay kassaya ödəniş yazılarkən istifadə olunacaq")
+                                help="İlkin başlanğıc tarixi (informativ)")
     
     # Qeydlər
     notes = fields.Text(string="Qeydlər")
+    
+    # Abunəlik ödəniş statusu (rəng üçün)
+    subscription_payment_status = fields.Selection([
+        ('on_time', 'Vaxtında'),
+        ('warning', 'Xəbərdarlıq (25+ gün)'),
+        ('overdue', 'Vaxtından keçmiş'),
+    ], string="Abunəlik Ödəniş Statusu", compute='_compute_subscription_payment_status', store=True)
+    
+    @api.depends('last_payment_date')
+    def _compute_subscription_payment_status(self):
+        """Son ödəniş tarixindən 25 gün keçib-keçmədiyini hesabla"""
+        today = fields.Date.today()
+        for lesson in self:
+            if not lesson.last_payment_date:
+                lesson.subscription_payment_status = 'on_time'
+                continue
+                
+            days_since_payment = (today - lesson.last_payment_date).days
+            
+            if days_since_payment < 25:
+                lesson.subscription_payment_status = 'on_time'
+            elif days_since_payment < 35:  # 25-35 gün arası sarı
+                lesson.subscription_payment_status = 'warning'
+            else:  # 35+ gün qırmızı
+                lesson.subscription_payment_status = 'overdue'
     
     @api.depends('start_date')
     def _compute_end_date(self):
@@ -73,7 +102,11 @@ class BasketballLessonSimple(models.Model):
     def _compute_last_payment_date(self):
         """Ən son ödənişin tarixini hesabla"""
         for lesson in self:
-            if lesson.payment_ids:
+            payments_with_real_date = lesson.payment_ids.filtered(lambda p: p.real_date)
+            if payments_with_real_date:
+                latest_payment = payments_with_real_date.sorted('real_date', reverse=True)
+                lesson.last_payment_date = latest_payment[0].real_date if latest_payment else False
+            elif lesson.payment_ids:
                 latest_payment = lesson.payment_ids.sorted('payment_date', reverse=True)
                 lesson.last_payment_date = latest_payment[0].payment_date if latest_payment else False
             else:
@@ -95,6 +128,11 @@ class BasketballLessonSimple(models.Model):
     def _compute_total_attendances(self):
         for lesson in self:
             lesson.total_attendances = len(lesson.attendance_ids)
+
+    @api.depends('substitute_ids')
+    def _compute_substitute_count(self):
+        for lesson in self:
+            lesson.substitute_count = len(lesson.substitute_ids)
             
     @api.depends('freeze_ids.freeze_days', 'freeze_ids.state')
     def _compute_total_freeze_days(self):
@@ -155,9 +193,55 @@ class BasketballLessonSimple(models.Model):
         else:
             self.original_price = 0.0
     
+    @api.onchange('group_ids')
+    def _onchange_group_ids(self):
+        """Qruplar dəyişəndə qrafiki preview göstər (virtual)"""
+        if not self.group_ids:
+            self.schedule_ids = [(5, 0, 0)]  # Hamısını sil
+            return
+        
+        # Virtual schedule list yaradırıq (hələ DB-də yaradılmır)
+        schedule_commands = [(5, 0, 0)]  # Əvvəlcə köhnələri sil
+        
+        for group in self.group_ids:
+            for group_schedule in group.schedule_ids.filtered(lambda s: s.is_active):
+                schedule_commands.append((0, 0, {
+                    'day_of_week': group_schedule.day_of_week,
+                    'start_time': group_schedule.start_time,
+                    'end_time': group_schedule.end_time,
+                    'is_active': True,
+                    'notes': f"Qrup qrafiki: {group.name}"
+                }))
+        
+        self.schedule_ids = schedule_commands
+    
+    def _sync_schedule_with_groups(self):
+        """Seçilmiş qrupların qrafiklərini abunəlik qrafiki ilə sinxronlaşdır (actual DB update)"""
+        if not self.id:  # Record hələ yaradılmayıbsa
+            return
+            
+        self.ensure_one()
+        
+        # Mövcud qrafiki təmizlə (yalnız qrup əsaslı olanları)
+        self.schedule_ids.filtered(lambda s: 'Qrup qrafiki:' in (s.notes or '')).unlink()
+        
+        # Seçilmiş qrupların qrafiklərini əlavə et
+        for group in self.group_ids:
+            for group_schedule in group.schedule_ids.filtered(lambda s: s.is_active):
+                self.env['basketball.lesson.schedule.simple'].create({
+                    'lesson_id': self.id,
+                    'day_of_week': group_schedule.day_of_week,
+                    'start_time': group_schedule.start_time,
+                    'end_time': group_schedule.end_time,
+                    'is_active': True,
+                    'notes': f"Qrup qrafiki: {group.name}"
+                })
+    
     @api.model
     def create(self, vals):
         # Abunəlik adı: A-MUSTERIID formatında
+        if vals.get('lesson_fee', 0) <= 0:
+            raise ValidationError("Dərs haqqı 0-dan böyük olmalıdır!") 
         if vals.get('partner_id'):
             partner_id = vals['partner_id']
             vals['name'] = f"A-{partner_id}"
@@ -166,6 +250,10 @@ class BasketballLessonSimple(models.Model):
 
         lesson = super(BasketballLessonSimple, self).create(vals)
         
+        # Qrup seçilmişsə qrafiki sinxronlaşdır
+        if lesson.group_ids:
+            lesson._sync_schedule_with_groups()
+        
         # Əgər yaradılan zaman state=active isə və ödəniş yoxdursa, avtomatik ilk ödəniş yarat
         if lesson.state == 'active' and not lesson.payment_ids:
             lesson._create_initial_payment()
@@ -173,8 +261,13 @@ class BasketballLessonSimple(models.Model):
         return lesson
     
     def write(self, vals):
-        """State dəyişdikdə (draft → active) avtomatik ödəniş yarat"""
+        """State və qrup dəyişdikdə müvafiq əməliyyatlar aparır"""
         result = super(BasketballLessonSimple, self).write(vals)
+        
+        # Əgər qruplar dəyişdirilirsə qrafiki yenilə
+        if 'group_ids' in vals:
+            for lesson in self:
+                lesson._sync_schedule_with_groups()
         
         # Əgər state active-ə dəyişdirilirsə və ödəniş yoxdursa
         if vals.get('state') == 'active':
@@ -188,17 +281,12 @@ class BasketballLessonSimple(models.Model):
         """İlk ödəniş sətirini yarat (helper method)"""
         self.ensure_one()
         
-        current_month = datetime.now().month
-        month_mapping = {
-            1: 'january', 2: 'february', 3: 'march', 4: 'april',
-            5: 'may', 6: 'june', 7: 'july', 8: 'august',
-            9: 'september', 10: 'october', 11: 'november', 12: 'december'
-        }
-        
+        default_due_date = self.payment_date or fields.Date.today()
+
         self.env['basketball.lesson.payment'].create({
             'lesson_id': self.id,
             'payment_date': fields.Date.today(),
-            'payment_month': month_mapping.get(current_month, 'january'),
+            'real_date': default_due_date,
             'amount': self.lesson_fee,
             'notes': 'İlk abunəlik ödənişi (avtomatik)'
         })
@@ -210,34 +298,33 @@ class BasketballLessonSimple(models.Model):
                 lesson.state = 'active'
                 # write() metodu avtomatik _create_initial_payment() çağıracaq
     
+    def action_cancel_request(self):
+        """Dərsin ləğv edilməsini tələb et"""
+        for lesson in self:
+            if lesson.state in ['draft', 'active', 'frozen']:
+                lesson.state = 'cancel_requested'
+
     def action_renew(self):
         for lesson in self:
             if lesson.state == 'active':
                 lesson.end_date = lesson.end_date + timedelta(days=30)
 
+                last_payment = False
                 if lesson.payment_ids:
-                    last_payment = lesson.payment_ids.sorted('id')[-1]  # YENI (payment_date yerinə id)
-                    months = ['january','february','march','april','may','june',  # YENI
-                              'july','august','september','october','november','december']  # YENI
-                    try:  # YENI
-                        idx = months.index(last_payment.payment_month)  # YENI
-                        next_month = months[(idx + 1) % 12]  # YENI
-                    except ValueError:  # YENI
-                        current_month = datetime.now().month  # YENI
-                        next_month = months[current_month % 12]  # YENI
+                    last_payment = lesson.payment_ids.sorted(key=lambda p: p.real_date or p.payment_date or fields.Date.today())[-1]
+
+                if last_payment:
+                    base_due_date = last_payment.real_date or last_payment.payment_date
                 else:
-                    current_month = datetime.now().month
-                    month_reverse_mapping = {
-                        1: 'january', 2: 'february', 3: 'march', 4: 'april',
-                        5: 'may', 6: 'june', 7: 'july', 8: 'august',
-                        9: 'september', 10: 'october', 11: 'november', 12: 'december'
-                    }
-                    next_month = month_reverse_mapping.get(current_month, 'january')
+                    base_due_date = lesson.start_date or lesson.payment_date
+
+                base_due_date = base_due_date or fields.Date.today()
+                next_due_date = base_due_date + relativedelta(months=1)
 
                 self.env['basketball.lesson.payment'].create({
                     'lesson_id': lesson.id,
-                    'payment_date': fields.Date.today(),     # eyni qala bilər
-                    'payment_month': next_month,             # YENI (hər dəfə 1 ay irəli)
+                    'payment_date': fields.Date.today(),
+                    'real_date': next_due_date,
                     'amount': lesson.lesson_fee,
                     'notes': 'Abunəlik yeniləməsi'
                 })
@@ -345,7 +432,7 @@ class BasketballLessonAttendanceSimple(models.Model):
     _order = 'attendance_date desc, attendance_time desc'
 
     lesson_id = fields.Many2one('basketball.lesson.simple', string="Dərs Abunəliyi", required=True)
-    schedule_id = fields.Many2one('basketball.lesson.schedule.simple', string="Dərs Qrafiki", required=True)
+    schedule_id = fields.Many2one('basketball.lesson.schedule.simple', string="Dərs Qrafiki", required=False, ondelete='set null')
     partner_id = fields.Many2one(related='lesson_id.partner_id', string="Müştəri", store=True)
     
     # İştirak məlumatları

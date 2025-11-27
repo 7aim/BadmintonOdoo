@@ -48,6 +48,52 @@ class BadmintonAttendanceCheck(models.Model):
     def _compute_present_count(self):
         for check in self:
             check.present_count = len(check.attendee_ids.filtered(lambda a: a.is_present))
+
+    def _prepare_attendee_commands(self, commands):
+        """Ensure partner_id is set on attendee command dictionaries."""
+        if not commands:
+            return commands
+
+        lesson_model = self.env['badminton.lesson.simple']
+        prepared = []
+
+        for command in commands:
+            if not isinstance(command, (tuple, list)) or len(command) < 1:
+                prepared.append(command)
+                continue
+
+            code = command[0]
+
+            if code not in (0, 1):
+                prepared.append(command)
+                continue
+
+            data = command[2] or {}
+            lesson_id = data.get('lesson_id')
+
+            if lesson_id and not data.get('partner_id'):
+                lesson = lesson_model.browse(lesson_id)
+                if lesson and lesson.partner_id:
+                    data = dict(data, partner_id=lesson.partner_id.id)
+
+            if code == 0:
+                prepared.append((0, 0, data))
+            else:
+                prepared.append((1, command[1], data))
+
+        return prepared
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if 'attendee_ids' in vals:
+                vals['attendee_ids'] = self._prepare_attendee_commands(vals['attendee_ids'])
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if 'attendee_ids' in vals:
+            vals['attendee_ids'] = self._prepare_attendee_commands(vals['attendee_ids'])
+        return super().write(vals)
     
     @api.onchange('group_id')
     def _onchange_group_id(self):
@@ -76,10 +122,19 @@ class BadmintonAttendanceCheck(models.Model):
             for member in members:
                 # Make sure the lesson exists
                 if member and member.id:
+                    # Bu gün üçün QR scan edilmiş iştirak var mı yoxla
+                    existing_qr_attendance = self.env['badminton.lesson.attendance.simple'].search([
+                        ('lesson_id', '=', member.id),
+                        ('schedule_id.day_of_week', '=', self.schedule_id.day_of_week),
+                        ('attendance_date', '=', self.check_date),
+                        ('qr_scanned', '=', True)
+                    ], limit=1)
+                    
                     attendee_vals.append((0, 0, {
                         'partner_id': member.partner_id.id,
                         'lesson_id': member.id,
-                        'is_present': False
+                        'is_present': False,
+                        'qr_scanned': bool(existing_qr_attendance)  # Avtomatik QR məlumatı
                     }))
             
             if attendee_vals:
@@ -91,7 +146,7 @@ class BadmintonAttendanceCheck(models.Model):
             if check.state == 'draft':
                 # İştirakları qeydə al
                 for attendee in check.attendee_ids:
-                    if attendee.is_present:
+                    if attendee.is_present and attendee.lesson_id:
                         # Uyğun dərs qrafikini tap
                         schedule = attendee.lesson_id.schedule_ids.filtered(
                             lambda s: s.day_of_week == check.schedule_id.day_of_week
@@ -104,7 +159,7 @@ class BadmintonAttendanceCheck(models.Model):
                                 'schedule_id': schedule[0].id,
                                 'attendance_date': check.check_date,
                                 'attendance_time': datetime.now(),
-                                'qr_scanned': False,
+                                'qr_scanned': attendee.qr_scanned,  # QR məlumatını əlavə et
                                 'notes': f"Yoxlama ilə əlavə edilib: {check.name}"
                             })
                 
@@ -128,11 +183,12 @@ class BadmintonAttendanceCheckLine(models.Model):
     attendance_check_id = fields.Many2one('badminton.attendance.check', string="İştirak Yoxlaması", 
                                          required=True, ondelete='cascade')
     partner_id = fields.Many2one('res.partner', string="İştirakçı", required=True)
-    lesson_id = fields.Many2one('badminton.lesson.simple', string="Abunəlik", required=True,
+    lesson_id = fields.Many2one('badminton.lesson.simple', string="Abunəlik",
                                domain="[('partner_id', '=', partner_id), ('state', 'in', ['active', 'frozen'])]")
     
     # İştirak statusu
     is_present = fields.Boolean(string="İştirak edir", default=False)
+    qr_scanned = fields.Boolean(string="QR Oxunub", default=False, help="Müştəri QR kod ilə giriş edib?")
     
     # Qeydlər
     notes = fields.Text(string="Qeydlər")
