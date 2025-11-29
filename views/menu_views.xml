@@ -59,12 +59,20 @@
     <menuitem id="menu_badminton_customers" name="🤵‍♂️ Badminton Müştəriləri" parent="menu_sport_main" 
               action="action_badminton_customers" sequence="31" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_admin"/>
 
-    <!-- Badminton Kassa Actions -->
+    <!-- Badminton Kassa Actions 
     <record id="action_badminton_cash_balance" model="ir.actions.act_window">
         <field name="name">Badminton Kassa Balansı</field>
         <field name="res_model">badminton.cash.balance</field>
         <field name="view_mode">form</field>
         <field name="target">main</field>
+    </record> -->
+    <!-- Badminton Kassa - Yalnız Badminton Satıcı və Admin  Kassa Wizard Feature -->
+    <record id="action_badminton_cash_balance" model="ir.actions.act_window">
+        <field name="name">Badminton Kassa Hesabatı</field>
+        <field name="res_model">badminton.cash.balance</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'dialog_size': 'large'}</field>
     </record>
 
     <record id="action_badminton_cash_flow" model="ir.actions.act_window">
@@ -178,13 +186,22 @@
     <menuitem id="menu_basketball_customers" name="⛹️‍♂️ Basketbol Müştəriləri" parent="menu_go_basketbol_main" 
               action="action_basketball_customers" sequence="30" groups="volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin"/>
 
-    <!-- Basketbol Kassa - Yalnız Basketbol Satıcı və Admin -->
+    <!-- Basketbol Kassa - Yalnız Basketbol Satıcı və Admin 
     <record id="action_basketball_cash_balance" model="ir.actions.act_window">
         <field name="name">Basketbol Kassa Balansı</field>
         <field name="res_model">basketball.cash.balance</field>
         <field name="view_mode">form</field>
         <field name="target">main</field>
+    </record>-->
+    <!-- Basketbol Kassa - Yalnız Basketbol Satıcı və Admin  Kassa Wizard Feature -->
+    <record id="action_basketball_cash_balance" model="ir.actions.act_window">
+        <field name="name">Basketbol Kassa Hesabatı</field>
+        <field name="res_model">basketball.cash.balance</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'dialog_size': 'large'}</field>
     </record>
+    
     <record id="action_basketball_cash_flow" model="ir.actions.act_window">
         <field name="name">Basketbol Kassa Əməliyyatları</field>
         <field name="res_model">volan.cash.flow</field>

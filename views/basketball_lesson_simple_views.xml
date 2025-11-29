@@ -16,20 +16,23 @@
                     <button name="action_freeze" string="Dondur" 
                             type="object" class="btn-warning"
                             invisible="state != 'active'"/>
-                    <button name="action_unfreeze" string="Aktiv et" 
+                    <!--button name="action_unfreeze" string="Aktiv et" 
                             type="object" class="btn-info"
-                            invisible="state != 'frozen'"/>
+                            invisible="state != 'frozen'"/-->
                     <button name="action_cancel_request" string="Ləğv Tələbi" 
                             type="object" class="btn-danger"
-                            invisible="state not in ['draft', 'active', 'frozen']"/>
+                            invisible="state not in ['draft', 'active']"/> <!-- frozen -->
+                        <button name="action_restore_previous_state" string="Geri qaytar"
+                            type="object" class="btn-secondary"
+                            invisible="previous_state == False"/>
                     <!--button name="action_complete" string="Tamamla" 
                             type="object" class="btn-secondary"
                             invisible="state != 'active'"/-->
                     <button name="action_cancel" string="Ləğv et" 
                             type="object" class="btn-danger"
-                            invisible="state not in ['draft', 'active', 'frozen']"/>
-                    <field name="state" widget="statusbar" 
-                           statusbar_visible="draft,active,frozen,completed"/>
+                            invisible="state not in ['draft', 'active']"/> <!-- frozen -->
+                        <field name="state" widget="statusbar" 
+                           statusbar_visible="draft,active,frozen,cancel_requested"/> <!-- frozen,completed -->
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -45,6 +48,8 @@
                             <field name="group_ids" widget="many2many_tags" options="{'no_create': True}"/>
                             <field name="original_price" invisible="original_price == 0"/>
                             <field name="lesson_fee"/>
+                            <field name="zero_fee_reason" placeholder="Ödənişsiz qərarın səbəbi"
+                                invisible="lesson_fee != 0"/>
                         </group>
                         <group>
                             <field name="start_date"/>
@@ -151,7 +156,7 @@
                   class="yasamal-basketball-subscription-list"
                   decoration-success="state=='active'" 
                   decoration-danger="subscription_payment_status in ['warning', 'overdue']" 
-                  decoration-info="state=='completed'" decoration-muted="state=='cancelled'">
+                  decoration-muted="state=='cancelled'">
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="group_ids" widget="many2many_tags"/>
@@ -163,7 +168,7 @@
                 <field name="end_date"/>
                 <field name="total_attendances"/>
                 <field name="subscription_payment_status" invisible="1"/>
-                <field name="state" widget="badge" decoration-success="state=='active'" decoration-info="state=='frozen'" decoration-danger="state=='cancelled'"/>
+                <field name="state" widget="badge" decoration-success="state=='active'" decoration-danger="state=='cancelled'"/>
             </list>
         </field>
     </record>
@@ -177,11 +182,12 @@
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="group_ids"/>
+                <!--<filter string="Dondurulmuş" name="frozen" domain="[('state','=','frozen')]"/>
+                <filter string="Tamamlanmış" name="completed" domain="[('state','=','completed')]"/>-->
                 <filter string="Aktiv" name="active" domain="[('state','=','active')]"/>
-                <filter string="Dondurulmuş" name="frozen" domain="[('state','=','frozen')]"/>
-                <filter string="Tamamlanmış" name="completed" domain="[('state','=','completed')]"/>
-                <filter string="Ləğv Edilməsi Tələb Olunub" name="cancel_requested" domain="[('state','=','cancel_requested')]"/>
                 <filter string="Ləğv Edilmiş" name="cancelled" domain="[('state','=','cancelled')]"/>
+                <filter string="Ləğv Tələbi" name="cancel_requested" domain="[('state','=','cancel_requested')]"/>
+                <filter string="Ödənişsizlər" name="free" domain="[('state','=','free')]"/>
                 <filter string="Ödəniş Xəbərdarlığı" name="payment_warning" domain="[('subscription_payment_status','=','warning')]"/>
                 <filter string="Ödəniş Gecikməsi" name="payment_overdue" domain="[('subscription_payment_status','=','overdue')]"/>
                 <group expand="0" string="Qruplaşdırma">

@@ -181,7 +181,7 @@
                 <filter string="Aktiv" name="active" domain="[('state','=','active')]"/>
                 <filter string="Dondurulmuş" name="frozen" domain="[('state','=','frozen')]"/>
                 <filter string="Tamamlanmış" name="completed" domain="[('state','=','completed')]"/>
-                <filter string="Ləğv Edilməsi Tələb Olunub" name="cancel_requested" domain="[('state','=','cancel_requested')]"/>
+                <filter string="Ləğv Tələbi" name="cancel_requested" domain="[('state','=','cancel_requested')]"/>
                 <filter string="Ləğv Edilmiş" name="cancelled" domain="[('state','=','cancelled')]"/>
                 <filter string="Ödəniş Xəbərdarlığı" name="payment_warning" domain="[('subscription_payment_status','=','warning')]"/>
                 <filter string="Ödəniş Gecikməsi" name="payment_overdue" domain="[('subscription_payment_status','=','overdue')]"/>

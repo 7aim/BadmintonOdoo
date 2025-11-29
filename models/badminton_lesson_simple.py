@@ -52,7 +52,7 @@ class BadmintonLessonSimple(models.Model):
         ('active', 'Aktiv'),
         ('frozen', 'Dondurulmuş'),
         ('completed', 'Tamamlanıb'),
-        ('cancel_requested', 'Ləğv Edilməsi Tələb Olunub'),
+        ('cancel_requested', 'Ləğv Tələbi'),
         ('cancelled', 'Ləğv Edilib')
     ], default='draft', string="Vəziyyət")
     
@@ -247,7 +247,7 @@ class BadmintonLessonSimple(models.Model):
         else:
             vals['name'] = 'A-0'  # Müştəri yoxdursa
 
-        lesson = super(badmintonLessonSimple, self).create(vals)
+        lesson = super( BadmintonLessonSimple, self).create(vals)
         
         # Qrup seçilmişsə qrafiki sinxronlaşdır
         if lesson.group_ids:
@@ -261,7 +261,7 @@ class BadmintonLessonSimple(models.Model):
     
     def write(self, vals):
         """State və qrup dəyişdikdə müvafiq əməliyyatlar aparır"""
-        result = super(badmintonLessonSimple, self).write(vals)
+        result = super(BadmintonLessonSimple, self).write(vals)
         
         # Əgər qruplar dəyişdirilirsə qrafiki yenilə
         if 'group_ids' in vals:

@@ -167,6 +167,7 @@
         <field name="name">Bütün Sessiyalar</field>
         <field name="res_model">badminton.session</field>
         <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_badminton_session_list"/> <!-- ƏSAS SƏTİR -->
         <field name="context">{}</field>
     </record>
 

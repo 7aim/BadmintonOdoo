@@ -49,6 +49,22 @@
                                 </list>
                             </field>
                         </page>
+                        <page string="Demo İştiraklar">
+                            <field name="demo_lesson_ids">
+                                <list string="Demo İştiraklar" editable="bottom" decoration-success="attended==True" create="0" delete="0">
+                                    <field name="x_studio_related_field_724_1j9ma6qpt"/>
+                                    <field name="partner_id" readonly="1"/>
+                                    <field name="partner_phone" readonly="1" optional="hide"/>
+                                    <field name="group_id" readonly="1" optional="hide"/>
+                                    <field name="date" readonly="1"/>
+                                    <field name="time" widget="float_time" readonly="1" optional="hide"/>
+                                    <field name="coach_id" readonly="1" optional="hide"/>
+                                    <field name="attended" widget="boolean_toggle"/>
+                                    <field name="converted" widget="boolean_toggle" optional="hide"/>
+                                    <field name="state" widget="badge" readonly="1"/>
+                                </list>
+                            </field>
+                        </page>
                     </notebook>
                     <group>
                         <field name="notes" placeholder="Qeydlər..."/>

@@ -23,6 +23,14 @@ class BasketballAttendanceCheck(models.Model):
     attendee_ids = fields.One2many('basketball.attendance.check.line', 'attendance_check_id', string="İştirakçılar")
     attendee_count = fields.Integer(string="İştirakçı Sayı", compute='_compute_attendee_count')
     present_count = fields.Integer(string="İştirak Edənlərin Sayı", compute='_compute_present_count')
+
+    demo_lesson_ids = fields.Many2many(
+        'basketball.demo.lesson',
+        string='Demo dərsləri',
+        compute='_compute_demo_lessons',
+        help='Eyni qrup və tarixdə planlaşdırılmış demo dərslər',
+    )
+    demo_lesson_count = fields.Integer(string='Demo dərs sayı', compute='_compute_demo_lessons')
     
     # Vəziyyət
     state = fields.Selection([
@@ -67,6 +75,21 @@ class BasketballAttendanceCheck(models.Model):
     def _compute_present_count(self):
         for check in self:
             check.present_count = len(check.attendee_ids.filtered(lambda a: a.is_present))
+
+    @api.depends('group_id', 'check_date')
+    def _compute_demo_lessons(self):
+        DemoLesson = self.env['basketball.demo.lesson']
+        for check in self:
+            if check.group_id and check.check_date:
+                demos = DemoLesson.search([
+                    ('group_id', '=', check.group_id.id),
+                    ('date', '=', check.check_date),
+                    ('state', '!=', 'cancelled'),
+                ])
+            else:
+                demos = DemoLesson.browse()
+            check.demo_lesson_ids = demos
+            check.demo_lesson_count = len(demos)
 
     def _prepare_attendee_commands(self, commands):
         """Ensure partner_id is set for every attendee command before create/write."""
