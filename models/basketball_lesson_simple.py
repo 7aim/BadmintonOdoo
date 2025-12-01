@@ -8,11 +8,11 @@ from dateutil.relativedelta import relativedelta
 STATE_SELECTION = [
     ('draft', 'Təsdiqlənməyib'),
     ('active', 'Aktiv'),
-    #('frozen', 'Dondurulmuş'),
-    #('completed', 'Tamamlanıb'),
     ('cancel_requested', 'Ləğv Tələbi'),
     ('cancelled', 'Ləğv Edilib'),
     ('free', 'Ödənişsizlər'),
+    #('frozen', 'Dondurulmuş'),
+    #('completed', 'Tamamlanıb'),
 ]
 
 
@@ -416,13 +416,22 @@ class BasketballLessonSimple(models.Model):
                 lesson.state = 'cancelled'
 
     def action_restore_previous_state(self):
-        for lesson in self.filtered('previous_state'):
-            previous = lesson.previous_state
-            super(BasketballLessonSimple, lesson).write({
-                'state': previous,
-                'previous_state': False,
-            })
-
+        for lesson in self:
+            if lesson.state == 'cancel_requested':
+                super(BasketballLessonSimple, lesson).write({
+                    'state': 'cancelled',
+                    'previous_state': False,
+                })
+            elif lesson.state == 'free':
+                super(BasketballLessonSimple, lesson).write({
+                    'state': 'active',
+                    'previous_state': False,
+                })
+            #elif lesson.previous_state:
+            #    super(BasketballLessonSimple, lesson).write({
+            #        'state': lesson.previous_state,
+            #        'previous_state': False,
+            #    })
     @api.constrains('lesson_fee', 'zero_fee_reason')
     def _check_zero_fee_reason(self):
         for lesson in self:

@@ -354,7 +354,7 @@ class BasketballCashBalance(models.TransientModel):
     overall_cash_income = fields.Float('💵 Nağd Qalıq', readonly=True)
     overall_card_income = fields.Float('💳 Kart Qalıq', readonly=True)
     overall_total_income = fields.Float('💰 Ümumi Qalıq', readonly=True)
-    cashbox_balance = fields.Float('🏦 Kassa Balansı', readonly=True,
+    cashbox_balance = fields.Float('🏦 Son Qalıq', readonly=True,
                                    help='Bütün tarixlər üzrə Ümumi Qalıq')
     initial_balance = fields.Float('🧾 İlkin Qalıq', readonly=True,
                                    help='Kassa Balansı - seçilmiş tarix aralığındakı Ümumi Qalıq')
@@ -636,15 +636,24 @@ class BasketballCashBalance(models.TransientModel):
             'overall_total_income': total_income,
         }
 
-    def _compute_all_time_overall_total(self):
-        """Ümumi Qalıq dəyərini bütün tarixlər üçün hesabla."""
+    def _compute_all_time_overall_total(self, date_to):
+        """Ümumi Qalıq dəyərini 0-cı ildən seçilmiş tarix aralığının sonuna qədər hesabla."""
         payment_obj = self.env['basketball.lesson.payment']
-        payments = payment_obj.search([])
-        subscription_cash = sum(payments.filtered(lambda p: p.payment_method_lesson == 'cash').mapped('amount'))
-        subscription_card = sum(payments.filtered(lambda p: p.payment_method_lesson == 'card').mapped('amount'))
+        
+        # payment_date və ya real_date seçilmiş tarix aralığının sonuna qədər olan ödənişlər
+        payment_date_payments = payment_obj.search([('payment_date', '<=', date_to)])
+        real_date_payments = payment_obj.search([
+            ('real_date', '<=', date_to),
+            ('real_date', '!=', False)
+        ])
+        all_payments = payment_date_payments | real_date_payments
+        
+        subscription_cash = sum(all_payments.filtered(lambda p: p.payment_method_lesson == 'cash').mapped('amount'))
+        subscription_card = sum(all_payments.filtered(lambda p: p.payment_method_lesson == 'card').mapped('amount'))
 
         sale_obj = self.env['basketball.product.sale']
-        sales = sale_obj.search([('state', '=', 'confirmed')])
+        end_dt = datetime.combine(date_to, datetime.max.time())
+        sales = sale_obj.search([('state', '=', 'confirmed'), ('sale_date', '<=', end_dt)])
         uniform_cash = sum(sales.filtered(lambda s: s.payment_method == 'cash').mapped('total_amount'))
         uniform_card = sum(sales.filtered(lambda s: s.payment_method == 'card').mapped('total_amount'))
 
@@ -653,12 +662,19 @@ class BasketballCashBalance(models.TransientModel):
             ('sport_type', '=', 'basketball'),
             ('category', '=', 'other'),
             ('transaction_type', '=', 'income'),
+            ('date', '<=', date_to),
         ]).mapped('amount'))
 
         return subscription_cash + subscription_card + uniform_cash + uniform_card + other_income
 
-    def _compute_cashbox_metrics(self, metrics):
-        all_time_total = self._compute_all_time_overall_total()
+    def _compute_cashbox_metrics(self, metrics, override=None):
+        state = self._resolve_filter_state(override)
+        date_from, date_to = self._get_date_range(state)
+        
+        if not date_to:
+            date_to = fields.Date.today()
+            
+        all_time_total = self._compute_all_time_overall_total(date_to)
         current_total = metrics.get('overall_total_income', 0.0)
         return {
             'cashbox_balance': all_time_total,
@@ -673,7 +689,7 @@ class BasketballCashBalance(models.TransientModel):
         metrics.update(self._compute_child_metrics(override=override))
         metrics.update(self._compute_delayed_payments(override=override))
         metrics.update(self._compute_overall_metrics(metrics))
-        metrics.update(self._compute_cashbox_metrics(metrics))
+        metrics.update(self._compute_cashbox_metrics(metrics, override=override))
         return metrics
 
     def action_refresh(self):
@@ -723,7 +739,7 @@ class BadmintonCashBalance(models.TransientModel):
     overall_card_income = fields.Float('💳 Kart Qalıq', readonly=True)
     overall_total_income = fields.Float('💰 Ümumi Qalıq', readonly=True)
     
-    cashbox_balance = fields.Float('🏦 Kassa Balansı', readonly=True,
+    cashbox_balance = fields.Float('🏦 Son Qalıq', readonly=True,
                                    help='Bütün tarixlər üzrə Ümumi Qalıq')
     initial_balance = fields.Float('🧾 İlkin Qalıq', readonly=True,
                                    help='Kassa Balansı - seçilmiş tarix aralığındakı Ümumi Qalıq')
@@ -1046,15 +1062,24 @@ class BadmintonCashBalance(models.TransientModel):
             'overall_total_income': total_income,
         }
 
-    def _compute_all_time_overall_total(self):
-        """Ümumi Qalıq dəyərini bütün tarixlər üçün hesablayır."""
+    def _compute_all_time_overall_total(self, date_to):
+        """Ümumi Qalıq dəyərini 0-cı ildən seçilmiş tarix aralığının sonuna qədər hesablayır."""
         payment_obj = self.env['badminton.lesson.payment']
-        payments = payment_obj.search([])
-        subscription_cash = sum(payments.filtered(lambda p: p.payment_method_lesson == 'cash').mapped('amount'))
-        subscription_card = sum(payments.filtered(lambda p: p.payment_method_lesson == 'card').mapped('amount'))
+        
+        # payment_date və ya real_date seçilmiş tarix aralığının sonuna qədər olan ödənişlər
+        payment_date_payments = payment_obj.search([('payment_date', '<=', date_to)])
+        real_date_payments = payment_obj.search([
+            ('real_date', '<=', date_to),
+            ('real_date', '!=', False)
+        ])
+        all_payments = payment_date_payments | real_date_payments
+        
+        subscription_cash = sum(all_payments.filtered(lambda p: p.payment_method_lesson == 'cash').mapped('amount'))
+        subscription_card = sum(all_payments.filtered(lambda p: p.payment_method_lesson == 'card').mapped('amount'))
 
         sale_obj = self.env['badminton.sale']
-        sales = sale_obj.search([('state', '=', 'paid')])
+        end_dt = datetime.combine(date_to, datetime.max.time())
+        sales = sale_obj.search([('state', '=', 'paid'), ('payment_date', '<=', end_dt)])
         sale_cash = sum(sales.filtered(lambda s: s.payment_method == 'cash').mapped('total_amount'))
         sale_card = sum(sales.filtered(lambda s: s.payment_method == 'card').mapped('total_amount'))
         sale_abonent = sum(sales.filtered(lambda s: s.payment_method == 'abonent').mapped('total_amount'))
@@ -1064,13 +1089,20 @@ class BadmintonCashBalance(models.TransientModel):
             ('sport_type', '=', 'badminton'),
             ('category', '=', 'other'),
             ('transaction_type', '=', 'income'),
+            ('date', '<=', date_to),
         ]).mapped('amount'))
 
         return (subscription_cash + subscription_card +
                 sale_cash + sale_card + sale_abonent + other_income)
 
-    def _compute_cashbox_metrics(self, metrics):
-        all_time_total = self._compute_all_time_overall_total()
+    def _compute_cashbox_metrics(self, metrics, override=None):
+        state = self._resolve_filter_state(override)
+        date_from, date_to = self._get_date_range(state)
+        
+        if not date_to:
+            date_to = fields.Date.today()
+            
+        all_time_total = self._compute_all_time_overall_total(date_to)
         current_total = metrics.get('overall_total_income', 0.0)
         return {
             'cashbox_balance': all_time_total,
@@ -1099,7 +1131,7 @@ class BadmintonCashBalance(models.TransientModel):
         metrics.update(self._compute_overall_metrics(metrics))
         metrics.update(self._compute_entry_metrics(override=override))
         metrics.update(self._compute_payment_summary(metrics))
-        metrics.update(self._compute_cashbox_metrics(metrics))
+        metrics.update(self._compute_cashbox_metrics(metrics, override=override))
         return metrics
 
     def action_refresh(self):

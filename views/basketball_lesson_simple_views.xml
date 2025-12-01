@@ -22,7 +22,7 @@
                     <button name="action_cancel_request" string="Ləğv Tələbi" 
                             type="object" class="btn-danger"
                             invisible="state not in ['draft', 'active']"/> <!-- frozen -->
-                        <button name="action_restore_previous_state" string="Geri qaytar"
+                        <button name="action_restore_previous_state" string="Təsdiq et"
                             type="object" class="btn-secondary"
                             invisible="previous_state == False"/>
                     <!--button name="action_complete" string="Tamamla" 
