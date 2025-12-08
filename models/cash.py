@@ -600,7 +600,8 @@ class BasketballCashBalance(models.TransientModel):
 
     def _compute_child_metrics(self, override=None):
         lesson_obj = self.env['basketball.lesson.simple']
-        all_lessons = lesson_obj.search([])
+        # Yalnız aktiv abunəlikləri say
+        all_lessons = lesson_obj.search([('state', '=', 'active')])
         total_children = len(set(all_lessons.mapped('partner_id').ids))
 
         state = self._resolve_filter_state(override)
@@ -755,6 +756,7 @@ class BadmintonCashBalance(models.TransientModel):
     abonent_entries = fields.Integer('🎫 Abunəçi Girişlər', readonly=True)
     onefit_entries = fields.Integer('🏃 1FIT Girişlər', readonly=True)
     push30_entries = fields.Integer('⚡ PUSH30 Girişlər', readonly=True)
+    push30_plus_entries = fields.Integer('🔥 PUSH30+ Girişlər', readonly=True)
     tripsome_entries = fields.Integer('🚗 Tripsome Girişlər', readonly=True)
     total_entries = fields.Integer('📊 Ümumi Giriş Sayı', readonly=True)
 
@@ -851,6 +853,7 @@ class BadmintonCashBalance(models.TransientModel):
             'abonent_entries': 0,
             'onefit_entries': 0,
             'push30_entries': 0,
+            'push30_plus_entries': 0,
             'tripsome_entries': 0,
             'total_entries': 0,
         }
@@ -934,9 +937,9 @@ class BadmintonCashBalance(models.TransientModel):
         sale_obj = self.env['badminton.sale']
         sales = sale_obj.search(self._build_sale_domain(date_from, date_to))
 
-        cash_amount = sum(sales.filtered(lambda s: s.payment_method == 'cash').mapped('total_amount'))
-        card_amount = sum(sales.filtered(lambda s: s.payment_method == 'card').mapped('total_amount'))
-        abonent_amount = sum(sales.filtered(lambda s: s.payment_method == 'abonent').mapped('total_amount'))
+        cash_amount = sum(sales.filtered(lambda s: s.payment_method == 'cash').mapped('amount_paid'))
+        card_amount = sum(sales.filtered(lambda s: s.payment_method == 'card').mapped('amount_paid'))
+        abonent_amount = sum(sales.filtered(lambda s: s.payment_method == 'abonent').mapped('amount_paid'))
         total_amount = cash_amount + card_amount + abonent_amount
 
         return {
@@ -988,7 +991,8 @@ class BadmintonCashBalance(models.TransientModel):
 
     def _compute_child_metrics(self, override=None):
         lesson_obj = self.env['badminton.lesson.simple']
-        all_lessons = lesson_obj.search([])
+        # Yalnız aktiv abunəlikləri say
+        all_lessons = lesson_obj.search([('state', '=', 'active')])
         total_children = len(set(all_lessons.mapped('partner_id').ids))
 
         state = self._resolve_filter_state(override)
@@ -1036,6 +1040,7 @@ class BadmintonCashBalance(models.TransientModel):
         abonent_entries = len(sessions.filtered(lambda s: s.payment_type == 'abonent'))
         onefit_entries = len(sessions.filtered(lambda s: s.promo_type == '1fit'))
         push30_entries = len(sessions.filtered(lambda s: s.promo_type == 'push30'))
+        push30_plus_entries = len(sessions.filtered(lambda s: s.promo_type == 'push30_plus'))
         tripsome_entries = len(sessions.filtered(lambda s: s.promo_type == 'tripsome'))
         total_entries = len(sessions)
 
@@ -1045,6 +1050,7 @@ class BadmintonCashBalance(models.TransientModel):
             'abonent_entries': abonent_entries,
             'onefit_entries': onefit_entries,
             'push30_entries': push30_entries,
+            'push30_plus_entries': push30_plus_entries,
             'tripsome_entries': tripsome_entries,
             'total_entries': total_entries,
         }
@@ -1080,9 +1086,9 @@ class BadmintonCashBalance(models.TransientModel):
         sale_obj = self.env['badminton.sale']
         end_dt = datetime.combine(date_to, datetime.max.time())
         sales = sale_obj.search([('state', '=', 'paid'), ('payment_date', '<=', end_dt)])
-        sale_cash = sum(sales.filtered(lambda s: s.payment_method == 'cash').mapped('total_amount'))
-        sale_card = sum(sales.filtered(lambda s: s.payment_method == 'card').mapped('total_amount'))
-        sale_abonent = sum(sales.filtered(lambda s: s.payment_method == 'abonent').mapped('total_amount'))
+        sale_cash = sum(sales.filtered(lambda s: s.payment_method == 'cash').mapped('amount_paid'))
+        sale_card = sum(sales.filtered(lambda s: s.payment_method == 'card').mapped('amount_paid'))
+        sale_abonent = sum(sales.filtered(lambda s: s.payment_method == 'abonent').mapped('amount_paid'))
 
         cash_flow_obj = self.env['volan.cash.flow']
         other_income = sum(cash_flow_obj.search([
