@@ -2,6 +2,7 @@ from odoo import models, fields, api
 from odoo.osv.expression import OR
 from odoo.exceptions import ValidationError
 from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
 
 class CashFlow(models.Model):
     _name = 'volan.cash.flow'
@@ -464,9 +465,80 @@ class BasketballCashBalance(models.TransientModel):
             'total_children_count': 0,
             'new_children_count': 0,
         }
-        
+
+    def _get_subscription_payment_sets(self, date_from, date_to):
+        """
+        Seçilmiş interval üçün 3 dəst qaytarır:
+        - timely: payment_date intervalda olanlar
+        - delayed:
+            * əgər interval eyni ay içindədirsə → real_date intervalda,
+                payment_date isə həmin AY-dan kənardadır
+            * əgər interval bir neçə ayı əhatə edirsə → real_date intervalda,
+                payment_date isə intervaldan kənardadır
+        - all_for_report: timely ∪ delayed  (Abunəlik Ümumi üçün)
+        """
+        payment_obj = self.env['basketball.lesson.payment']
+
+        if not date_from or not date_to:
+            empty = payment_obj.browse([])
+            return {
+                'timely': empty,
+                'delayed': empty,
+                'all_for_report': empty,
+            }
+
+        # 1️⃣ Seçilmiş intervalda payment_date
+        timely = payment_obj.search([
+            ('payment_date', '>=', date_from),
+            ('payment_date', '<=', date_to),
+        ])
+
+        # 2️⃣ Seçilmiş intervalda real_date
+        payments_real = payment_obj.search([
+            ('real_date', '>=', date_from),
+            ('real_date', '<=', date_to),
+            ('real_date', '!=', False),
+        ])
+
+        # 3️⃣ Interval eyni aya düşür, ya yox?
+        same_month = (
+            date_from.year == date_to.year
+            and date_from.month == date_to.month
+        )
+
+        if same_month:
+            # Məs: 4–6 oktyabr → burada 1–31 oktyabr istifadə olunur
+            month_start = date_from.replace(day=1)
+            month_end = month_start + relativedelta(months=1, days=-1)
+
+            delayed = payments_real.filtered(lambda p:
+                not p.payment_date or
+                p.payment_date < month_start or
+                p.payment_date > month_end
+            )
+        else:
+            # Məs: 1 sentyabr – 20 dekabr → bütün intervala baxırıq
+            delayed = payments_real.filtered(lambda p:
+                not p.payment_date or
+                p.payment_date < date_from or
+                p.payment_date > date_to
+            )
+
+        all_for_report = timely | delayed
+
+        return {
+            'timely': timely,
+            'delayed': delayed,
+            'all_for_report': all_for_report,
+        }
+
+
     def _compute_delayed_payments(self, override=None):
-        """Gecikmiş ödənişləri hesabla: real_date bu tarix aralığında olan ama payment_date başqa ayda olan"""
+        """
+        Gecikmiş ödənişləri hesabla:
+        real_date seçilmiş tarix intervalında,
+        payment_date isə həmin intervalın AYI üzrə deyil (başqa aydadır).
+        """
         state = self._resolve_filter_state(override)
         if state['date_filter'] == 'custom' and (not state['date_from'] or not state['date_to']):
             return {'delayed_payments_amount': 0.0}
@@ -474,23 +546,10 @@ class BasketballCashBalance(models.TransientModel):
         date_from, date_to = self._get_date_range(state)
         if not date_from or not date_to:
             return {'delayed_payments_amount': 0.0}
-        
-        payment_obj = self.env['basketball.lesson.payment']
-        
-        # real_date bu tarix aralığında olan ödənişlər
-        payments_current_real_date = payment_obj.search([
-            ('real_date', '>=', date_from),
-            ('real_date', '<=', date_to),
-            ('real_date', '!=', False)
-        ])
-        
-        # payment_date bu tarix aralığında olmayan gecikmiş ödənişləri filtrələ
-        delayed_payments = payments_current_real_date.filtered(lambda p: 
-            not p.payment_date or 
-            p.payment_date < date_from or 
-            p.payment_date > date_to
-        )
-        
+
+        sets = self._get_subscription_payment_sets(date_from, date_to)
+        delayed_payments = sets['delayed']
+
         delayed_amount = sum(delayed_payments.mapped('amount'))
         return {'delayed_payments_amount': delayed_amount}
 
@@ -500,26 +559,20 @@ class BasketballCashBalance(models.TransientModel):
             return self._empty_subscription_metrics()
 
         date_from, date_to = self._get_date_range(state)
-        payment_obj = self.env['basketball.lesson.payment']
-        
-        # 1. payment_date bu ayda olan ödənişlər
-        payment_date_payments = payment_obj.search([
-            ('payment_date', '>=', date_from),
-            ('payment_date', '<=', date_to)
-        ])
-        
-        # 2. real_date bu ayda olan ödənişlər
-        real_date_payments = payment_obj.search([
-            ('real_date', '>=', date_from),
-            ('real_date', '<=', date_to),
-            ('real_date', '!=', False)
-        ])
-        
-        # Bütün ödənişləri birləşdir (duplikasiyalar avtomatik aradan qalxar)
-        all_payments = payment_date_payments | real_date_payments
+        if not date_from or not date_to:
+            return self._empty_subscription_metrics()
 
-        cash_amount = sum(all_payments.filtered(lambda p: p.payment_method_lesson == 'cash').mapped('amount'))
-        card_amount = sum(all_payments.filtered(lambda p: p.payment_method_lesson == 'card').mapped('amount'))
+        sets = self._get_subscription_payment_sets(date_from, date_to)
+        all_payments = sets['all_for_report']
+
+        cash_amount = sum(all_payments.filtered(
+            lambda p: p.payment_method_lesson == 'cash'
+        ).mapped('amount'))
+
+        card_amount = sum(all_payments.filtered(
+            lambda p: p.payment_method_lesson == 'card'
+        ).mapped('amount'))
+
         total_amount = cash_amount + card_amount
 
         return {
@@ -858,7 +911,63 @@ class BadmintonCashBalance(models.TransientModel):
             'total_entries': 0,
         }
 
+    def _get_subscription_payment_sets(self, date_from, date_to):
+        """Seçilmiş interval üçün 3 dəst qaytarır:
+        - timely: payment_date intervalda olanlar
+        - delayed: real_date intervalda, payment_date isə AY-dan kənar olanlar
+        - all_for_report: timely ∪ delayed  (reportda istifadə etdiyimiz)
+        """
+        payment_obj = self.env['basketball.lesson.payment']
+
+        if not date_from or not date_to:
+            empty = payment_obj.browse([])
+            return {
+                'timely': empty,
+                'delayed': empty,
+                'all_for_report': empty,
+            }
+
+        # 1️⃣ Intervalda payment_date
+        timely = payment_obj.search([
+            ('payment_date', '>=', date_from),
+            ('payment_date', '<=', date_to),
+        ])
+
+        # 2️⃣ Intervalda real_date
+        payments_real = payment_obj.search([
+            ('real_date', '>=', date_from),
+            ('real_date', '<=', date_to),
+            ('real_date', '!=', False),
+        ])
+
+        # 3️⃣ AY aralığını tap (date_from-un ayına görə)
+        month_start = date_from.replace(day=1)
+        month_end = month_start + relativedelta(months=1, days=-1)
+
+        # 4️⃣ Gecikmiş: real_date intervalda, payment_date AY-dan kənardadır
+        delayed = payments_real.filtered(lambda p:
+            not p.payment_date or
+            p.payment_date < month_start or
+            p.payment_date > month_end
+        )
+
+        # 5️⃣ Reportda istifadə etdiyimiz dəst:
+        # payment_date intervalda OLANLAR + gecikmişlər
+        all_for_report = timely | delayed
+
+        return {
+            'timely': timely,
+            'delayed': delayed,
+            'all_for_report': all_for_report,
+        }
+
+
     def _compute_delayed_payments(self, override=None):
+        """
+        Gecikmiş ödənişləri hesabla:
+        real_date seçilmiş tarix intervalında,
+        payment_date isə həmin intervalın AYI üzrə deyil (başqa aydadır).
+        """
         state = self._resolve_filter_state(override)
         if state['date_filter'] == 'custom' and (not state['date_from'] or not state['date_to']):
             return {'delayed_payments_amount': 0.0}
@@ -867,18 +976,12 @@ class BadmintonCashBalance(models.TransientModel):
         if not date_from or not date_to:
             return {'delayed_payments_amount': 0.0}
 
-        payment_obj = self.env['badminton.lesson.payment']
-        payments_current_real_date = payment_obj.search([
-            ('real_date', '>=', date_from),
-            ('real_date', '<=', date_to),
-            ('real_date', '!=', False)
-        ])
-
-        delayed_payments = payments_current_real_date.filtered(lambda p:
-            not p.payment_date or p.payment_date < date_from or p.payment_date > date_to)
+        sets = self._get_subscription_payment_sets(date_from, date_to)
+        delayed_payments = sets['delayed']
 
         delayed_amount = sum(delayed_payments.mapped('amount'))
         return {'delayed_payments_amount': delayed_amount}
+
 
     def _compute_subscription_metrics(self, override=None):
         state = self._resolve_filter_state(override)
@@ -889,23 +992,17 @@ class BadmintonCashBalance(models.TransientModel):
         if not date_from or not date_to:
             return self._empty_subscription_metrics()
 
-        payment_obj = self.env['badminton.lesson.payment']
+        sets = self._get_subscription_payment_sets(date_from, date_to)
+        all_payments = sets['all_for_report']
 
-        payment_date_payments = payment_obj.search([
-            ('payment_date', '>=', date_from),
-            ('payment_date', '<=', date_to)
-        ])
+        cash_amount = sum(all_payments.filtered(
+            lambda p: p.payment_method_lesson == 'cash'
+        ).mapped('amount'))
 
-        real_date_payments = payment_obj.search([
-            ('real_date', '>=', date_from),
-            ('real_date', '<=', date_to),
-            ('real_date', '!=', False)
-        ])
+        card_amount = sum(all_payments.filtered(
+            lambda p: p.payment_method_lesson == 'card'
+        ).mapped('amount'))
 
-        all_payments = payment_date_payments | real_date_payments
-
-        cash_amount = sum(all_payments.filtered(lambda p: p.payment_method_lesson == 'cash').mapped('amount'))
-        card_amount = sum(all_payments.filtered(lambda p: p.payment_method_lesson == 'card').mapped('amount'))
         total_amount = cash_amount + card_amount
 
         return {
@@ -913,6 +1010,7 @@ class BadmintonCashBalance(models.TransientModel):
             'subscription_card_amount': card_amount,
             'subscription_total_amount': total_amount,
         }
+
 
     def _build_sale_domain(self, date_from, date_to):
         domain = [('state', '=', 'paid')]

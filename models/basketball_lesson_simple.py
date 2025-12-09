@@ -15,10 +15,9 @@ STATE_SELECTION = [
     #('completed', 'Tamamlanıb'),
 ]
 
-
 class BasketballLessonSimple(models.Model):
     _name = 'basketball.lesson.simple'
-    _description = 'Basketbol Dərsi (Sadə)'
+    _description = 'Basketbol Dərsi'
     _order = 'create_date desc'
     _temp_states = ('free', 'cancel_requested')
     
@@ -79,23 +78,50 @@ class BasketballLessonSimple(models.Model):
         ('overdue', 'Vaxtından keçmiş'),
     ], string="Abunəlik Ödəniş Statusu", compute='_compute_subscription_payment_status', store=True)
     
-    @api.depends('last_payment_date')
+    @api.depends('payment_date', 'payment_ids', 'payment_ids.payment_date')
     def _compute_subscription_payment_status(self):
-        """Son ödəniş tarixindən 25 gün keçib-keçmədiyini hesabla"""
+        """Başlanğıc tarixinə əsasən hər ay üçün ödəniş olub-olmadığını yoxla"""
+        from calendar import monthrange
         today = fields.Date.today()
         for lesson in self:
-            if not lesson.last_payment_date:
+            if not lesson.payment_date:
                 lesson.subscription_payment_status = 'on_time'
                 continue
-                
-            days_since_payment = (today - lesson.last_payment_date).days
             
-            if days_since_payment < 25:
+            # Başlanğıc tarixinin günü
+            payment_day = lesson.payment_date.day
+            
+            # Bu ayın maksimum günü (28, 29, 30 və ya 31)
+            max_day_in_month = monthrange(today.year, today.month)[1]
+            
+            # Bu ay üçün gözlənilən ödəniş günü (əgər 31 oktyabr başlayıbsa, fevralda 28/29 götür)
+            expected_day = min(payment_day, max_day_in_month)
+            expected_payment_date = today.replace(day=expected_day)
+            
+            # 5 gün əvvəl
+            warning_date = expected_payment_date - timedelta(days=5)
+            
+            # Əgər bugün warning_date-dən sonradırsa, yoxla
+            if today >= warning_date:
+                # Bu ay üçün ödəniş olub-olmadığını yoxla
+                current_month = today.month
+                current_year = today.year
+                
+                payment_found = False
+                for payment in lesson.payment_ids:
+                    if payment.payment_date:
+                        if payment.payment_date.month == current_month and payment.payment_date.year == current_year:
+                            payment_found = True
+                            break
+                
+                if payment_found:
+                    lesson.subscription_payment_status = 'on_time'
+                elif today < expected_payment_date:
+                    lesson.subscription_payment_status = 'warning'
+                else:
+                    lesson.subscription_payment_status = 'overdue'
+            else:
                 lesson.subscription_payment_status = 'on_time'
-            elif days_since_payment < 35:  # 25-35 gün arası sarı
-                lesson.subscription_payment_status = 'warning'
-            else:  # 35+ gün qırmızı
-                lesson.subscription_payment_status = 'overdue'
     
     @api.depends('start_date')
     def _compute_end_date(self):
@@ -356,20 +382,25 @@ class BasketballLessonSimple(models.Model):
 
                 last_payment = False
                 if lesson.payment_ids:
-                    last_payment = lesson.payment_ids.sorted(key=lambda p: p.real_date or p.payment_date or fields.Date.today())[-1]
+                    last_payment = lesson.payment_ids.sorted(key=lambda p: p.payment_date or p.real_date or fields.Date.today())[-1]
 
                 if last_payment:
-                    base_due_date = last_payment.real_date or last_payment.payment_date
+                    base_payment_date = last_payment.payment_date
+                    base_real_date = last_payment.real_date
                 else:
-                    base_due_date = lesson.start_date or lesson.payment_date
+                    base_payment_date = lesson.start_date or lesson.payment_date
+                    base_real_date = lesson.start_date or lesson.payment_date
 
-                base_due_date = base_due_date or fields.Date.today()
-                next_due_date = base_due_date + relativedelta(months=1)
+                base_payment_date = base_payment_date or fields.Date.today()
+                base_real_date = base_real_date or fields.Date.today()
+                
+                next_payment_date = base_payment_date + relativedelta(months=1)
+                next_real_date = base_real_date + relativedelta(months=1)
 
                 self.env['basketball.lesson.payment'].create({
                     'lesson_id': lesson.id,
-                    'payment_date': fields.Date.today(),
-                    'real_date': next_due_date,
+                    'payment_date': next_payment_date,
+                    'real_date': next_real_date,
                     'amount': lesson.lesson_fee,
                     'notes': 'Abunəlik yeniləməsi'
                 })
@@ -460,7 +491,6 @@ class BasketballLessonSimple(models.Model):
                     'message': 'Abunəlik haqqını 0 etdiniz. Zəhmət olmasa "Ödənişsiz səbəb" sahəsini doldurun.'
                 }
             }
-
 
 class BasketballLessonScheduleSimple(models.Model):
     _name = 'basketball.lesson.schedule.simple'

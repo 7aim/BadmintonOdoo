@@ -1,13 +1,25 @@
 # -*- coding: utf-8 -*-
 from odoo import models, fields, api
 from odoo.exceptions import ValidationError
+from odoo.tools import float_compare
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 
+STATE_SELECTION = [
+    ('draft', 'Təsdiqlənməyib'),
+    ('active', 'Aktiv'),
+    ('cancel_requested', 'Ləğv Tələbi'),
+    ('cancelled', 'Ləğv Edilib'),
+    ('free', 'Ödənişsizlər'),
+    ('frozen', 'Dondurulmuş'),
+    ('completed', 'Tamamlanıb'),
+]
+
 class BadmintonLessonSimple(models.Model):
     _name = 'badminton.lesson.simple'
-    _description = 'Badminton Dərsi (Sadə)'
+    _description = 'Badminton Dərsi'
     _order = 'create_date desc'
+    _temp_states = ('free', 'cancel_requested')
     
     name = fields.Char(string="Dərs Nömrəsi", readonly=True, default="Yeni")
     partner_id = fields.Many2one('res.partner', string="Müştəri", required=True)
@@ -19,6 +31,7 @@ class BadmintonLessonSimple(models.Model):
 
     # Dərs Qrafiki (həftənin günləri)
     schedule_ids = fields.One2many('badminton.lesson.schedule.simple', 'lesson_id', string="Həftəlik Qrafik")
+    
     # İştiraklar
     attendance_ids = fields.One2many('badminton.lesson.attendance.simple', 'lesson_id', string="Dərsə İştiraklar")
     total_attendances = fields.Integer(string="Ümumi İştirak", compute='_compute_total_attendances')
@@ -47,14 +60,8 @@ class BadmintonLessonSimple(models.Model):
     current_freeze_id = fields.Many2one('badminton.lesson.freeze', string="Cari Dondurma", compute='_compute_current_freeze', store=True)
     
     # Vəziyyət
-    state = fields.Selection([
-        ('draft', 'Təsdiqlənməyib'),
-        ('active', 'Aktiv'),
-        ('frozen', 'Dondurulmuş'),
-        ('completed', 'Tamamlanıb'),
-        ('cancel_requested', 'Ləğv Tələbi'),
-        ('cancelled', 'Ləğv Edilib')
-    ], default='draft', string="Vəziyyət")
+    state = fields.Selection(STATE_SELECTION, default='draft', string="Vəziyyət")
+    previous_state = fields.Selection(STATE_SELECTION, string="Öncəki Status", readonly=True)
     
     # Ödəniş tarixi (sabit - kassaya təsir edən gün)
     payment_date = fields.Date(string="Başlama Tarixi", required=True, default=fields.Date.today,
@@ -62,6 +69,7 @@ class BadmintonLessonSimple(models.Model):
     
     # Qeydlər
     notes = fields.Text(string="Qeydlər")
+    zero_fee_reason = fields.Text(string="Ödənişsiz səbəb")
     
     # Abunəlik ödəniş statusu (rəng üçün)
     subscription_payment_status = fields.Selection([
@@ -70,23 +78,50 @@ class BadmintonLessonSimple(models.Model):
         ('overdue', 'Vaxtından keçmiş'),
     ], string="Abunəlik Ödəniş Statusu", compute='_compute_subscription_payment_status', store=True)
     
-    @api.depends('last_payment_date')
+    @api.depends('payment_date', 'payment_ids', 'payment_ids.payment_date')
     def _compute_subscription_payment_status(self):
-        """Son ödəniş tarixindən 25 gün keçib-keçmədiyini hesabla"""
+        """Başlanğıc tarixinə əsasən hər ay üçün ödəniş olub-olmadığını yoxla"""
+        from calendar import monthrange
         today = fields.Date.today()
         for lesson in self:
-            if not lesson.last_payment_date:
+            if not lesson.payment_date:
                 lesson.subscription_payment_status = 'on_time'
                 continue
-                
-            days_since_payment = (today - lesson.last_payment_date).days
             
-            if days_since_payment < 25:
+            # Başlanğıc tarixinin günü
+            payment_day = lesson.payment_date.day
+            
+            # Bu ayın maksimum günü (28, 29, 30 və ya 31)
+            max_day_in_month = monthrange(today.year, today.month)[1]
+            
+            # Bu ay üçün gözlənilən ödəniş günü (əgər 31 oktyabr başlayıbsa, fevralda 28/29 götür)
+            expected_day = min(payment_day, max_day_in_month)
+            expected_payment_date = today.replace(day=expected_day)
+            
+            # 5 gün əvvəl
+            warning_date = expected_payment_date - timedelta(days=5)
+            
+            # Əgər bugün warning_date-dən sonradırsa, yoxla
+            if today >= warning_date:
+                # Bu ay üçün ödəniş olub-olmadığını yoxla
+                current_month = today.month
+                current_year = today.year
+                
+                payment_found = False
+                for payment in lesson.payment_ids:
+                    if payment.payment_date:
+                        if payment.payment_date.month == current_month and payment.payment_date.year == current_year:
+                            payment_found = True
+                            break
+                
+                if payment_found:
+                    lesson.subscription_payment_status = 'on_time'
+                elif today < expected_payment_date:
+                    lesson.subscription_payment_status = 'warning'
+                else:
+                    lesson.subscription_payment_status = 'overdue'
+            else:
                 lesson.subscription_payment_status = 'on_time'
-            elif days_since_payment < 35:  # 25-35 gün arası sarı
-                lesson.subscription_payment_status = 'warning'
-            else:  # 35+ gün qırmızı
-                lesson.subscription_payment_status = 'overdue'
     
     @api.depends('start_date')
     def _compute_end_date(self):
@@ -239,15 +274,18 @@ class BadmintonLessonSimple(models.Model):
     @api.model
     def create(self, vals):
         # Abunəlik adı: A-MUSTERIID formatında
-        if vals.get('lesson_fee', 0) <= 0:
-            raise ValidationError("Dərs haqqı 0-dan böyük olmalıdır!") 
+        #if vals.get('lesson_fee', 0) <= 0:
+            #raise ValidationError("Dərs haqqı 0-dan böyük olmalıdır!") 
         if vals.get('partner_id'):
             partner_id = vals['partner_id']
             vals['name'] = f"A-{partner_id}"
         else:
             vals['name'] = 'A-0'  # Müştəri yoxdursa
 
-        lesson = super( BadmintonLessonSimple, self).create(vals)
+        lesson = super(BadmintonLessonSimple, self).create(vals)
+
+        if lesson._is_zero_fee(lesson.lesson_fee):
+            lesson._set_state_with_history('free')
         
         # Qrup seçilmişsə qrafiki sinxronlaşdır
         if lesson.group_ids:
@@ -261,7 +299,17 @@ class BadmintonLessonSimple(models.Model):
     
     def write(self, vals):
         """State və qrup dəyişdikdə müvafiq əməliyyatlar aparır"""
+        lesson_fee_updated = 'lesson_fee' in vals
+        state_updated = 'state' in vals
+
+        if state_updated and vals.get('state') not in self._temp_states:
+            self._clear_previous_state()
+
         result = super(BadmintonLessonSimple, self).write(vals)
+
+        if lesson_fee_updated:
+            zero_fee_records = self.filtered(lambda l: self._is_zero_fee(l.lesson_fee))
+            zero_fee_records._set_state_with_history('free')
         
         # Əgər qruplar dəyişdirilirsə qrafiki yenilə
         if 'group_ids' in vals:
@@ -290,6 +338,31 @@ class BadmintonLessonSimple(models.Model):
             'notes': 'İlk abunəlik ödənişi (avtomatik)'
         })
 
+    @staticmethod
+    def _is_zero_fee(amount):
+        return float_compare(amount or 0.0, 0.0, precision_digits=2) == 0
+
+    def _set_state_with_history(self, new_state):
+        for lesson in self:
+            if lesson.state == new_state:
+                continue
+
+            updates = {'state': new_state}
+            if new_state in self._temp_states:
+                if lesson.state in self._temp_states:
+                    prev_state = lesson.previous_state
+                else:
+                    prev_state = lesson.state
+                updates['previous_state'] = prev_state
+            else:
+                updates['previous_state'] = False
+
+            super(BadmintonLessonSimple, lesson).write(updates)
+
+    def _clear_previous_state(self):
+        for lesson in self.filtered('previous_state'):
+            super(BadmintonLessonSimple, lesson).write({'previous_state': False})
+
     def action_confirm(self):
         """Dərsi təsdiqlə və ödənişi qəbul et"""
         for lesson in self:
@@ -299,9 +372,8 @@ class BadmintonLessonSimple(models.Model):
     
     def action_cancel_request(self):
         """Dərsin ləğv edilməsini tələb et"""
-        for lesson in self:
-            if lesson.state in ['draft', 'active', 'frozen']:
-                lesson.state = 'cancel_requested'
+        eligible = self.filtered(lambda l: l.state in ['draft', 'active']) #['draft', 'active', 'frozen']
+        eligible._set_state_with_history('cancel_requested')
 
     def action_renew(self):
         for lesson in self:
@@ -310,26 +382,30 @@ class BadmintonLessonSimple(models.Model):
 
                 last_payment = False
                 if lesson.payment_ids:
-                    last_payment = lesson.payment_ids.sorted(key=lambda p: p.real_date or p.payment_date or fields.Date.today())[-1]
+                    last_payment = lesson.payment_ids.sorted(key=lambda p: p.payment_date or p.real_date or fields.Date.today())[-1]
 
                 if last_payment:
-                    base_due_date = last_payment.real_date or last_payment.payment_date
+                    base_payment_date = last_payment.payment_date
+                    base_real_date = last_payment.real_date
                 else:
-                    base_due_date = lesson.start_date or lesson.payment_date
+                    base_payment_date = lesson.start_date or lesson.payment_date
+                    base_real_date = lesson.start_date or lesson.payment_date
 
-                base_due_date = base_due_date or fields.Date.today()
-                next_due_date = base_due_date + relativedelta(months=1)
+                base_payment_date = base_payment_date or fields.Date.today()
+                base_real_date = base_real_date or fields.Date.today()
+                
+                next_payment_date = base_payment_date + relativedelta(months=1)
+                next_real_date = base_real_date + relativedelta(months=1)
 
                 self.env['badminton.lesson.payment'].create({
                     'lesson_id': lesson.id,
-                    'payment_date': fields.Date.today(),
-                    'real_date': next_due_date,
+                    'payment_date': next_payment_date,
+                    'real_date': next_real_date,
                     'amount': lesson.lesson_fee,
                     'notes': 'Abunəlik yeniləməsi'
                 })
     
     def action_complete(self):
-        """Dərsi tamamla"""
         for lesson in self:
             if lesson.state == 'active':
                 lesson.state = 'completed'
@@ -353,7 +429,6 @@ class BadmintonLessonSimple(models.Model):
                 }
     
     def action_unfreeze(self):
-        """Abunəliyi aktiv et"""
         for lesson in self:
             if lesson.state == 'frozen' and lesson.current_freeze_id:
                 # Cari dondurmanı tamamlandı kimi işarələ
@@ -371,6 +446,51 @@ class BadmintonLessonSimple(models.Model):
             if lesson.state in ['draft', 'active', 'frozen']:
                 lesson.state = 'cancelled'
 
+    def action_restore_previous_state(self):
+        for lesson in self:
+            if lesson.state == 'cancel_requested':
+                super(BadmintonLessonSimple, lesson).write({
+                    'state': 'cancelled',
+                    'previous_state': False,
+                })
+            elif lesson.state == 'free':
+                super(BadmintonLessonSimple, lesson).write({
+                    'state': 'active',
+                    'previous_state': False,
+                })
+            #elif lesson.previous_state:
+            #    super(BadmintonLessonSimple, lesson).write({
+            #        'state': lesson.previous_state,
+            #        'previous_state': False,
+            #    })
+    @api.constrains('lesson_fee', 'zero_fee_reason')
+    def _check_zero_fee_reason(self):
+        for lesson in self:
+            if lesson.lesson_fee is None:
+                continue
+            if lesson.lesson_fee < 0:
+                raise ValidationError("Dərs haqqı mənfi ola bilməz.")
+            if self._is_zero_fee(lesson.lesson_fee) and not lesson.zero_fee_reason:
+                raise ValidationError("0 AZN üçün səbəb daxil edilməlidir.")
+
+    @api.onchange('lesson_fee')
+    def _onchange_lesson_fee(self):
+        if self.lesson_fee is None:
+            return
+        if self.lesson_fee < 0:
+            warning = {
+                'title': 'Yanlış məbləğ',
+                'message': 'Dərs haqqı mənfi ola bilməz. Zəhmət olmasa müsbət məbləğ daxil edin.'
+            }
+            self.lesson_fee = 0.0
+            return {'warning': warning}
+        if self._is_zero_fee(self.lesson_fee):
+            return {
+                'warning': {
+                    'title': 'Ödənişsiz abunəlik',
+                    'message': 'Abunəlik haqqını 0 etdiniz. Zəhmət olmasa "Ödənişsiz səbəb" sahəsini doldurun.'
+                }
+            }
 
 class badmintonLessonScheduleSimple(models.Model):
     _name = 'badminton.lesson.schedule.simple'

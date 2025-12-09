@@ -153,12 +153,57 @@ class BasketballAttendanceCheck(models.Model):
             # 3) attendee_ids üçün partner_id-ni doldur (sənin mövcud util)
             if 'attendee_ids' in vals:
                 vals['attendee_ids'] = self._prepare_attendee_commands(vals['attendee_ids'])
+            
+            # 4) Demo lesson dəyişikliklərini tut
+            if 'demo_lesson_ids' in vals:
+                # Create zamanı hələ record yoxdur, ona görə vals-dan pop edirik
+                vals.pop('demo_lesson_ids')
+        
         return super().create(vals_list)
 
     def write(self, vals):
         if 'attendee_ids' in vals:
             vals['attendee_ids'] = self._prepare_attendee_commands(vals['attendee_ids'])
+        
+        # Demo lesson dəyişikliklərini tut
+        if 'demo_lesson_ids' in vals:
+            self._apply_demo_lesson_updates(vals['demo_lesson_ids'])
+            vals.pop('demo_lesson_ids')  # Computed field-ə yazma xətasını qarşısını al
+        
         return super().write(vals)
+    
+    def _apply_demo_lesson_updates(self, commands):
+        """Demo lesson checkbox dəyişikliklərini həqiqi demo lesson-lara yaz"""
+        if not commands:
+            return
+        
+        demo_model = self.env['basketball.demo.lesson']
+        
+        for command in commands:
+            if not isinstance(command, (tuple, list)) or len(command) < 3:
+                continue
+            
+            code = command[0]
+            if code == 1:  # Update command (1, id, values)
+                demo_id = command[1]
+                values = command[2]
+                
+                if demo_id and values:
+                    demo = demo_model.browse(demo_id)
+                    if demo.exists():
+                        # Yalnız attended və converted sahələrini yenilə
+                        update_vals = {}
+                        if 'attended' in values:
+                            update_vals['attended'] = values['attended']
+                            if values['attended']:
+                                update_vals['attendance_time'] = fields.Datetime.now()
+                        if 'converted' in values:
+                            update_vals['converted'] = values['converted']
+                            if values['converted'] and not demo.conversion_date:
+                                update_vals['conversion_date'] = fields.Date.today()
+                        
+                        if update_vals:
+                            demo.write(update_vals)
     
     @api.onchange('schedule_id')
     def _onchange_schedule_id(self):

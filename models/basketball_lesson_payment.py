@@ -18,7 +18,7 @@ class BasketballLessonPayment(models.Model):
 
     payment_date = fields.Date(string="Aid olduğu ay", required=True, default=fields.Date.today,
                                help="Müştərinin real ödənişi etdiyi gün (informativ)")
-    real_date = fields.Date(string="Ödəniş Tarixi", required=True,
+    real_date = fields.Date(string="Ödəniş Tarixi", required=True, default=fields.Date.today,   
                             help="Kassaya mədaxilin düşəcəyi tarix (kassa bu tarixdə artacaq)")
     
     # Məbləğ

@@ -19,7 +19,7 @@ class BasketballDemoLesson(models.Model):
     
     # Tarix və vaxt
     date = fields.Date(string="Tarix", required=True, default=fields.Date.today)
-    time = fields.Float(string="Vaxt", required=True, help="Məsələn 19.5 = 19:30")
+    time = fields.Float(string="Vaxt", required=True, help="Məsələn 19.5 = 19:30", default=20.00, readonly=True)
     duration = fields.Float(string="Müddət (saat)", default=1.0)
     
     # Demo dərs məlumatları

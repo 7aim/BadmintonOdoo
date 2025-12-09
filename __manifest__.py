@@ -32,6 +32,7 @@
         'views/basketball_group_views.xml',
         'views/basketball_attendance_check_views.xml',
         'views/basketball_demo_lesson_views.xml',
+        'views/basketball_lesson_payment_views.xml',
         'views/customer_wizard_views.xml',
         'views/qr_scanner_views.xml',
         'views/session_extend_wizard_views.xml',

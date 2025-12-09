@@ -22,6 +22,7 @@ class BadmintonSession(models.Model):
     promo_type = fields.Selection([
         ('1fit', '1FIT'),
         ('push30', 'PUSH30'),
+        ('push30_plus', 'PUSH30+'),
         ('tripsome', 'Tripsome')
     ], string="Tətbiq")
 
@@ -150,6 +151,14 @@ class BadmintonSession(models.Model):
     def _onchange_partner_id(self):
         if self.session_package_id and self.session_package_id.partner_id != self.partner_id:
             self.session_package_id = False
+    
+    @api.onchange('promo_type')
+    def _onchange_promo_type(self):
+        """Push30+ seçilendə müddəti 2 saat et"""
+        if self.promo_type == 'push30_plus':
+            self.duration_hours = 2.0
+        elif self.promo_type in ['1fit', 'push30', 'tripsome']:
+            self.duration_hours = 1.0
 
     # ---------- helpers / flows ----------
     def _deduct_balance_on_start(self):

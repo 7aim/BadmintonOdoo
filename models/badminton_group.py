@@ -18,6 +18,7 @@ class BadmintonGroup(models.Model):
     # Qrup üzvləri
     member_ids = fields.Many2many('badminton.lesson.simple', 'badminton_lesson_group_rel', 'group_id', 'lesson_id', string="Qrup Üzvləri", compute='_compute_member_ids')
     member_count = fields.Integer(string="Üzv Sayı", compute='_compute_member_count')
+    unique_new_members_count = fields.Integer(string="Yeni Unikal Üzv", compute='_compute_unique_new_members', store=False)
 
     # Aktivlik
     is_active = fields.Boolean(string="Aktiv", default=True)
@@ -34,10 +35,32 @@ class BadmintonGroup(models.Model):
             ])
             group.member_ids = [(6, 0, lessons.ids)]
     
-    @api.depends('member_ids')
+    @api.depends('member_ids', 'member_ids.state', 'member_ids.partner_id')
     def _compute_member_count(self):
         for group in self:
-            group.member_count = len(group.member_ids.filtered(lambda l: l.state in ['active', 'frozen']))
+            active_members = group.member_ids.filtered(lambda l: l.state in ['active', 'frozen'])
+            unique_partners = active_members.mapped('partner_id')
+            group.member_count = len(unique_partners)
+    
+    def _compute_unique_new_members(self):
+        """Hər qrupda yalnız yeni (əvvəlki qruplarda olmayan) müştəriləri say"""
+        all_groups = self.search([('is_active', '=', True)], order='sequence, name DESC')
+        seen_partners = set()
+        
+        for group in all_groups:
+            if group.id in self.ids:
+                active_members = group.member_ids.filtered(lambda l: l.state in ['active', 'frozen'])
+                group_partners = set(active_members.mapped('partner_id').ids)
+                
+                # Bu qrupda yeni olan müştəriləri tap
+                new_partners = group_partners - seen_partners
+                group.unique_new_members_count = len(new_partners)
+                
+                # Bu qrupun bütün müştərilərini seen_partners-ə əlavə et
+                seen_partners.update(group_partners)
+            else:
+                active_members = group.member_ids.filtered(lambda l: l.state in ['active', 'frozen'])
+                seen_partners.update(active_members.mapped('partner_id').ids)
     
     @api.model
     def create(self, vals):

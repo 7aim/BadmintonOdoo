@@ -90,7 +90,9 @@
                   decoration-muted="is_active==False">
                 <!--field name="sequence"/-->
                 <field name="name"/>
-                <field name="member_count" sum="True"/>
+                <field name="member_count" string="Qrup Üzvləri"/>
+                <field name="unique_new_members_count" string="Qrup Üzvləri" sum="Cəm Unikal"/>
+                <field name="cumulative_unique_count" string="Toplanan Unikal"/>
                 <field name="is_active"/>
             </list>
         </field>
