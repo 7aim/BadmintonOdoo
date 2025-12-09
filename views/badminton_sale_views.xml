@@ -52,6 +52,17 @@
                             <field name="credited_hours" readonly="1"/>
                         </group>
                     </group>
+                    <group string="Depozit Məlumatları" class="oe_inline">
+                        <group>
+                            <field name="customer_deposit_balance" readonly="1" style="font-weight: bold; color: #28a745;"/>
+                            <field name="deposit_used" style="font-weight: bold; color: #dc3545;"/>
+                            <field name="deposit_added" style="font-weight: bold; color: #007bff;"/>
+                        </group>
+                        <group>
+                            <field name="amount_to_pay" readonly="1" style="font-size: 14px; font-weight: bold; color: #ff9800;"/>
+                            <field name="amount_paid" style="font-size: 14px; font-weight: bold; color: #17a2b8;"/>
+                        </group>
+                    </group>
                     <group string="Qeydlər">
                         <field name="notes" nolabel="1"/>
                     </group>

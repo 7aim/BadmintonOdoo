@@ -22,6 +22,8 @@
                     <field name="badminton_balance" style="font-size: 18px; font-weight: bold; color: #007bff;" 
                            />
                     <field name="monthly_balance_hours" readonly="1" string="Aylıq Balans (saat)"/>
+                    <field name="badminton_deposit_balance" style="font-size: 16px; font-weight: bold; color: #28a745;" 
+                           string="Depozit Balansı"/>
                 </group>
             </xpath>
             <xpath expr="//page[@name='internal_notes']" position="before">

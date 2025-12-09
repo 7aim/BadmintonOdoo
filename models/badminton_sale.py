@@ -32,6 +32,13 @@ class BadmintonSale(models.Model):
     unit_price = fields.Float(string="Saatlıq Qiymət", default=8, store=True)
     total_amount = fields.Float(string="Ümumi Məbləğ", store=True)
     
+    # Depozit məlumatları
+    customer_deposit_balance = fields.Float(string="Müştəri Depoziti", related='partner_id.badminton_deposit_balance', readonly=True)
+    deposit_used = fields.Float(string="İstifadə Edilən Depozit", default=0.0, help="Bu satışda istifadə edilən depozit məbləği")
+    amount_paid = fields.Float(string="Ödənilən Məbləğ", default=0.0, help="Müştərinin faktiki ödədiyi məbləğ")
+    amount_to_pay = fields.Float(string="Ödəniləcək Məbləğ", default=0.0, help="Depozit nəzərə alındıqdan sonra ödəniləcək məbləğ")
+    deposit_added = fields.Float(string="Depozitə Əlavə", default=0.0, help="Artıq ödənişdən depozitə əlavə edilən məbləğ")
+    
     payment_date = fields.Datetime(string="Ödəniş Tarixi")
     payment_method = fields.Selection([
         ('cash', 'Nağd'),
@@ -111,18 +118,29 @@ class BadmintonSale(models.Model):
         
         # Əgər satış 'paid' vəziyyətində yaradılırsa, dərhal balansı artır və kassaya əlavə et
         if sale.state == 'paid':
-            # Kassaya əməliyyatı əlavə et
-            self.env['volan.cash.flow'].create({
-                'name': f"Badminton satışı: {sale.name}",
-                'date': fields.Date.today(),
-                'amount': sale.total_amount,
-                'transaction_type': 'income',
-                'category': 'badminton_sale',
-                'partner_id': sale.partner_id.id,
-                'related_model': 'badminton.sale',
-                'related_id': sale.id,
-                'notes': f"{sale.hours_quantity} saat, {sale.unit_price} AZN/saat"
-            })
+            # Depozit əməliyyatlarını həyata keçir
+            partner = sale.partner_id
+            if sale.deposit_used > 0:
+                # Depozitdən istifadə et
+                partner.badminton_deposit_balance -= sale.deposit_used
+            
+            if sale.deposit_added > 0:
+                # Artıq ödənişi depozitə əlavə et
+                partner.badminton_deposit_balance += sale.deposit_added
+            
+            # Kassaya ödənilən məbləğin hamısını əlavə et
+            if sale.amount_paid > 0:
+                self.env['volan.cash.flow'].create({
+                    'name': f"Badminton satışı: {sale.name}",
+                    'date': fields.Date.today(),
+                    'amount': sale.amount_paid,
+                    'transaction_type': 'income',
+                    'category': 'badminton_sale',
+                    'partner_id': sale.partner_id.id,
+                    'related_model': 'badminton.sale',
+                    'related_id': sale.id,
+                    'notes': f"{sale.hours_quantity} saat, Depozit: {sale.deposit_used} AZN, Ödəniş: {sale.amount_paid} AZN"
+                })
             
             # Müştəri hesabına saatları əlavə et
             sale._add_hours_to_customer()
@@ -143,18 +161,29 @@ class BadmintonSale(models.Model):
                 sale.state = 'paid'
                 sale.payment_date = fields.Datetime.now()
                 
-                # Kassaya əməliyyatı əlavə et
-                self.env['volan.cash.flow'].create({
-                    'name': f"Badminton satışı: {sale.name}",
-                    'date': fields.Date.today(),
-                    'amount': sale.total_amount,
-                    'transaction_type': 'income',
-                    'category': 'badminton_sale',
-                    'partner_id': sale.partner_id.id,
-                    'related_model': 'badminton.sale',
-                    'related_id': sale.id,
-                    'notes': f"{sale.hours_quantity} saat, {sale.unit_price} AZN/saat"
-                })
+                # Depozit əməliyyatlarını həyata keçir
+                partner = sale.partner_id
+                if sale.deposit_used > 0:
+                    # Depozitdən istifadə et
+                    partner.badminton_deposit_balance -= sale.deposit_used
+                
+                if sale.deposit_added > 0:
+                    # Artıq ödənişi depozitə əlavə et
+                    partner.badminton_deposit_balance += sale.deposit_added
+                
+                # Kassaya ödənilən məbləğin hamısını əlavə et
+                if sale.amount_paid > 0:
+                    self.env['volan.cash.flow'].create({
+                        'name': f"Badminton satışı: {sale.name}",
+                        'date': fields.Date.today(),
+                        'amount': sale.amount_paid,
+                        'transaction_type': 'income',
+                        'category': 'badminton_sale',
+                        'partner_id': sale.partner_id.id,
+                        'related_model': 'badminton.sale',
+                        'related_id': sale.id,
+                        'notes': f"{sale.hours_quantity} saat, Depozit: {sale.deposit_used} AZN, Ödəniş: {sale.amount_paid} AZN"
+                    })
                 
                 # Müştəri hesabına saatları əlavə et
                 sale._add_hours_to_customer()

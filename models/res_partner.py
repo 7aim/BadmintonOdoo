@@ -45,6 +45,10 @@ class VolanPartner(models.Model):
     badminton_balance = fields.Integer(string="Badminton Balansı (saat)", default=0, 
                                       help="Müştərinin qalan badminton saatlarının sayı")
     
+    # 4.1. Badminton Depozit Balansı
+    badminton_deposit_balance = fields.Float(string="Depozit Balansı", default=0.0,
+                                            help="Müştərinin depozit hesabındakı qalıq məbləğ (AZN)")
+    
     # 5. Badminton Satış Tarixçəsi
     badminton_sale_ids = fields.One2many('badminton.sale', 'partner_id', string="Badminton Satışları")
     badminton_balance_history_ids = fields.One2many('badminton.balance.history', 'partner_id', string="Balans Tarixçəsi")
