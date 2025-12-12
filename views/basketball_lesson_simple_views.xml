@@ -31,6 +31,9 @@
                     <button name="action_cancel" string="Ləğv et" 
                             type="object" class="btn-danger"
                             invisible="state not in ['draft', 'active']"/> <!-- frozen -->
+                    <button name="action_recompute_subscription_status" string="🔄 Statusu Yenilə" 
+                            type="object" class="btn-secondary"
+                            groups="base.group_system"/>
                         <field name="state" widget="statusbar" 
                            statusbar_visible="draft,active,frozen,cancel_requested"/> <!-- frozen,completed -->
                 </header>
@@ -65,7 +68,8 @@
                         </group>
                         <group>
                             <field name="last_payment_date" readonly="1"/>
-                            <field name="total_attendances" readonly="1"/>
+                            <!--field name="total_attendances" readonly="1"/-->
+                            <field name="current_month_attendances" readonly="1"/>
                             <field name="substitute_count" readonly="1"/>
                         </group>
                     </group>
@@ -167,7 +171,8 @@
                 <field name="last_payment_date"/>
                 <field name="start_date"/>
                 <field name="end_date"/>
-                <field name="total_attendances"/>
+                <!--field name="total_attendances"/>-->
+                <field name="current_month_attendances"/>
                 <field name="subscription_payment_status" invisible="1"/>
                 <field name="state" widget="badge" decoration-success="state=='active'" decoration-danger="state=='cancelled'" decoration-warning="state=='cancel_requested'"/>
             </list>
@@ -214,6 +219,19 @@
             <p>
                 Bu bölmədə basketbol müştərilərinin abunəliklərini idarə edə bilərsiniz.
             </p>
+        </field>
+    </record>
+
+    <!-- Server Action: Statusu Yenilə (Toplu) -->
+    <record id="action_server_recompute_subscription_status" model="ir.actions.server">
+        <field name="name">🔄 Ödəniş Statusunu Yenilə</field>
+        <field name="model_id" ref="model_basketball_lesson_simple"/>
+        <field name="binding_model_id" ref="model_basketball_lesson_simple"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+if records:
+    records.action_recompute_subscription_status()
         </field>
     </record>
 </odoo>

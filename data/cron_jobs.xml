@@ -34,5 +34,29 @@
             <field name="active" eval="True"/>
             <field name="user_id" ref="base.user_admin"/>
         </record>
+
+        <!-- Basketbol abunəlik ödəniş statusunu hər gün yenilə -->
+        <record id="ir_cron_basketball_subscription_payment_status" model="ir.cron">
+            <field name="name">Basketbol: Abunəlik ödəniş statusunu yenilə</field>
+            <field name="model_id" ref="model_basketball_lesson_simple"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_update_subscription_payment_status()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+            <field name="user_id" ref="base.user_admin"/>
+        </record>
+
+        <!-- Badminton abunəlik ödəniş statusunu hər gün yenilə -->
+        <record id="ir_cron_badminton_subscription_payment_status" model="ir.cron">
+            <field name="name">Badminton: Abunəlik ödəniş statusunu yenilə</field>
+            <field name="model_id" ref="model_badminton_lesson_simple"/>
+            <field name="state">code</field>
+            <field name="code">model.cron_update_subscription_payment_status()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+            <field name="active" eval="True"/>
+            <field name="user_id" ref="base.user_admin"/>
+        </record>
     </data>
 </odoo>

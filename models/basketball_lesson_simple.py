@@ -35,6 +35,8 @@ class BasketballLessonSimple(models.Model):
     # İştiraklar
     attendance_ids = fields.One2many('basketball.lesson.attendance.simple', 'lesson_id', string="Dərsə İştiraklar")
     total_attendances = fields.Integer(string="Ümumi İştirak", compute='_compute_total_attendances')
+    current_month_attendances = fields.Integer(string="İştirak Sayı", compute='_compute_current_month_attendances', 
+                                                help="Ən son ödəniş tarixindən sonrakı iştiraklar")
     substitute_ids = fields.One2many('basketball.lesson.substitute', 'lesson_id', string="Əvəzedici Dərslər")
     substitute_count = fields.Integer(string="Əvəzedici Dərs Sayı", compute='_compute_substitute_count', store=True)
     
@@ -162,6 +164,18 @@ class BasketballLessonSimple(models.Model):
     def _compute_total_attendances(self):
         for lesson in self:
             lesson.total_attendances = len(lesson.attendance_ids)
+    
+    @api.depends('attendance_ids.attendance_date', 'last_payment_date')
+    def _compute_current_month_attendances(self):
+        """Ən son ödəniş tarixindən sonra neçə dəfə dərsə gəldi"""
+        for lesson in self:
+            if lesson.last_payment_date and lesson.attendance_ids:
+                attendances_after_payment = lesson.attendance_ids.filtered(
+                    lambda a: a.attendance_date and a.attendance_date > lesson.last_payment_date
+                )
+                lesson.current_month_attendances = len(attendances_after_payment)
+            else:
+                lesson.current_month_attendances = len(lesson.attendance_ids)
 
     @api.depends('substitute_ids')
     def _compute_substitute_count(self):
@@ -463,6 +477,28 @@ class BasketballLessonSimple(models.Model):
             #        'state': lesson.previous_state,
             #        'previous_state': False,
             #    })
+    
+    def action_recompute_subscription_status(self):
+        """Manual olaraq abunəlik ödəniş statusunu yenilə (Admin üçün)"""
+        self._compute_subscription_payment_status()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': 'Uğurlu',
+                'message': f'{len(self)} abunəliyin statusu yeniləndi',
+                'type': 'success',
+                'sticky': False,
+            }
+        }
+    
+    @api.model
+    def cron_update_subscription_payment_status(self):
+        """Scheduled action - hər gün bütün aktiv abunəliklərin statusunu yenilə"""
+        active_lessons = self.search([('state', 'in', ['draft', 'active'])])
+        active_lessons._compute_subscription_payment_status()
+        return True
+    
     @api.constrains('lesson_fee', 'zero_fee_reason')
     def _check_zero_fee_reason(self):
         for lesson in self:
