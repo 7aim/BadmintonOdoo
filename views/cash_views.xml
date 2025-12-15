@@ -112,8 +112,7 @@
                     <div class="oe_button_box" name="button_box">
                         <button name="action_refresh" type="object" string="Yenilə" 
                                 icon="fa-refresh" class="oe_stat_button"/>
-                        <button name="generate_cash_report" type="object" string="Hesabat" 
-                                icon="fa-bar-chart" class="oe_stat_button"/>
+
                     </div>
                     <div class="oe_title">
                         <h1>Volan Yasamal - Kassa Hesabatı</h1>
