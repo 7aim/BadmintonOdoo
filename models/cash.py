@@ -237,25 +237,7 @@ class CashBalance(models.TransientModel):
         expenses = sum(cash_flow_obj.search([('transaction_type', '=', 'expense')]).mapped('amount'))
         
         return income - expenses
-        
-    def generate_cash_report(self):
-        """Nağd pul hesabat səhifəsini açır"""
-        self.ensure_one()
-        domain = self._get_date_domain()
-        action = {
-            'name': 'Kassa Hesabatı',
-            'type': 'ir.actions.act_window',
-            'res_model': 'volan.cash.flow',
-            'view_mode': 'pivot,graph,list,form',
-            'domain': domain,  # Bütün əməliyyatları göstər (həm gəlir, həm xərc)
-            'context': {
-                'pivot_measures': ['amount'],
-                'search_default_group_by_transaction_type': 1,  # Əməliyyat növünə görə qruplaşdır
-                'search_default_group_by_category': 1,
-                'search_default_group_by_date': 1
-            }
-        }
-        return action
+
         
     def _open_cash_flow_view(self, title, domain):
         """Filtrələnmiş kassa əməliyyatı siyahısını göstərir"""
@@ -917,7 +899,7 @@ class BadmintonCashBalance(models.TransientModel):
         - delayed: real_date intervalda, payment_date isə AY-dan kənar olanlar
         - all_for_report: timely ∪ delayed  (reportda istifadə etdiyimiz)
         """
-        payment_obj = self.env['basketball.lesson.payment']
+        payment_obj = self.env['badminton.lesson.payment']
 
         if not date_from or not date_to:
             empty = payment_obj.browse([])
