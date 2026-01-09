@@ -132,7 +132,7 @@
 
     <menuitem id="menu_sport_config" name="⚙️ Tənzimləmələr" parent="menu_sport_main" sequence="40"
               groups="volan_yasamal.group_volan_admin"/>
-    <menuitem id="menu_badminton_package" name="Paketlər" parent="menu_sport_config"
+    <menuitem id="menu_badminton_package" name="📦 Paketlər" parent="menu_sport_config"
               action="action_badminton_package" sequence="15"/>
     <!--menuitem id="menu_customer_lookup" name="Müştəri Axtarışı" parent="menu_sport_config" 
               action="action_customer_lookup_wizard" sequence="1"/-->

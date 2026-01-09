@@ -57,6 +57,10 @@ class VolanPartner(models.Model):
     monthly_balance_units = fields.Float(string="Aylıq Balans (vahid)", compute='_compute_monthly_balances', store=False)
     monthly_balance_hours = fields.Float(string="Aylıq Balans (saat)", compute='_compute_monthly_balances', store=False)
     
+    genclik_monthly_balance_ids = fields.One2many('badminton.monthly.balance.genclik', 'partner_id', string="Gənclik Aylıq Paket Balansları")
+    genclik_monthly_balance_units = fields.Float(string="Gənclik Aylıq Balans (vahid)", compute='_compute_genclik_monthly_balances', store=False)
+    genclik_monthly_balance_hours = fields.Float(string="Gənclik Aylıq Balans (saat)", compute='_compute_genclik_monthly_balances', store=False)
+
     # 5.1. Gənclik Filialı Satış Tarixçəsi
     genclik_sale_ids = fields.One2many(
         'badminton.sale.genclik',
@@ -115,6 +119,14 @@ class VolanPartner(models.Model):
             partner.monthly_balance_units = sum(active_lines.mapped('remaining_units'))
             partner.monthly_balance_hours = sum(line.get_hours_available() for line in active_lines)
 
+    @api.depends('genclik_monthly_balance_ids.remaining_units', 'genclik_monthly_balance_ids.state', 'genclik_monthly_balance_ids.expiry_date', 'genclik_monthly_balance_ids.deduction_factor')
+    def _compute_genclik_monthly_balances(self):
+        today = fields.Date.today()
+        for partner in self:
+            active_lines = partner._get_genclik_active_monthly_lines(today)
+            partner.genclik_monthly_balance_units = sum(active_lines.mapped('remaining_units'))
+            partner.genclik_monthly_balance_hours = sum(line.get_hours_available() for line in active_lines)
+
     def _get_active_monthly_lines(self, date_ref=None):
         self.ensure_one()
         date_ref = date_ref or fields.Date.today()
@@ -122,13 +134,28 @@ class VolanPartner(models.Model):
             lambda l: l.remaining_units > 0 and l.state == 'active' and (not l.expiry_date or l.expiry_date >= date_ref)
         )
 
+    def _get_genclik_active_monthly_lines(self, date_ref=None):
+        self.ensure_one()
+        date_ref = date_ref or fields.Date.today()
+        return self.genclik_monthly_balance_ids.filtered(
+            lambda l: l.remaining_units > 0 and l.state == 'active' and (not l.expiry_date or l.expiry_date >= date_ref)
+        )
+
     def get_monthly_hours_available(self):
         self.ensure_one()
         return sum(line.get_hours_available() for line in self._get_active_monthly_lines())
 
+    def get_genclik_monthly_hours_available(self):
+        self.ensure_one()
+        return sum(line.get_hours_available() for line in self._get_genclik_active_monthly_lines())
+
     def get_total_badminton_hours_available(self):
         self.ensure_one()
         return (self.badminton_balance or 0.0) + self.get_monthly_hours_available()
+
+    def get_total_genclik_badminton_hours_available(self):
+        self.ensure_one()
+        return (self.badminton_balance or 0.0) + self.get_genclik_monthly_hours_available()
 
     def consume_badminton_hours(self, required_hours, transaction_type='usage', description='', session=None):
         self.ensure_one()
@@ -137,6 +164,19 @@ class VolanPartner(models.Model):
 
         remaining_hours = required_hours
         remaining_hours -= self._consume_from_monthly(remaining_hours, transaction_type, description, session)
+
+        if remaining_hours <= 0:
+            return True
+
+        return self._consume_normal_hours(remaining_hours, transaction_type, description, session)
+
+    def consume_genclik_badminton_hours(self, required_hours, transaction_type='usage', description='', session=None):
+        self.ensure_one()
+        if required_hours <= 0:
+            return True
+
+        remaining_hours = required_hours
+        remaining_hours -= self._consume_from_genclik_monthly(remaining_hours, transaction_type, description, session)
 
         if remaining_hours <= 0:
             return True
@@ -170,6 +210,44 @@ class VolanPartner(models.Model):
                 'balance_after': after,
                 'transaction_type': transaction_type,
                 'description': description or 'Aylıq paket istifadə olundu',
+                'balance_channel': 'monthly',
+                'monthly_line_id': line.id,
+            })
+
+            hours_covered += hours_to_take
+            remaining_hours -= hours_to_take
+            if remaining_hours <= 0:
+                break
+
+        return hours_covered
+
+    def _consume_from_genclik_monthly(self, required_hours, transaction_type, description, session):
+        lines = self._get_genclik_active_monthly_lines()
+        if not lines:
+            return 0.0
+
+        history_model = self.env['badminton.balance.history.genclik']
+        remaining_hours = required_hours
+        hours_covered = 0.0
+
+        for line in lines:
+            hours_available = line.get_hours_available()
+            if hours_available <= 0:
+                continue
+
+            hours_to_take = min(remaining_hours, hours_available)
+            if hours_to_take <= 0:
+                break
+
+            units_used, before, after = line.consume_hours(hours_to_take)
+            history_model.create({
+                'partner_id': self.id,
+                'session_id': session.id if session else False,
+                'hours_used': units_used,
+                'balance_before': before,
+                'balance_after': after,
+                'transaction_type': transaction_type,
+                'description': description or 'Gənclik aylıq paket istifadə olundu',
                 'balance_channel': 'monthly',
                 'monthly_line_id': line.id,
             })

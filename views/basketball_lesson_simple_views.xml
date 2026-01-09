@@ -10,12 +10,9 @@
                     <button name="action_confirm" string="Təsdiqlə" 
                             type="object" class="btn-primary"
                             invisible="state != 'draft'"/>
-                    <!--button name="action_renew" string="Yenilə (+1 ay)" 
-                            type="object" class="btn-success"
-                            invisible="state != 'active'"/-->
-                    <button name="action_freeze" string="Dondur" 
+                    <!--button name="action_freeze" string="Dondur" 
                             type="object" class="btn-warning"
-                            invisible="state != 'active'"/>
+                            invisible="state != 'active'"/-->
                     <!--button name="action_unfreeze" string="Aktiv et" 
                             type="object" class="btn-info"
                             invisible="state != 'frozen'"/-->
@@ -34,8 +31,11 @@
                     <button name="action_recompute_subscription_status" string="🔄 Statusu Yenilə" 
                             type="object" class="btn-secondary"
                             groups="base.group_system"/>
-                        <field name="state" widget="statusbar" 
-                           statusbar_visible="draft,active,frozen,cancel_requested"/> <!-- frozen,completed -->
+                    <button name="action_return_cancelled" string="Geri Qaytar" 
+                        type="object" class="btn-secondary"
+                        invisible="state != 'cancelled'"/>
+                    <field name="state" widget="statusbar" 
+                       statusbar_visible="draft,active,frozen,cancel_requested"/> <!-- frozen,completed -->
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -55,7 +55,7 @@
                                 invisible="lesson_fee != 0"/>
                         </group>
                         <group>
-                            <field name="start_date"/>
+                            <!--field name="start_date"/-->
                             <field name="end_date"/>
                             <field name="payment_date" help="İlkin başlanğıc tarixi (informativ)"/>
                         </group>
@@ -159,9 +159,9 @@
             <list string="Basketbol Dərsləri"
                   class="yasamal-basketball-subscription-list"
                   decoration-success="state=='active'" 
-                  decoration-danger="subscription_payment_status in ['warning', 'overdue']" 
+                  decoration-danger="subscription_payment_status=='overdue'" 
                   decoration-muted="state=='cancelled'"
-                  decoration-warning="state=='cancel_requested'">
+                  decoration-warning="subscription_payment_status=='warning'">
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="group_ids" widget="many2many_tags"/>
@@ -169,7 +169,7 @@
                 <field name="total_months"/>
                 <field name="total_payments"/>
                 <field name="last_payment_date"/>
-                <field name="start_date"/>
+                <field name="payment_date"/>
                 <field name="end_date"/>
                 <!--field name="total_attendances"/>-->
                 <field name="current_month_attendances"/>
@@ -194,8 +194,8 @@
                 <filter string="Ləğv Edilmiş" name="cancelled" domain="[('state','=','cancelled')]"/>
                 <filter string="Ləğv Tələbi" name="cancel_requested" domain="[('state','=','cancel_requested')]"/>
                 <filter string="Ödənişsizlər" name="free" domain="[('state','=','free')]"/>
-                <filter string="Ödəniş Xəbərdarlığı" name="payment_warning" domain="[('subscription_payment_status','=','warning')]"/>
-                <filter string="Ödəniş Gecikməsi" name="payment_overdue" domain="[('subscription_payment_status','=','overdue')]"/>
+                <filter string="Ödəniş Xəbərdarlığı" name="payment_warning" domain="[('subscription_payment_status','=','warning'), ('state', '=', 'active')]"/>
+                <filter string="Ödəniş Gecikməsi" name="payment_overdue" domain="[('subscription_payment_status','=','overdue'), ('state', '=', 'active')]"/>
                 <group expand="0" string="Qruplaşdırma">
                     <filter string="Müştəri" name="group_partner" context="{'group_by': 'partner_id'}"/>
                     <filter string="Vəziyyət" name="group_state" context="{'group_by': 'state'}"/>

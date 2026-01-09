@@ -217,8 +217,7 @@ class BasketballAttendanceCheck(models.Model):
             # Qrupun aktiv üzvlərini əldə et (ödəniş gecikməsi olmayanlar)
             members = self.env['basketball.lesson.simple'].search([
                 ('group_ids', 'in', self.group_id.id),
-                ('state', 'in', ['active', 'frozen']),
-                ('subscription_payment_status', '!=', 'overdue')
+                ('state', 'in', ['active', 'frozen'])
             ])
 
             for member in members:
@@ -324,7 +323,7 @@ class BasketballAttendanceCheckLine(models.Model):
                                          required=True, ondelete='cascade')
     partner_id = fields.Many2one('res.partner', string="İştirakçı", required=True)
     lesson_id = fields.Many2one('basketball.lesson.simple', string="Abunəlik", 
-                               domain="[('partner_id', '=', partner_id), ('state', 'in', ['active', 'frozen']), ('subscription_payment_status', '!=', 'overdue')]")
+                               domain="[('partner_id', '=', partner_id), ('state', 'in', ['active', 'frozen'])]")
     origin = fields.Selection([
         ('member', 'Abunəlik'),
         ('substitute', 'Əvəzedici'),
@@ -333,6 +332,12 @@ class BasketballAttendanceCheckLine(models.Model):
     # İştirak statusu
     is_present = fields.Boolean(string="İştirak edir", default=False)
     qr_scanned = fields.Boolean(string="QR Oxunub", default=False, help="Müştəri QR kod ilə giriş edib?")
+    lesson_subscription_status = fields.Selection(
+        related='lesson_id.subscription_payment_status',
+        string="Abunəlik Ödəniş Statusu",
+        readonly=True,
+        store=False,
+    )
     
     # Qeydlər
     notes = fields.Text(string="Qeydlər")
@@ -344,8 +349,7 @@ class BasketballAttendanceCheckLine(models.Model):
             # Find active lessons for this partner in the same group
             domain = [
                 ('partner_id', '=', self.partner_id.id),
-                ('state', 'in', ['active', 'frozen']),
-                ('subscription_payment_status', '!=', 'overdue')
+                ('state', 'in', ['active', 'frozen'])
             ]
             
             if self.attendance_check_id.group_id:
@@ -359,18 +363,6 @@ class BasketballAttendanceCheckLine(models.Model):
                 self.lesson_id = False
         elif self.origin != 'member':
             return
-    
-    @api.onchange('lesson_id')
-    def _onchange_lesson_id(self):
-        """Əgər seçilmiş abunəlik ödəniş gecikməsindədirsə, xəbərdarlıq ver və təmizlə"""
-        if self.lesson_id and self.lesson_id.subscription_payment_status == 'overdue':
-            self.lesson_id = False
-            return {
-                'warning': {
-                    'title': 'Ödəniş Gecikməsi',
-                    'message': f'{self.partner_id.name} üçün abunəlik ödəniş gecikməsindədir. İştirak üçün əvvəlcə ödəniş edilməlidir.'
-                }
-            }
     
     _sql_constraints = [
     ('unique_partner_attendance', 'unique(attendance_check_id, partner_id)', 

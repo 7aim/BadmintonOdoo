@@ -38,9 +38,15 @@
                     <notebook>
                         <page string="İştirakçılar">
                             <field name="attendee_ids">
-                                <list editable="bottom" decoration-success="qr_scanned==True" create="0" delete="0">
+                                <list editable="bottom"
+                                      class="yasamal-badminton-attendance-lines"
+                                      decoration-success="qr_scanned==True"
+                                      decoration-warning="lesson_subscription_status=='warning'"
+                                      decoration-danger="lesson_subscription_status=='overdue'"
+                                      create="0" delete="0">
                                     <field name="partner_id" readonly="1"/>
                                     <field name="lesson_id" column_invisible="1"/>
+                                    <field name="lesson_subscription_status" column_invisible="1"/>
                                     <field name="is_present"/>
                                     <field name="qr_scanned" string="🔘 QR" readonly="1"/>
                                     <field name="notes"/>
@@ -105,10 +111,14 @@
         <field name="name">badminton.attendance.check.line.list</field>
         <field name="model">badminton.attendance.check.line</field>
         <field name="arch" type="xml">
-            <list string="İştirakçılar" editable="bottom">
+            <list string="İştirakçılar" editable="bottom"
+                  class="yasamal-badminton-attendance-lines"
+                  decoration-warning="lesson_subscription_status=='warning'"
+                  decoration-danger="lesson_subscription_status=='overdue'">
                 <field name="partner_id" options="{'no_create': True}"
                        domain="[('is_company', '=', False), ('sport_type', 'in', ['badminton', 'both']), ('branch', '=', 'yasamal')]"/>
                 <field name="lesson_id" invisible="1"/>
+                <field name="lesson_subscription_status" invisible="1"/>
                 <field name="is_present"/>
                 <field name="notes"/>
             </list>

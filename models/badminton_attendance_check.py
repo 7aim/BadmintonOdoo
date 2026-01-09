@@ -189,6 +189,12 @@ class BadmintonAttendanceCheckLine(models.Model):
     # İştirak statusu
     is_present = fields.Boolean(string="İştirak edir", default=False)
     qr_scanned = fields.Boolean(string="QR Oxunub", default=False, help="Müştəri QR kod ilə giriş edib?")
+    lesson_subscription_status = fields.Selection(
+        related='lesson_id.subscription_payment_status',
+        string="Abunəlik Ödəniş Statusu",
+        readonly=True,
+        store=False,
+    )
     
     # Qeydlər
     notes = fields.Text(string="Qeydlər")

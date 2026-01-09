@@ -119,7 +119,7 @@ class QRScannerWizard(models.TransientModel):
             active_lesson = self.env['badminton.lesson.simple'].search([
                 ('partner_id', '=', partner.id),
                 ('state', '=', 'active'),
-                ('start_date', '<=', fields.Date.today()),
+                ('payment_date', '<=', fields.Date.today()),
                 ('end_date', '>=', fields.Date.today())
             ], limit=1)
             
@@ -239,7 +239,7 @@ class QRScannerWizard(models.TransientModel):
                 basketball_lesson = self.env['basketball.lesson.simple'].search([
                     ('partner_id', '=', partner_id),
                     ('state', '=', 'active'),
-                    ('start_date', '<=', today),
+                    ('payment_date', '<=', today),
                     ('end_date', '>=', today)
                 ], limit=1)
                 

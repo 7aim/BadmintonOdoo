@@ -27,6 +27,7 @@
         'views/badminton_lesson_freeze_views.xml',
         'views/badminton_lesson_simple_views.xml',
         'views/badminton_group_views.xml',
+        'views/badminton_lesson_payment_views.xml',
         'views/basketball_lesson_freeze_views.xml',
         'views/basketball_lesson_simple_views.xml',
         'views/basketball_group_views.xml',
@@ -39,6 +40,8 @@
         'views/badminton_attendance_check_views.xml',
         'views/menu_views.xml',
         'views/cash_views.xml',
+        'reports/basketball_payment_receipt.xml',
+        'reports/badminton_payment_receipt.xml',
     ],
     'assets': {
         'web.assets_backend': [

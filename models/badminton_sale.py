@@ -30,7 +30,7 @@ class BadmintonSale(models.Model):
     # Satış məlumatları
     hours_quantity = fields.Integer(string="Saat Sayı", required=True, default=1)
     unit_price = fields.Float(string="Saatlıq Qiymət", default=8, store=True)
-    total_amount = fields.Float(string="Ümumi Məbləğ", store=True)
+    total_amount = fields.Float(string="Ümumi Məbləğ", readonly=True, store=True)
     
     # Depozit məlumatları
     customer_deposit_balance = fields.Float(string="Müştəri Depoziti", related='partner_id.badminton_deposit_balance', readonly=True)
