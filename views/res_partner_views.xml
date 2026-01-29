@@ -18,7 +18,7 @@
                 <group string="QR Kod">
                     <field name="qr_code_image" widget="image" string=" "/>
                 </group>
-                <group string="Badminton Balansı" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin" invisible="sport_type == 'basketball'">
+                <group string="Badminton Balansı" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin,volan_genclikk.group_genclik_satici,volan_genclikk.group_genclik_admin" invisible="sport_type == 'basketball'">
                     <field name="badminton_balance" style="font-size: 18px; font-weight: bold; color: #007bff;" 
                            />
                     <field name="monthly_balance_hours" readonly="1" string="Aylıq Balans (saat)" invisible="branch == 'genclik'"/>

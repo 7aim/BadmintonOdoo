@@ -94,8 +94,6 @@ class QRScannerWizard(models.TransientModel):
                 self.result_message = (
                     "✅ SESSİYA YARADILDI (Gözləmədə)!\n"
                     f"👤 Müştəri: {partner.name}\n"
-                    f"🎮 Sessiya: {session.name}\n"
-                    "⚠️ Zəhmət olmasa 'Başlat' düyməsinə basın!\n"
                     f"💡 Aylıq balans: {monthly_hours} saat\n"
                     f"💰 Normal balans: {normal_balance} saat\n"
                     f"🔢 Növbə: {session.queue_number}"
