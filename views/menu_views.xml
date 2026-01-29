@@ -33,8 +33,8 @@
               action="action_badminton_lesson_simple" sequence="1" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
     <menuitem id="menu_badminton_groups" name="🤾‍♂️ Badminton Qrupları" parent="menu_badminton_lessons" 
               action="action_badminton_group" sequence="2" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin"/>
-    <menuitem id="menu_badminton_lesson_freeze" name="❄️ Dondurma Tarixçəsi" parent="menu_badminton_lessons" 
-              action="action_badminton_lesson_freeze" sequence="3" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
+    <!--<menuitem id="menu_badminton_lesson_freeze" name="❄️ Dondurma Tarixçəsi" parent="menu_badminton_lessons" 
+              action="action_badminton_lesson_freeze" sequence="3" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>-->
     <!-- Badminton İştirak Yoxlaması - Yalnız Məşqçi və Admin -->
     <!--menuitem id="menu_badminton_attendance_check_list" name="İştirak Yoxlaması" parent="menu_badminton_lessons" 
               action="action_badminton_attendance_check" sequence="4" groups="volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin"/-->
@@ -97,6 +97,26 @@
               action="action_badminton_cash_balance" sequence="1" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
     <menuitem id="menu_badminton_cash_flow_menu" name="💸 Mədaxil / Məxaric" parent="menu_badminton_cash" 
               action="action_badminton_cash_flow" sequence="2" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_admin"/>
+
+    <!-- Məhsul İdarəetmə Menyusu -->
+    <menuitem id="badminton_product_menu"
+              name="🏷️ Raket Satışı"
+              parent="volan_yasamal.menu_sport_main"
+              sequence="34"/>
+
+    <!-- Məhsullar -->
+    <menuitem id="badminton_product_submenu"
+              name="🏸 Raketlər"
+              parent="badminton_product_menu"
+              action="badminton_product_action"
+              sequence="10"/>
+
+    <!-- Məhsul Satışları -->
+    <menuitem id="badminton_product_sale_submenu"
+              name="🛒 Satışlar"
+              parent="badminton_product_menu"
+              action="badminton_product_sale_action"
+              sequence="20"/>
 
     <!-- Badminton QR Scan Action -->
     <record id="action_badminton_qr_scanner_wizard" model="ir.actions.act_window">

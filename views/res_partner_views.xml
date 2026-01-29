@@ -50,7 +50,7 @@
                         </list>
                     </field>
                 </page>
-                <page string="Balans Tarixçəsi" name="balance_history" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin" invisible="branch == 'genclik' or sport_type == 'basketball'">
+                <!--<page string="Balans Tarixçəsi" name="balance_history" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin" invisible="branch == 'genclik' or sport_type == 'basketball'">
                     <field name="badminton_balance_history_ids" context="{'default_partner_id': id}">
                         <list string="Balans Tarixçəsi" create="false" edit="false" delete="false">
                             <field name="transaction_date"/>
@@ -62,7 +62,7 @@
                             <field name="description"/>
                         </list>
                     </field>
-                </page>
+                </page>-->
                 <page string="Aylıq Paket Balansları" name="monthly_balances" groups="volan_yasamal.group_volan_satici,volan_yasamal.group_volan_nezaretci,volan_yasamal.group_volan_mesqci,volan_yasamal.group_volan_admin" invisible="branch == 'genclik' or sport_type == 'basketball'">
                     <field name="monthly_balance_ids" context="{'default_partner_id': id}">
                         <list string="Aylıq Paketlər" create="false" edit="false" delete="false">
@@ -87,7 +87,7 @@
                         </list>
                     </field>
                 </page>
-                <page string="Balans Tarixçəsi" name="balance_history_genclik" groups="volan_genclikk.group_genclik_satici,volan_genclikk.group_genclik_admin" invisible="branch == 'yasamal'">
+                <!--<page string="Balans Tarixçəsi" name="balance_history_genclik" groups="volan_genclikk.group_genclik_satici,volan_genclikk.group_genclik_admin" invisible="branch == 'yasamal'">
                     <field name="genclik_balance_history_ids" context="{'default_partner_id': id}">
                         <list string="Balans Tarixçəsi" create="false" edit="false" delete="false">
                             <field name="transaction_date"/>
@@ -98,7 +98,7 @@
                             <field name="description"/>
                         </list>
                     </field>
-                </page>
+                </page>-->
                 <page string="Basketbol Üzvlüklər" name="basketball_memberships" invisible="[('is_company', '=', True)]" groups="volan_yasamal.group_go_basketbol_mesqci,volan_yasamal.group_go_basketbol_satici,volan_yasamal.group_go_basketbol_admin">
                     <field name="basketball_membership_ids" context="{'default_partner_id': id}">
                         <list string="Basketbol Üzvlüklər" create="false" edit="false" delete="false">

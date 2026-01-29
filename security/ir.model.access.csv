@@ -58,6 +58,7 @@ access_admin_sport_membership,admin.sport.membership,model_sport_membership,vola
 access_admin_sport_attendance,admin.sport.attendance,model_sport_attendance,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_basketball_demo_lesson,admin.basketball.demo.lesson,model_basketball_demo_lesson,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_badminton_sale,admin.badminton.sale,model_badminton_sale,volan_yasamal.group_volan_admin,1,1,1,1
+access_admin_badminton_sale_name_migration,admin.badminton.sale.name.migration,model_badminton_sale_name_migration,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_badminton_package,admin.badminton.package,model_badminton_package,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_badminton_sale_wizard,admin.badminton.sale.wizard,model_badminton_sale_wizard,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_badminton_attendance_check,admin.badminton.attendance.check,model_badminton_attendance_check,volan_yasamal.group_volan_admin,1,1,1,1
@@ -128,3 +129,9 @@ access_go_basketbol_satici_qr_scanner_wizard,go.basketbol.satici.qr.scanner.wiza
 access_admin_basketball_package,admin.basketball.package,model_basketball_package,volan_yasamal.group_volan_admin,1,1,1,1
 access_go_basketbol_admin_basketball_package,go.basketbol.admin.basketball.package,model_basketball_package,volan_yasamal.group_go_basketbol_admin,1,1,1,1
 access_go_basketbol_satici_basketball_package,go.basketbol.satici.basketball.package,model_basketball_package,volan_yasamal.group_go_basketbol_satici,1,0,0,0
+access_badminton_product_user,badminton.product.user,model_badminton_product,base.group_user,1,1,1,1
+
+access_badminton_product_sale_user,badminton.product.sale.user,model_badminton_product_sale,base.group_user,1,1,1,1
+access_badminton_product_sale_line_user,badminton.product.sale.line.user,model_badminton_product_sale_line,base.group_user,1,1,1,1
+access_badminton_stock_movement_user,badminton.stock.movement.user,model_badminton_stock_movement,base.group_user,1,1,1,1
+access_badminton_stock_update_wizard_user,badminton.stock.update.wizard.user,model_badminton_stock_update_wizard,base.group_user,1,1,1,1

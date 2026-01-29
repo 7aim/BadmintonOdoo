@@ -81,6 +81,35 @@ class VolanPartner(models.Model):
     # 7. Məşqçi bayrağı
     is_coach = fields.Boolean(string="Məşqçidir", default=False, help="İşçinin məşqçi olub olmadığını göstərir")
 
+    @api.constrains('mobile', 'birth_date')
+    def _check_duplicate_contact(self):
+        """Eyni mobil nömrəsi və doğum tarixi olan kontaktın olmasını yoxlayır"""
+        for partner in self:
+            # Yalnız şirkət olmayan və doğum tarixi olan müştərilər üçün yoxla
+            if partner.is_company or not partner.birth_date:
+                continue
+            
+            # Telefon nömrəsi olmalıdır
+            phone_number = partner.mobile
+            if not phone_number:
+                continue
+            
+            # Eyni telefon və doğum tarixi olan başqa kontakt var mı?
+            domain = [
+                ('id', '!=', partner.id),
+                ('birth_date', '=', partner.birth_date),
+                ('is_company', '=', False),
+                ('mobile', '=', phone_number)
+            ]
+            
+            duplicate = self.search(domain, limit=1)
+            if duplicate:
+                raise ValidationError(
+                    f"Bu telefon nömrəsi ({phone_number}) və doğum tarixi ({partner.birth_date}) "
+                    f"ilə artıq '{duplicate.name}' adlı kontakt mövcuddur!\n"
+                    f"Dublikat yaratmaq olmaz."
+                )
+
     @api.depends('birth_date')
     def _compute_age(self):
         """Müştərinin doğum tarixindən yaşını hesablayır"""

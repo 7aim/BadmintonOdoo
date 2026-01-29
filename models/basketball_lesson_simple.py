@@ -11,6 +11,7 @@ STATE_SELECTION = [
     ('active', 'Aktiv'),
     ('cancel_requested', 'Ləğv Tələbi'),
     ('cancelled', 'Ləğv Edilib'),
+    ('restore_requested', 'Bərpa Tələbi'),
     ('free', 'Ödənişsizlər'),
     #('frozen', 'Dondurulmuş'),
     #('completed', 'Tamamlanıb'),
@@ -104,6 +105,11 @@ class BasketballLessonSimple(models.Model):
             day = base_day or next_month.day
             max_day = monthrange(next_month.year, next_month.month)[1]
             lesson.end_date = next_month.replace(day=min(day, max_day))
+
+    @api.onchange('payment_date')
+    def _onchange_payment_date(self):
+        """Başlama tarixi dəyişəndə bitmə tarixini yenilə"""
+        self._compute_end_date()
 
     @api.depends('payment_date', 'payment_ids.payment_date', 'payment_ids.real_date')
     def _compute_subscription_payment_status(self):
@@ -350,10 +356,13 @@ class BasketballLessonSimple(models.Model):
     
     def write(self, vals):
 
-        if 'payment_date' in vals and self.env.user.login != 'admin':
-            for rec in self:
-                if rec.payment_date:
-                    raise ValidationError("Başlama tarixi bir dəfə təyin edildikdən sonra dəyişdirilə bilməz.")
+        # Başlama tarixini dəyişməyə icazə: yalnız admin və ya restore_requested statusuna keçərkən
+        #if 'payment_date' in vals and self.env.user.login != 'admin':
+            # Əgər restore_requested statusuna keçirikssə, icazə ver
+        #    if vals.get('state') != 'restore_requested':
+        #        for rec in self:
+        #            if rec.payment_date:
+        #                raise ValidationError("Başlama tarixi bir dəfə təyin edildikdən sonra dəyişdirilə bilməz.")
 
         """State və qrup dəyişdikdə müvafiq əməliyyatlar aparır"""
         lesson_fee_updated = 'lesson_fee' in vals
@@ -433,14 +442,25 @@ class BasketballLessonSimple(models.Model):
         eligible._set_state_with_history('cancel_requested')
     
     def action_return_cancelled(self):
-        """Ləğv edilmiş abunəliyi geri qaytar (yalnız cancelled üçün)"""
+        """Ləğv edilmiş abunəliyi geri qaytar - restore_requested statusuna keçir"""
         for lesson in self:
             if lesson.state != 'cancelled':
                 continue
-
+            # Başlama tarixini bugünə təyin et və bərpa tələbi statusuna keçir (eyni anda)
+            lesson.write({
+                'payment_date': fields.Date.today(),
+                'state': 'restore_requested'
+            })
+    
+    def action_restore(self):
+        """Admin restore_requested abunəlikləri əvvəlki statusuna qaytarır"""
+        for lesson in self:
+            if lesson.state != 'restore_requested':
+                continue
+            
             # Əgər 0 AZN-dirsə, qaytaranda da 'free' olsun
             target_state = 'free' if lesson._is_zero_fee(lesson.lesson_fee) else 'active'
-
+            
             # write() içindəki məntiq işləsin (active olarsa ödəniş yoxdursa avtomatik ilk ödəniş yaratsın)
             lesson.write({'state': target_state})
 
@@ -554,6 +574,23 @@ class BasketballLessonSimple(models.Model):
                 }
             }
 
+    def unlink(self):
+        """Ödənişləri olan abunəliyi silməyə icazə vermə"""
+        for lesson in self:
+            # Ödənişləri yoxla
+            payments = self.env['basketball.lesson.payment'].search([
+                ('lesson_id', '=', lesson.id)
+            ])
+            if payments:
+                raise ValidationError(
+                    f'⛔ Bu abunəliyi silmək mümkün deyil!\n\n'
+                    f'Abunəlik: {lesson.name}\n'
+                    f'Ödəniş sətiirləri sayı: {len(payments)}\n\n'
+                    f'💡 Əvvəlcə bütün ödəniş sətirlərini silməlisiniz!'
+                )
+        
+        return super(BasketballLessonSimple, self).unlink()
+
 class BasketballLessonScheduleSimple(models.Model):
     _name = 'basketball.lesson.schedule.simple'
     _description = 'Həftəlik Dərs Qrafiki (Sadə)'
@@ -595,7 +632,7 @@ class BasketballLessonScheduleSimple(models.Model):
             
             formatted_time = f"{day_names[schedule.day_of_week]} {start_hours:02d}:{start_minutes:02d}-{end_hours:02d}:{end_minutes:02d}"
             result.append((schedule.id, formatted_time))
-        return result 
+        return result
 
     @api.constrains('start_time', 'end_time')
     def _check_time_range(self):
