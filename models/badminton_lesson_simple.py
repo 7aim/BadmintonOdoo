@@ -47,7 +47,7 @@ class BadmintonLessonSimple(models.Model):
     
     # Tarix məlumatları
     start_date = fields.Date(string="Cari Dövr Başlama", required=True, default=fields.Date.today)
-    end_date = fields.Date(string="Cari Dövr Bitmə", compute='_compute_end_date', store=True, readonly=False)
+    end_date = fields.Date(string="Bitmə tarixi", compute='_compute_end_date', store=True, readonly=False)
     
     # Ödənişlər (One2Many)
     payment_ids = fields.One2many('badminton.lesson.payment', 'lesson_id', string="Ödənişlər")

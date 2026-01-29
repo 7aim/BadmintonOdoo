@@ -19,7 +19,7 @@
                     <group string="Qiymətlər">
                         <group>
                             <field name="adult_price"/>
-                            <field name="child_price"/>
+                            <!--<field name="child_price"/>-->
                         </group>
                     </group>
                 </sheet>
@@ -36,7 +36,7 @@
                 <field name="name"/>
                 <field name="discount_percent"/>
                 <field name="adult_price"/>
-                <field name="child_price"/>
+                <!--<field name="child_price"/>-->
                 <field name="active"/>
             </list>
         </field>
