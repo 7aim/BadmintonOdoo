@@ -3,7 +3,6 @@ access_satici_res_partner,satici.res.partner,base.model_res_partner,volan_yasama
 access_satici_badminton_sale,satici.badminton.sale,model_badminton_sale,volan_yasamal.group_volan_satici,1,1,1,0
 access_satici_badminton_package,satici.badminton.package,model_badminton_package,volan_yasamal.group_volan_satici,1,0,0,0
 access_satici_badminton_sale_wizard,satici.badminton.sale.wizard,model_badminton_sale_wizard,volan_yasamal.group_volan_satici,1,1,1,0
-access_satici_badminton_balance_history,satici.badminton.balance.history,model_badminton_balance_history,volan_yasamal.group_volan_satici,1,1,1,0
 access_satici_badminton_monthly_balance,satici.badminton.monthly.balance,model_badminton_monthly_balance,volan_yasamal.group_volan_satici,1,1,1,0
 access_satici_badminton_lesson_simple,satici.badminton.lesson.simple,model_badminton_lesson_simple,volan_yasamal.group_volan_satici,1,1,1,0
 access_satici_badminton_lesson_schedule_simple,satici.badminton.lesson.schedule.simple,model_badminton_lesson_schedule_simple,volan_yasamal.group_volan_satici,1,1,1,1
@@ -36,7 +35,6 @@ access_nezaretci_sport_schedule,nezaretci.sport.schedule,model_sport_schedule,vo
 access_nezaretci_sport_attendance,nezaretci.sport.attendance,model_sport_attendance,volan_yasamal.group_volan_nezaretci,1,0,0,0
 access_admin_badminton_session,admin.badminton.session,model_badminton_session,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_badminton_session_filter,admin.badminton.session.filter,model_badminton_session_filter,volan_yasamal.group_volan_admin,1,1,1,1
-access_admin_badminton_balance_history,admin.badminton.balance.history,model_badminton_balance_history,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_badminton_monthly_balance,admin.badminton.monthly.balance,model_badminton_monthly_balance,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_badminton_lesson_simple,admin.badminton.lesson.simple,model_badminton_lesson_simple,volan_yasamal.group_volan_admin,1,1,1,1
 access_admin_badminton_lesson_schedule_simple,admin.badminton.lesson.schedule.simple,model_badminton_lesson_schedule_simple,volan_yasamal.group_volan_admin,1,1,1,1

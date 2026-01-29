@@ -51,8 +51,9 @@ class VolanPartner(models.Model):
     
     # 5. Badminton Satış Tarixçəsi
     badminton_sale_ids = fields.One2many('badminton.sale', 'partner_id', string="Badminton Satışları")
+    """ Close history
     badminton_balance_history_ids = fields.One2many('badminton.balance.history', 'partner_id', string="Balans Tarixçəsi")
-
+    """
     monthly_balance_ids = fields.One2many('badminton.monthly.balance', 'partner_id', string="Aylıq Paket Balansları")
     monthly_balance_units = fields.Float(string="Aylıq Balans (vahid)", compute='_compute_monthly_balances', store=False)
     monthly_balance_hours = fields.Float(string="Aylıq Balans (saat)", compute='_compute_monthly_balances', store=False)
@@ -68,12 +69,14 @@ class VolanPartner(models.Model):
         string="Gənclik Badminton Satışları",
         groups="volan_genclikk.group_genclik_admin,volan_genclikk.group_genclik_satici"
     )
+    """ Close history
     genclik_balance_history_ids = fields.One2many(
         'badminton.balance.history.genclik',
         'partner_id',
         string="Gənclik Balans Tarixçəsi",
         groups="volan_genclikk.group_genclik_admin,volan_genclikk.group_genclik_satici"
     )
+    """
     
     # 6. Basketbol Üzvlüklər
     basketball_membership_ids = fields.One2many('sport.membership', 'partner_id', string="Basketbol Üzvlüklər")
@@ -217,7 +220,9 @@ class VolanPartner(models.Model):
         if not lines:
             return 0.0
 
+        """ Close history
         history_model = self.env['badminton.balance.history']
+        """
         remaining_hours = required_hours
         hours_covered = 0.0
 
@@ -255,7 +260,9 @@ class VolanPartner(models.Model):
         if not lines:
             return 0.0
 
+        """ Close history
         history_model = self.env['badminton.balance.history.genclik']
+        """
         remaining_hours = required_hours
         hours_covered = 0.0
 
@@ -269,6 +276,7 @@ class VolanPartner(models.Model):
                 break
 
             units_used, before, after = line.consume_hours(hours_to_take)
+            """ Close history
             history_model.create({
                 'partner_id': self.id,
                 'session_id': session.id if session else False,
@@ -280,6 +288,7 @@ class VolanPartner(models.Model):
                 'balance_channel': 'monthly',
                 'monthly_line_id': line.id,
             })
+            """
 
             hours_covered += hours_to_take
             remaining_hours -= hours_to_take
@@ -301,6 +310,7 @@ class VolanPartner(models.Model):
         new_balance = current_balance - required_hours
         self.badminton_balance = new_balance
 
+        """ Close history
         self.env['badminton.balance.history'].create({
             'partner_id': self.id,
             'session_id': session.id if session else False,
@@ -312,6 +322,7 @@ class VolanPartner(models.Model):
             'balance_channel': 'normal',
         })
         return True
+        """
 
 
 

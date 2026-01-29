@@ -229,6 +229,7 @@ class BadmintonSale(models.Model):
             current_balance = partner.badminton_balance or 0
             partner.badminton_balance = current_balance + sale.hours_quantity
             
+            """ Close history
             # Tarixçə yaradırıq
             self.env['badminton.balance.history'].create({
                 'partner_id': partner.id,
@@ -240,6 +241,7 @@ class BadmintonSale(models.Model):
                 'description': f"Badminton saatları alışı: {sale.name}",
                 'balance_channel': 'normal'
             })
+            """
 
     def _add_monthly_hours_to_customer(self):
         for sale in self:
@@ -262,6 +264,7 @@ class BadmintonSale(models.Model):
                 'expiry_date': expiry_date,
             })
 
+            """ Close history
             self.env['badminton.balance.history'].create({
                 'partner_id': partner.id,
                 'sale_id': sale.id,
@@ -273,8 +276,9 @@ class BadmintonSale(models.Model):
                 'balance_channel': 'monthly',
                 'monthly_line_id': line.id,
             })
+            """
 
-
+""" Close history
 class BadmintonBalanceHistory(models.Model):
     _name = 'badminton.balance.history'
     _description = 'Badminton Balans Tarixçəsi'
@@ -306,3 +310,4 @@ class BadmintonBalanceHistory(models.Model):
         ('monthly', 'Aylıq Paket')
     ], string="Balans Mənbəyi", default='normal')
     monthly_line_id = fields.Many2one('badminton.monthly.balance', string="Aylıq Paket")
+"""

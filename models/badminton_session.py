@@ -335,6 +335,7 @@ class BadmintonSession(models.Model):
             )
 
         units_used, before, after = line.consume_hours(hours)
+        """ Close history
         self.env['badminton.balance.history'].create({
             'partner_id': self.partner_id.id,
             'session_id': self.id,
@@ -346,6 +347,7 @@ class BadmintonSession(models.Model):
             'balance_channel': 'monthly',
             'monthly_line_id': line.id,
         })
+        """
 
     def action_extend_session_wizard(self):
         return {

@@ -24,8 +24,8 @@
               action="action_badminton_sale_wizard" sequence="4"/>
     <menuitem id="menu_badminton_sales_history" name="📈 Satış Tarixçəsi" parent="menu_badminton_sales" 
               action="action_badminton_sale" sequence="3"/>
-    <menuitem id="menu_badminton_balance_history" name="💵 Balans Tarixçəsi" parent="menu_badminton_sales" 
-              action="action_badminton_balance_history" sequence="5"/>
+    <!--<menuitem id="menu_badminton_balance_history" name="💵 Balans Tarixçəsi" parent="menu_badminton_sales" 
+              action="action_badminton_balance_history" sequence="5"/>-->
 
     <!-- Badminton Dərsləri -->
     <menuitem id="menu_badminton_lessons" name="Badminton Dərsləri" parent="menu_badminton_section" sequence="25"/>
