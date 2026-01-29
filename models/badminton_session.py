@@ -296,14 +296,25 @@ class BadmintonSession(models.Model):
 
     def extend_session(self, additional_hours=1.0):
         for s in self.filtered(lambda r: r.state in ('active', 'extended')):
+
+            # PROMO sessiya: balans çıxma, sadəcə vaxtı uzat
+            if s.promo_type:
+                s.extended_time += additional_hours
+                s.end_time = s.end_time + timedelta(hours=additional_hours)
+                s.state = 'extended'
+                s.notes = (f"Promo sessiya uzadıldı (+{additional_hours} saat). "
+                        f"Tətbiq: {s.promo_type}. Balans çıxılmadı.")
+                s.warn10_sent = False
+                continue
+
+            # normal flow (balans çıx)
             if s.session_package_id:
                 s._consume_selected_package(
-                    additional_hours,
-                    'extension',
+                    additional_hours, 'extension',
                     f"Sessiya uzadıldı: {s.name} (+{additional_hours} saat)"
                 )
             else:
-                s.partner_id.consume_badminton_hours(
+                s.partner_id.consume_genclik_badminton_hours(
                     additional_hours,
                     transaction_type='extension',
                     description=f"Sessiya uzadıldı: {s.name} (+{additional_hours} saat)",
@@ -314,8 +325,8 @@ class BadmintonSession(models.Model):
             s.end_time = s.end_time + timedelta(hours=additional_hours)
             s.state = 'extended'
             s.notes = (f"Sessiya {additional_hours} saat uzadıldı. "
-                       f"Aylıq balans: {s.partner_id.get_monthly_hours_available()} saat | "
-                       f"Normal balans: {s.partner_id.badminton_balance}")
+                    f"Aylıq balans: {s.partner_id.get_monthly_hours_available()} saat | "
+                    f"Normal balans: {s.partner_id.badminton_balance}")
             s.warn10_sent = False
 
     def _consume_selected_package(self, hours, transaction_type, description):
